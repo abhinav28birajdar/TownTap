@@ -56,11 +56,9 @@ const NewHomeScreen: React.FC = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get location from store
-  const { latitude, longitude } = useLocationStore((state) => ({
-    latitude: state.latitude,
-    longitude: state.longitude,
-  }));
+  // Get location from store with proper memoization
+  const latitude = useLocationStore((state) => state.latitude);
+  const longitude = useLocationStore((state) => state.longitude);
 
   useEffect(() => {
     loadBusinesses();

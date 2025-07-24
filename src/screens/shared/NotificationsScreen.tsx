@@ -1,576 +1,575 @@
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Alert,
     FlatList,
-    RefreshControl,
     SafeAreaView,
+    ScrollView,
+    StatusBar,
     StyleSheet,
+    Switch,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 
-import { useAuthStore } from '../../stores/authStore';
-import { Notification } from '../../types';
-
-interface NotificationsScreenProps {
-  navigation: any;
+interface Notification {
+  id: string;
+  type: 'order' | 'promotion' | 'system' | 'business';
+  title: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+  icon: string;
+  actionRequired?: boolean;
 }
 
-const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation }) => {
+interface NotificationSettings {
+  orderUpdates: boolean;
+  promotions: boolean;
+  newBusinesses: boolean;
+  systemUpdates: boolean;
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+}
+
+export default function NotificationsScreen() {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
-  
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'settings'>('all');
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'order',
+      title: 'Order Delivered!',
+      message: 'Your order from Pizza Palace has been delivered. Enjoy your meal!',
+      timestamp: '2024-01-15T19:15:00Z',
+      isRead: false,
+      icon: '🍕',
+      actionRequired: false,
+    },
+    {
+      id: '2',
+      type: 'promotion',
+      title: '50% Off on First Order',
+      message: 'Welcome to TownTap! Use code WELCOME50 to get 50% off on your first order.',
+      timestamp: '2024-01-15T10:30:00Z',
+      isRead: false,
+      icon: '🎉',
+      actionRequired: true,
+    },
+    {
+      id: '3',
+      type: 'business',
+      title: 'New Restaurant Nearby',
+      message: 'Burger Junction just opened in your area. Check out their grand opening offers!',
+      timestamp: '2024-01-14T16:45:00Z',
+      isRead: true,
+      icon: '🍔',
+      actionRequired: false,
+    },
+    {
+      id: '4',
+      type: 'order',
+      title: 'Order Confirmed',
+      message: 'Your order #TP-2024-001235 has been confirmed and is being prepared.',
+      timestamp: '2024-01-14T18:20:00Z',
+      isRead: true,
+      icon: '✅',
+      actionRequired: false,
+    },
+    {
+      id: '5',
+      type: 'system',
+      title: 'App Update Available',
+      message: 'A new version of TownTap is available with improved features and bug fixes.',
+      timestamp: '2024-01-13T09:00:00Z',
+      isRead: true,
+      icon: '📱',
+      actionRequired: true,
+    },
+  ]);
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
+  const [settings, setSettings] = useState<NotificationSettings>({
+    orderUpdates: true,
+    promotions: true,
+    newBusinesses: true,
+    systemUpdates: true,
+    pushNotifications: true,
+    emailNotifications: false,
+    smsNotifications: false,
+  });
 
-  const loadNotifications = async () => {
-    try {
-      setLoading(true);
-      // Mock notifications - replace with actual API call
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          user_id: user?.id || '',
-          type: 'order_confirmed',
-          title: 'Order Confirmed',
-          body: 'Your order #12345 has been confirmed by Fresh Vegetables Store.',
-          is_read: false,
-          priority: 'normal',
-          action_url: '/orders/12345',
-          data: {
-            order_id: '12345',
-            business_name: 'Fresh Vegetables Store',
-          },
-          created_at: '2024-01-15T10:30:00Z',
-        },
-        {
-          id: '2',
-          user_id: user?.id || '',
-          type: 'promotion',
-          title: 'Special Offer',
-          body: '20% off on all organic products this weekend!',
-          is_read: false,
-          priority: 'normal',
-          action_url: '/promotions/weekend-sale',
-          data: {
-            discount: '20%',
-            valid_until: '2024-01-21T23:59:59Z',
-          },
-          created_at: '2024-01-15T09:00:00Z',
-        },
-        {
-          id: '3',
-          user_id: user?.id || '',
-          type: 'business_update',
-          title: 'New Message',
-          body: 'You have a new message from Raj Electronics.',
-          is_read: true,
-          priority: 'normal',
-          action_url: '/chat/conv-123',
-          data: {
-            conversation_id: 'conv-123',
-            sender_name: 'Raj Electronics',
-          },
-          created_at: '2024-01-15T08:45:00Z',
-        },
-        {
-          id: '4',
-          user_id: user?.id || '',
-          type: 'order_ready',
-          title: 'Out for Delivery',
-          body: 'Your order is out for delivery and will arrive in 15-20 minutes.',
-          is_read: true,
-          priority: 'high',
-          action_url: '/orders/12344/track',
-          data: {
-            order_id: '12344',
-            estimated_time: '15-20 minutes',
-          },
-          created_at: '2024-01-14T16:30:00Z',
-        },
-        {
-          id: '5',
-          user_id: user?.id || '',
-          type: 'order_placed',
-          title: 'New Order Received',
-          body: 'You have received a new order from customer John Doe.',
-          is_read: false,
-          priority: 'high',
-          action_url: '/business/orders/new',
-          data: {
-            order_id: '12346',
-            customer_name: 'John Doe',
-          },
-          created_at: '2024-01-15T11:00:00Z',
-        },
-      ];
-      
-      // Filter notifications based on user type
-      const filteredNotifications = mockNotifications.filter(notification => {
-        if (user?.user_type === 'business') {
-          return ['order_placed', 'business_update', 'payment_success'].includes(notification.type);
-        } else {
-          return ['order_confirmed', 'promotion', 'business_update', 'order_ready', 'order_delivered'].includes(notification.type);
-        }
-      });
-      
-      setNotifications(filteredNotifications);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-      Alert.alert(t('error.title'), t('error.loadingNotifications'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadNotifications();
-    setRefreshing(false);
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, is_read: true }
-            : notification
-        )
-      );
-      
-      // Here you would call your API to mark the notification as read
-      console.log('Marking notification as read:', notificationId);
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      setNotifications(prev => 
-        prev.map(notification => ({ ...notification, is_read: true }))
-      );
-      
-      // Here you would call your API to mark all notifications as read
-      console.log('Marking all notifications as read');
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
-  };
-
-  const deleteNotification = async (notificationId: string) => {
-    Alert.alert(
-      t('notifications.deleteTitle'),
-      t('notifications.deleteMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setNotifications(prev => 
-                prev.filter(notification => notification.id !== notificationId)
-              );
-              // Here you would call your API to delete the notification
-              console.log('Deleting notification:', notificationId);
-            } catch (error) {
-              console.error('Error deleting notification:', error);
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleNotificationPress = (notification: Notification) => {
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
-
-    // Navigate based on notification type and action_url
-    if (notification.action_url) {
-      if (notification.action_url.includes('/orders/')) {
-        navigation.navigate('OrderHistory');
-      } else if (notification.action_url.includes('/chat/')) {
-        navigation.navigate('Chat', {
-          conversationId: notification.data?.conversation_id,
-        });
-      } else if (notification.action_url.includes('/business/orders/')) {
-        navigation.navigate('OrderManagement');
-      }
-    }
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'order_confirmed':
-      case 'order_placed':
-      case 'order_ready':
-      case 'order_delivered':
-        return 'receipt-outline';
-      case 'promotion':
-      case 'discount_offer':
-        return 'pricetag-outline';
-      case 'business_update':
-        return 'chatbubble-outline';
-      case 'payment_success':
-      case 'payment_failed':
-        return 'card-outline';
-      case 'new_business':
-        return 'business-outline';
-      default:
-        return 'notifications-outline';
-    }
-  };
-
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case 'order_confirmed':
-      case 'order_placed':
-      case 'order_ready':
-      case 'order_delivered':
-        return '#34C759';
-      case 'promotion':
-      case 'discount_offer':
-        return '#FF9500';
-      case 'business_update':
-        return '#007AFF';
-      case 'payment_success':
-        return '#30D158';
-      case 'payment_failed':
-        return '#FF3B30';
-      case 'new_business':
-        return '#5856D6';
-      default:
-        return '#8E8E93';
-    }
-  };
-
-  const formatTime = (timestamp: string) => {
+  const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
     if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(diffInHours * 60);
-      return `${diffInMinutes}m ago`;
+      return 'Just now';
     } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)}h ago`;
+      return `${diffInHours}h ago`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
       return `${diffInDays}d ago`;
     }
   };
 
-  const filteredNotifications = notifications.filter(notification => 
-    filter === 'all' || !notification.is_read
-  );
+  const markAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === id
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
+  };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const markAllAsRead = () => {
+    setNotifications(prev =>
+      prev.map(notification => ({ ...notification, isRead: true }))
+    );
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  const updateSetting = (key: keyof NotificationSettings, value: boolean) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
 
   const renderNotification = ({ item }: { item: Notification }) => (
     <TouchableOpacity
-      style={[
-        styles.notificationCard,
-        !item.is_read && styles.unreadNotification
-      ]}
-      onPress={() => handleNotificationPress(item)}
-      activeOpacity={0.7}
+      style={[styles.notificationCard, !item.isRead && styles.unreadNotification]}
+      onPress={() => markAsRead(item.id)}
     >
-      <View style={styles.notificationContent}>
-        <View style={[
-          styles.iconContainer,
-          { backgroundColor: getNotificationColor(item.type) + '20' }
-        ]}>
-          <Ionicons
-            name={getNotificationIcon(item.type) as any}
-            size={24}
-            color={getNotificationColor(item.type)}
-          />
+      <View style={styles.notificationHeader}>
+        <View style={styles.notificationIcon}>
+          <Text style={styles.notificationEmoji}>{item.icon}</Text>
         </View>
-        
-        <View style={styles.textContainer}>
-          <View style={styles.titleRow}>
-            <Text style={[
-              styles.title,
-              !item.is_read && styles.unreadTitle
-            ]}>
-              {item.title}
-            </Text>
-            <Text style={styles.time}>{formatTime(item.created_at)}</Text>
-          </View>
-          
-          <Text style={styles.message} numberOfLines={2}>
-            {item.body}
-          </Text>
-          
-          {!item.is_read && <View style={styles.unreadDot} />}
+        <View style={styles.notificationContent}>
+          <Text style={styles.notificationTitle}>{item.title}</Text>
+          <Text style={styles.notificationMessage}>{item.message}</Text>
+          <Text style={styles.notificationTime}>{formatTimestamp(item.timestamp)}</Text>
         </View>
-        
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => deleteNotification(item.id)}
-        >
-          <Ionicons name="close" size={20} color="#8E8E93" />
-        </TouchableOpacity>
+        {!item.isRead && <View style={styles.unreadDot} />}
       </View>
+      
+      {item.actionRequired && (
+        <View style={styles.actionSection}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>Take Action</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => deleteNotification(item.id)}
+      >
+        <Text style={styles.deleteButtonText}>×</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
+  const renderSettingItem = (
+    title: string,
+    subtitle: string,
+    key: keyof NotificationSettings,
+    value: boolean
+  ) => (
+    <View style={styles.settingItem}>
+      <View style={styles.settingText}>
+        <Text style={styles.settingTitle}>{title}</Text>
+        <Text style={styles.settingSubtitle}>{subtitle}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={(newValue) => updateSetting(key, newValue)}
+        trackColor={{ false: '#E9ECEF', true: '#007AFF' }}
+        thumbColor={value ? '#FFFFFF' : '#FFFFFF'}
+      />
+    </View>
+  );
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+        <TouchableOpacity style={styles.backButton}>
+          <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
-        {unreadCount > 0 && (
-          <TouchableOpacity
-            style={styles.markAllButton}
-            onPress={markAllAsRead}
-          >
-            <Text style={styles.markAllText}>{t('notifications.markAllRead')}</Text>
+        <Text style={styles.headerTitle}>Notifications</Text>
+        {activeTab === 'all' && unreadCount > 0 && (
+          <TouchableOpacity style={styles.markAllButton} onPress={markAllAsRead}>
+            <Text style={styles.markAllButtonText}>Mark All Read</Text>
           </TouchableOpacity>
         )}
+        {activeTab === 'settings' && <View style={styles.placeholder} />}
       </View>
 
-      {/* Filter Tabs */}
-      <View style={styles.filterTabs}>
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
         <TouchableOpacity
-          style={[
-            styles.filterTab,
-            filter === 'all' && styles.activeFilterTab
-          ]}
-          onPress={() => setFilter('all')}
+          style={[styles.tab, activeTab === 'all' && styles.activeTab]}
+          onPress={() => setActiveTab('all')}
         >
-          <Text style={[
-            styles.filterTabText,
-            filter === 'all' && styles.activeFilterTabText
-          ]}>
-            {t('notifications.all')} ({notifications.length})
+          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
+            All Notifications
           </Text>
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[
-            styles.filterTab,
-            filter === 'unread' && styles.activeFilterTab
-          ]}
-          onPress={() => setFilter('unread')}
+          style={[styles.tab, activeTab === 'settings' && styles.activeTab]}
+          onPress={() => setActiveTab('settings')}
         >
-          <Text style={[
-            styles.filterTabText,
-            filter === 'unread' && styles.activeFilterTabText
-          ]}>
-            {t('notifications.unread')} ({unreadCount})
+          <Text style={[styles.tabText, activeTab === 'settings' && styles.activeTabText]}>
+            Settings
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Notifications List */}
-      <FlatList
-        data={filteredNotifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#007AFF']}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="notifications-outline" size={64} color="#C7C7CC" />
-            <Text style={styles.emptyTitle}>
-              {filter === 'unread' 
-                ? t('notifications.noUnread')
-                : t('notifications.noNotifications')
-              }
-            </Text>
-            <Text style={styles.emptySubtitle}>
-              {t('notifications.emptyDescription')}
-            </Text>
+      {/* Content */}
+      {activeTab === 'all' ? (
+        <FlatList
+          data={notifications}
+          renderItem={renderNotification}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.notificationsList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateIcon}>🔔</Text>
+              <Text style={styles.emptyStateTitle}>No Notifications</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                You're all caught up! New notifications will appear here.
+              </Text>
+            </View>
+          }
+        />
+      ) : (
+        <ScrollView style={styles.settingsContent} showsVerticalScrollIndicator={false}>
+          {/* Notification Types */}
+          <View style={styles.settingsSection}>
+            <Text style={styles.settingsSectionTitle}>Notification Types</Text>
+            {renderSettingItem(
+              'Order Updates',
+              'Get notified about order status changes',
+              'orderUpdates',
+              settings.orderUpdates
+            )}
+            {renderSettingItem(
+              'Promotions & Offers',
+              'Receive special deals and discounts',
+              'promotions',
+              settings.promotions
+            )}
+            {renderSettingItem(
+              'New Businesses',
+              'Learn about new restaurants in your area',
+              'newBusinesses',
+              settings.newBusinesses
+            )}
+            {renderSettingItem(
+              'System Updates',
+              'App updates and important announcements',
+              'systemUpdates',
+              settings.systemUpdates
+            )}
           </View>
-        }
-      />
+
+          {/* Delivery Methods */}
+          <View style={styles.settingsSection}>
+            <Text style={styles.settingsSectionTitle}>Delivery Methods</Text>
+            {renderSettingItem(
+              'Push Notifications',
+              'Get instant notifications on your device',
+              'pushNotifications',
+              settings.pushNotifications
+            )}
+            {renderSettingItem(
+              'Email Notifications',
+              'Receive notifications via email',
+              'emailNotifications',
+              settings.emailNotifications
+            )}
+            {renderSettingItem(
+              'SMS Notifications',
+              'Get text messages for important updates',
+              'smsNotifications',
+              settings.smsNotifications
+            )}
+          </View>
+
+          {/* Quiet Hours */}
+          <View style={styles.settingsSection}>
+            <Text style={styles.settingsSectionTitle}>Quiet Hours</Text>
+            <TouchableOpacity style={styles.quietHoursButton}>
+              <View style={styles.quietHoursText}>
+                <Text style={styles.settingTitle}>Do Not Disturb</Text>
+                <Text style={styles.settingSubtitle}>10:00 PM - 8:00 AM</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#E9ECEF',
   },
   backButton: {
     padding: 4,
   },
+  backButtonText: {
+    fontSize: 18,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 16,
+    color: '#1A1A1A',
   },
   markAllButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    padding: 4,
   },
-  markAllText: {
+  markAllButtonText: {
     fontSize: 14,
     color: '#007AFF',
     fontWeight: '500',
   },
-  filterTabs: {
+  placeholder: {
+    width: 80,
+  },
+  tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#E9ECEF',
   },
-  filterTab: {
+  tab: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    borderRadius: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  activeFilterTab: {
-    backgroundColor: '#007AFF',
+  activeTab: {
+    borderBottomColor: '#007AFF',
   },
-  filterTabText: {
-    fontSize: 14,
-    color: '#666',
+  tabText: {
+    fontSize: 16,
+    color: '#666666',
     fontWeight: '500',
   },
-  activeFilterTabText: {
-    color: '#fff',
+  activeTabText: {
+    color: '#007AFF',
   },
-  list: {
-    flex: 1,
+  notificationBadge: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+    minWidth: 20,
+    alignItems: 'center',
   },
-  listContainer: {
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  notificationsList: {
     padding: 16,
   },
   notificationCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  unreadNotification: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  notificationContent: {
-    flexDirection: 'row',
     padding: 16,
-    alignItems: 'flex-start',
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
     position: 'relative',
   },
-  titleRow: {
+  unreadNotification: {
+    borderColor: '#007AFF',
+    borderWidth: 2,
+  },
+  notificationHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  notificationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  notificationEmoji: {
+    fontSize: 20,
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
     marginBottom: 4,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    flex: 1,
-    marginRight: 8,
-  },
-  unreadTitle: {
-    fontWeight: '600',
-  },
-  time: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
-  message: {
+  notificationMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#666666',
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  notificationTime: {
+    fontSize: 12,
+    color: '#999999',
   },
   unreadDot: {
-    position: 'absolute',
-    top: 2,
-    right: -8,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#007AFF',
+    marginLeft: 8,
+    marginTop: 8,
+  },
+  actionSection: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  actionButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
   },
   deleteButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FA',
     alignItems: 'center',
-    paddingVertical: 64,
+    justifyContent: 'center',
   },
-  emptyTitle: {
+  deleteButtonText: {
+    fontSize: 18,
+    color: '#666666',
+    fontWeight: 'bold',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyStateTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
+    color: '#1A1A1A',
     marginBottom: 8,
   },
-  emptySubtitle: {
+  emptyStateSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#666666',
     textAlign: 'center',
-    paddingHorizontal: 32,
+    lineHeight: 20,
+  },
+  settingsContent: {
+    flex: 1,
+  },
+  settingsSection: {
+    backgroundColor: '#FFFFFF',
+    marginBottom: 16,
+    paddingVertical: 16,
+  },
+  settingsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 16,
+    marginHorizontal: 20,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  settingText: {
+    flex: 1,
+    marginRight: 16,
+  },
+  settingTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1A1A1A',
+  },
+  settingSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 2,
+  },
+  quietHoursButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  quietHoursText: {
+    flex: 1,
+  },
+  chevron: {
+    fontSize: 20,
+    color: '#CED4DA',
+    fontWeight: 'bold',
   },
 });
-
-export default NotificationsScreen;

@@ -14,7 +14,7 @@ import {
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { businessService } from '../../services/businessService';
-import { useCartStore } from '../../stores/cartStore';
+// import { useCartStore } from '../../stores/cartStore';
 import { Business, CartItem, Product, Service } from '../../types';
 
 const OrderScreen: React.FC<any> = ({ navigation, route }) => {
@@ -25,7 +25,13 @@ const OrderScreen: React.FC<any> = ({ navigation, route }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const { items, addItem, removeItem, updateItemQuantity, getItemCount, getCartTotal } = useCartStore();
+  // const { items, addItem, removeItem, updateItemQuantity, getItemCount, getCartTotal } = useCartStore();
+  const items: CartItem[] = [];
+  const addItem = (businessId: string, item: any) => {};
+  const removeItem = (id: string) => {};
+  const updateItemQuantity = (id: string, quantity: number) => {};
+  const getItemCount = () => 0;
+  const getCartTotal = () => 0;
 
   useEffect(() => {
     loadBusinessData();
