@@ -1,525 +1,301 @@
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
+import { MotiView } from 'moti';
 import React, { useState } from 'react';
-import {
-    Alert,
-    Clipboard,
-    ScrollView,
-    Share,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
+import { COLORS, CONTENT_TEMPLATES, DIMENSIONS } from '../../config/constants';
+import { getCurrentLanguage } from '../../i18n';
+import { generateAIContent } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 
-interface ContentForm {
-  prompt: string;
-  contentType: 'promotional_caption' | 'product_description' | 'service_description' | 'social_media_post';
-  platform: 'instagram' | 'facebook' | 'whatsapp' | 'general';
-  tone: 'festive' | 'professional' | 'casual' | 'urgent' | 'friendly';
-  language: 'en' | 'hi';
-}
-
-const contentTypes = [
-  { value: 'promotional_caption', label: 'Promotional Caption' },
-  { value: 'product_description', label: 'Product Description' },
-  { value: 'service_description', label: 'Service Description' },
-  { value: 'social_media_post', label: 'Social Media Post' },
-];
-
-const platforms = [
-  { value: 'instagram', label: 'Instagram', icon: '📷' },
-  { value: 'facebook', label: 'Facebook', icon: '👥' },
-  { value: 'whatsapp', label: 'WhatsApp', icon: '💬' },
-  { value: 'general', label: 'General', icon: '📝' },
-];
-
-const tones = [
-  { value: 'festive', label: 'Festive', icon: '🎉' },
-  { value: 'professional', label: 'Professional', icon: '💼' },
-  { value: 'casual', label: 'Casual', icon: '😊' },
-  { value: 'urgent', label: 'Urgent', icon: '⚡' },
-  { value: 'friendly', label: 'Friendly', icon: '🤝' },
-];
-
-const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'hi', label: 'हिंदी' },
-];
-
-export default function AIContentGeneratorScreen() {
-  const user = useAuthStore((state) => state.user);
-  const [form, setForm] = useState<ContentForm>({
-    prompt: '',
-    contentType: 'promotional_caption',
-    platform: 'instagram',
-    tone: 'friendly',
-    language: 'en',
-  });
-  const [generatedContent, setGeneratedContent] = useState<string>('');
+const AIContentGeneratorScreen: React.FC = () => {
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  
+  // Form state
+  const [prompt, setPrompt] = useState('');
+  const [contentType, setContentType] = useState(CONTENT_TEMPLATES.CONTENT_TYPES[0]);
+  const [platform, setPlatform] = useState(CONTENT_TEMPLATES.PLATFORMS[0]);
+  const [tone, setTone] = useState(CONTENT_TEMPLATES.TONES[0]);
+  
+  // UI state
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showPlatformModal, setShowPlatformModal] = useState(false);
-  const [showToneModal, setShowToneModal] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [showResult, setShowResult] = useState(false);
 
-  const generateContent = async () => {
-    if (!form.prompt.trim()) {
-      Alert.alert('Error', 'Please enter a prompt to generate content.');
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      Alert.alert(t('common.error'), t('ai.contentGenerator.error'));
+      return;
+    }
+
+    if (!user?.profile?.user_type || user.profile.user_type !== 'business_owner') {
+      Alert.alert(t('common.error'), 'Only business users can generate content');
       return;
     }
 
     setIsGenerating(true);
-    
-    // Simulate AI content generation
+    setShowResult(false);
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockContent = generateMockContent(form);
-      setGeneratedContent(mockContent);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate content. Please try again.');
+      const { data, error } = await generateAIContent({
+        businessId: user.id,
+        promptText: prompt,
+        contentType,
+        platform,
+        tone,
+        language: getCurrentLanguage(),
+      });
+
+      if (error) {
+        throw new Error(error.message || t('ai.contentGenerator.error'));
+      }
+
+      setGeneratedContent(data?.content || '');
+      setShowResult(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    } catch (error: any) {
+      Alert.alert(t('common.error'), error.message);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const generateMockContent = (form: ContentForm): string => {
-    const { prompt, contentType, platform, tone, language } = form;
-    
-    if (language === 'hi') {
-      return generateHindiContent(prompt, contentType, tone);
-    }
-    
-    switch (contentType) {
-      case 'promotional_caption':
-        return `🎉 Special Offer Alert! 🎉
-
-${prompt} - Now available with exclusive discounts!
-
-✨ Limited time offer
-🚚 Free delivery available
-💯 100% satisfaction guaranteed
-
-${platform === 'instagram' ? '#SpecialOffer #LocalBusiness #TownTap' : ''}
-
-Visit us today or order online! 📞 Call now for more details.`;
-
-      case 'product_description':
-        return `Discover the amazing ${prompt}!
-
-🌟 Key Features:
-• Premium quality materials
-• Excellent value for money
-• Customer satisfaction guaranteed
-• Quick delivery available
-
-${tone === 'professional' ? 'Our commitment to quality ensures you receive only the best products.' : 'Perfect for your daily needs and special occasions!'}
-
-Order now and experience the difference! 🛍️`;
-
-      case 'service_description':
-        return `Professional ${prompt} Services
-
-🔧 What we offer:
-• Expert technicians
-• Affordable pricing
-• Quick response time
-• Quality workmanship guaranteed
-
-${tone === 'urgent' ? '⚡ Emergency services available 24/7!' : '📅 Book your appointment today!'}
-
-Contact us for a free quote and consultation.`;
-
-      case 'social_media_post':
-        return `Hey everyone! 👋
-
-${prompt} is what we're excited about today!
-
-${tone === 'casual' ? '😊 Come check us out and see what makes us special!' : '🏆 We\'re committed to providing you with the best experience.'}
-
-${platform === 'facebook' ? 'Tag a friend who might be interested! 👥' : ''}
-${platform === 'instagram' ? '📸 Share your experience with us!' : ''}
-
-#LocalBusiness #CommunityFirst #TownTap`;
-
-      default:
-        return `Here's your generated content about ${prompt}. This content is optimized for ${platform} with a ${tone} tone.`;
-    }
-  };
-
-  const generateHindiContent = (prompt: string, contentType: string, tone: string): string => {
-    switch (contentType) {
-      case 'promotional_caption':
-        return `🎉 विशेष ऑफर अलर्ट! 🎉
-
-${prompt} - अब विशेष छूट के साथ उपलब्ध!
-
-✨ सीमित समय का ऑफर
-🚚 मुफ्त डिलीवरी उपलब्ध
-💯 100% संतुष्टि की गारंटी
-
-आज ही हमसे मिलें या ऑनलाइन ऑर्डर करें! 📞 अधिक जानकारी के लिए अभी कॉल करें।`;
-
-      case 'product_description':
-        return `अद्भुत ${prompt} की खोज करें!
-
-🌟 मुख्य विशेषताएं:
-• प्रीमियम गुणवत्ता की सामग्री
-• पैसे की बेहतरीन वैल्यू
-• ग्राहक संतुष्टि की गारंटी
-• त्वरित डिलीवरी उपलब्ध
-
-अभी ऑर्डर करें और अंतर का अनुभव करें! 🛍️`;
-
-      default:
-        return `आपका ${prompt} के बारे में जेनरेट किया गया कंटेंट। यह कंटेंट ${tone} टोन के साथ अनुकूलित है।`;
-    }
-  };
-
-  const copyToClipboard = async () => {
+  const handleCopy = async () => {
     if (generatedContent) {
-      await Clipboard.setString(generatedContent);
-      Alert.alert('Success', 'Content copied to clipboard!');
+      await Clipboard.setStringAsync(generatedContent);
+      Alert.alert(t('common.success'), t('common.copied'));
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
 
-  const shareContent = async () => {
+  const handleShare = async () => {
     if (generatedContent) {
       try {
         await Share.share({
           message: generatedContent,
-          title: 'Generated Content from TownTap',
+          title: t('ai.contentGenerator.generatedContent'),
         });
       } catch (error) {
-        console.error('Error sharing content:', error);
+        console.error('Share error:', error);
       }
     }
   };
 
-  const renderSelector = (
+  const handleRefine = () => {
+    setShowResult(false);
+    setGeneratedContent('');
+  };
+
+  const renderDropdown = (
     title: string,
-    value: string,
-    options: Array<{ value: string; label: string; icon?: string }>,
+    options: string[],
+    selectedValue: string,
     onSelect: (value: string) => void
   ) => (
-    <View style={styles.selectorContainer}>
-      <Text style={styles.selectorTitle}>{title}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.selectorOptions}>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.selectorOption,
-                value === option.value && styles.selectorOptionActive
-              ]}
-              onPress={() => onSelect(option.value)}
-            >
-              {option.icon && (
-                <Text style={styles.selectorOptionIcon}>{option.icon}</Text>
-              )}
-              <Text style={[
-                styles.selectorOptionText,
-                value === option.value && styles.selectorOptionTextActive
-              ]}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+    <View style={styles.dropdownContainer}>
+      <Text style={styles.dropdownLabel}>{title}</Text>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.optionsScroll}
+        contentContainerStyle={styles.optionsContainer}
+      >
+        {options.map((option, index) => (
+          <View key={option} style={styles.optionButton}>
+            <Button
+              title={option}
+              onPress={() => onSelect(option)}
+              variant={selectedValue === option ? 'primary' : 'outline'}
+              size="sm"
+            />
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>🤖 AI Content Generator</Text>
-          <Text style={styles.headerSubtitle}>
-            Create engaging content for your business
-          </Text>
+          <Text style={styles.title}>{t('ai.contentGenerator.title')}</Text>
+          <Text style={styles.subtitle}>{t('ai.contentGenerator.subtitle')}</Text>
         </View>
 
-        {/* Content Type Selector */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Content Type</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.contentTypeOptions}>
-              {contentTypes.map((type) => (
-                <TouchableOpacity
-                  key={type.value}
-                  style={[
-                    styles.contentTypeOption,
-                    form.contentType === type.value && styles.contentTypeOptionActive
-                  ]}
-                  onPress={() => setForm({ ...form, contentType: type.value as any })}
-                >
-                  <Text style={[
-                    styles.contentTypeText,
-                    form.contentType === type.value && styles.contentTypeTextActive
-                  ]}>
-                    {type.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Platform Selector */}
-        {renderSelector(
-          'Platform',
-          form.platform,
-          platforms,
-          (value) => setForm({ ...form, platform: value as any })
-        )}
-
-        {/* Tone Selector */}
-        {renderSelector(
-          'Tone',
-          form.tone,
-          tones,
-          (value) => setForm({ ...form, tone: value as any })
-        )}
-
-        {/* Language Selector */}
-        {renderSelector(
-          'Language',
-          form.language,
-          languages,
-          (value) => setForm({ ...form, language: value as any })
-        )}
-
-        {/* Prompt Input */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Prompt</Text>
-          <TextInput
-            style={styles.promptInput}
-            value={form.prompt}
-            onChangeText={(text) => setForm({ ...form, prompt: text })}
-            placeholder="Describe what you want to promote (e.g., '50% off on fresh vegetables', 'expert laptop repair service', etc.)"
-            placeholderTextColor="#999"
+        {/* Input Form */}
+        <Card>
+          <Input
+            label={t('ai.contentGenerator.prompt')}
+            placeholder={t('ai.contentGenerator.prompt')}
+            value={prompt}
+            onChangeText={setPrompt}
             multiline
-            maxLength={300}
+            numberOfLines={4}
           />
-          <Text style={styles.characterCount}>
-            {form.prompt.length}/300 characters
-          </Text>
-        </View>
 
-        {/* Generate Button */}
-        <TouchableOpacity
-          style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]}
-          onPress={generateContent}
-          disabled={isGenerating}
-        >
-          <Text style={styles.generateButtonText}>
-            {isGenerating ? 'Generating...' : 'Generate Content'}
-          </Text>
-        </TouchableOpacity>
+          {renderDropdown(
+            t('ai.contentGenerator.contentType'),
+            CONTENT_TEMPLATES.CONTENT_TYPES,
+            contentType,
+            setContentType
+          )}
+
+          {renderDropdown(
+            t('ai.contentGenerator.platform'),
+            CONTENT_TEMPLATES.PLATFORMS,
+            platform,
+            setPlatform
+          )}
+
+          {renderDropdown(
+            t('ai.contentGenerator.tone'),
+            CONTENT_TEMPLATES.TONES,
+            tone,
+            setTone
+          )}
+
+          <Button
+            title={isGenerating ? t('ai.contentGenerator.generating') : t('ai.contentGenerator.generate')}
+            onPress={handleGenerate}
+            loading={isGenerating}
+            disabled={!prompt.trim() || isGenerating}
+          />
+        </Card>
 
         {/* Generated Content */}
-        {generatedContent && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Generated Content</Text>
-            <View style={styles.contentContainer}>
-              <Text style={styles.generatedContent}>{generatedContent}</Text>
-              <View style={styles.contentActions}>
-                <TouchableOpacity style={styles.actionButton} onPress={copyToClipboard}>
-                  <Text style={styles.actionButtonText}>📋 Copy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={shareContent}>
-                  <Text style={styles.actionButtonText}>📤 Share</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButton} 
-                  onPress={() => setForm({ ...form, prompt: '' })}
-                >
-                  <Text style={styles.actionButtonText}>🔄 New</Text>
-                </TouchableOpacity>
+        {showResult && generatedContent && (
+          <MotiView
+            from={{ opacity: 0, translateY: 50 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ 
+              type: 'spring', 
+              damping: 20,
+              stiffness: 200,
+              delay: 300 
+            }}
+            style={styles.resultContainer}
+          >
+            <Card>
+              <Text style={styles.resultTitle}>
+                {t('ai.contentGenerator.generatedContent')}
+              </Text>
+              <Text style={styles.resultContent}>{generatedContent}</Text>
+              
+              <View style={styles.actionButtons}>
+                <Button
+                  title={t('ai.contentGenerator.copy')}
+                  onPress={handleCopy}
+                  variant="outline"
+                  size="sm"
+                  icon="📋"
+                />
+                <Button
+                  title={t('ai.contentGenerator.share')}
+                  onPress={handleShare}
+                  variant="outline"
+                  size="sm"
+                  icon="📤"
+                />
+                <Button
+                  title={t('ai.contentGenerator.refine')}
+                  onPress={handleRefine}
+                  variant="secondary"
+                  size="sm"
+                  icon="✨"
+                />
               </View>
-            </View>
-          </View>
+            </Card>
+          </MotiView>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    padding: DIMENSIONS.PADDING.md,
+  },
   header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    marginBottom: DIMENSIONS.PADDING.xl,
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    color: COLORS.text.primary,
+    textAlign: 'center',
+    marginBottom: DIMENSIONS.PADDING.sm,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#666',
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  section: {
-    marginTop: 24,
+  dropdownContainer: {
+    marginBottom: DIMENSIONS.PADDING.lg,
   },
-  sectionTitle: {
+  dropdownLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+    marginBottom: DIMENSIONS.PADDING.sm,
+  },
+  optionsScroll: {
+    flexDirection: 'row',
+  },
+  optionsContainer: {
+    gap: DIMENSIONS.PADDING.sm,
+  },
+  optionButton: {
+    marginRight: DIMENSIONS.PADDING.sm,
+  },
+  resultContainer: {
+    marginTop: DIMENSIONS.PADDING.md,
+  },
+  resultTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    paddingHorizontal: 20,
-    marginBottom: 12,
+    color: COLORS.text.primary,
+    marginBottom: DIMENSIONS.PADDING.md,
   },
-  contentTypeOptions: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  contentTypeOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  contentTypeOptionActive: {
-    backgroundColor: '#2196F3',
-    borderColor: '#2196F3',
-  },
-  contentTypeText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  contentTypeTextActive: {
-    color: '#fff',
-  },
-  selectorContainer: {
-    marginBottom: 16,
-  },
-  selectorTitle: {
+  resultContent: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  selectorOptions: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  selectorOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  selectorOptionActive: {
-    backgroundColor: '#2196F3',
-    borderColor: '#2196F3',
-  },
-  selectorOptionIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  selectorOptionText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  selectorOptionTextActive: {
-    color: '#fff',
-  },
-  promptInput: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 20,
-    fontSize: 16,
-    textAlignVertical: 'top',
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  characterCount: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'right',
-    paddingHorizontal: 20,
-    marginTop: 4,
-  },
-  generateButton: {
-    backgroundColor: '#2196F3',
-    marginHorizontal: 20,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  generateButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  generateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  contentContainer: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  generatedContent: {
-    fontSize: 16,
-    color: '#333',
+    color: COLORS.text.primary,
     lineHeight: 24,
-    marginBottom: 16,
+    marginBottom: DIMENSIONS.PADDING.lg,
+    padding: DIMENSIONS.PADDING.md,
+    backgroundColor: COLORS.gray[50],
+    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
   },
-  contentActions: {
+  actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 16,
-  },
-  actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
-  },
-  actionButtonText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    gap: DIMENSIONS.PADDING.sm,
   },
 });
+
+export default AIContentGeneratorScreen;

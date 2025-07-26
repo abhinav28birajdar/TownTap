@@ -1,437 +1,490 @@
-import {
+import { supabase } from '../lib/supabase';
+import type {
+    AnalyticsSummary,
     Business,
-    BusinessAnalytics,
-    Location,
-    Product,
+    BusinessRegistration,
+    Favorite,
+    Message,
+    MessageFormData,
     Review,
-    SearchFilters,
-    SearchResult,
-    Service
-} from '../types';
+    ReviewFormData
+} from '../types/index_location';
 
-// Mock data for development
-const mockBusinesses: Business[] = [
-  {
-    id: 'business-1',
-    business_name: 'Fresh Grocery Store',
-    description: 'Your neighborhood grocery store with fresh produce and daily essentials',
-    logo_url: 'https://via.placeholder.com/100x100/4CAF50/FFFFFF?text=FG',
-    banner_url: 'https://via.placeholder.com/400x200/4CAF50/FFFFFF?text=Fresh+Grocery',
-    address_line1: '123 Main Street',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    zip_code: '400001',
-    latitude: 19.0760,
-    longitude: 72.8777,
-    contact_phone: '+91 98765 43210',
-    contact_email: 'contact@freshgrocery.com',
-    business_type: 'grocery',
-    specialized_categories: ['Fresh Produce', 'Dairy', 'Beverages'],
-    operating_hours: {
-      monday: { open: '08:00', close: '22:00', is_closed: false },
-      tuesday: { open: '08:00', close: '22:00', is_closed: false },
-      wednesday: { open: '08:00', close: '22:00', is_closed: false },
-      thursday: { open: '08:00', close: '22:00', is_closed: false },
-      friday: { open: '08:00', close: '22:00', is_closed: false },
-      saturday: { open: '08:00', close: '23:00', is_closed: false },
-      sunday: { open: '09:00', close: '21:00', is_closed: false },
-    },
-    delivery_available: true,
-    delivery_radius_km: 5,
-    min_order_value: 150,
-    delivery_charge: 30,
-    avg_rating: 4.5,
-    total_reviews: 234,
-    is_approved: true,
-    status: 'active',
-    owner_id: 'owner-1',
-    social_media_links: {
-      instagram: '@freshgrocery',
-      whatsapp: '+919876543210'
-    },
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-15T00:00:00Z'
-  },
-  {
-    id: 'business-2',
-    business_name: 'TechFix Solutions',
-    description: 'Professional electronics repair and IT services',
-    logo_url: 'https://via.placeholder.com/100x100/2196F3/FFFFFF?text=TF',
-    banner_url: 'https://via.placeholder.com/400x200/2196F3/FFFFFF?text=TechFix',
-    address_line1: '456 Tech Park',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    zip_code: '560001',
-    latitude: 12.9716,
-    longitude: 77.5946,
-    contact_phone: '+91 87654 32109',
-    contact_email: 'hello@techfix.com',
-    business_type: 'services',
-    specialized_categories: ['Computer Repair', 'Mobile Repair', 'Data Recovery'],
-    operating_hours: {
-      monday: { open: '09:00', close: '18:00', is_closed: false },
-      tuesday: { open: '09:00', close: '18:00', is_closed: false },
-      wednesday: { open: '09:00', close: '18:00', is_closed: false },
-      thursday: { open: '09:00', close: '18:00', is_closed: false },
-      friday: { open: '09:00', close: '18:00', is_closed: false },
-      saturday: { open: '10:00', close: '16:00', is_closed: false },
-      sunday: { open: '10:00', close: '16:00', is_closed: true },
-    },
-    delivery_available: false,
-    delivery_radius_km: 10,
-    min_order_value: 500,
-    delivery_charge: 0,
-    avg_rating: 4.8,
-    total_reviews: 89,
-    is_approved: true,
-    status: 'active',
-    owner_id: 'owner-2',
-    social_media_links: {
-      facebook: 'TechFixSolutions',
-      instagram: '@techfixsolutions'
-    },
-    created_at: '2024-01-05T00:00:00Z',
-    updated_at: '2024-01-20T00:00:00Z'
+export class BusinessService {
+  
+  /**
+   * Register a new business
+   */
+  static async registerBusiness(
+    businessData: BusinessRegistration, 
+    ownerId: string
+  ): Promise<Business | null> {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .insert({
+          owner_id: ownerId,
+          ...businessData,
+          location: `POINT(${businessData.location.longitude} ${businessData.location.latitude})`,
+        })
+        .select(`
+          *,
+          category:business_categories(*),
+          owner:profiles(*)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return this.transformBusinessData(data);
+    } catch (error) {
+      console.error('Error registering business:', error);
+      return null;
+    }
   }
-];
 
-const mockProducts: Product[] = [
-  {
-    id: 'product-1',
-    business_id: 'business-1',
-    name: 'Fresh Bananas',
-    description: 'Premium quality bananas, rich in potassium and natural sugars',
-    price: 40,
-    discount_price: 35,
-    image_urls: ['https://via.placeholder.com/200x200/FFC107/FFFFFF?text=Bananas'],
-    category: 'Fresh Produce',
-    subcategory: 'Fruits',
-    unit: 'per dozen',
-    stock_quantity: 50,
-    is_available: true,
-    tags: ['fresh', 'organic', 'healthy'],
-    sku: 'FP-BAN-001',
-    weight: 2,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-15T00:00:00Z'
-  },
-  {
-    id: 'product-2',
-    business_id: 'business-1',
-    name: 'Organic Milk',
-    description: 'Fresh organic milk from local farms, rich in calcium and proteins',
-    price: 60,
-    image_urls: ['https://via.placeholder.com/200x200/FFFFFF/000000?text=Milk'],
-    category: 'Dairy',
-    subcategory: 'Milk & Cream',
-    unit: 'per liter',
-    stock_quantity: 30,
-    is_available: true,
-    tags: ['organic', 'fresh', 'dairy'],
-    sku: 'DA-MLK-001',
-    weight: 1,
-    created_at: '2024-01-02T00:00:00Z',
-    updated_at: '2024-01-16T00:00:00Z'
-  }
-];
-
-export const businessService = {
-  // Get all businesses with optional filters
-  getBusinesses: async (filters?: SearchFilters): Promise<SearchResult> => {
+  /**
+   * Update existing business
+   */
+  static async updateBusiness(
+    businessId: string, 
+    updateData: Partial<BusinessRegistration>
+  ): Promise<Business | null> {
     try {
-      // For now, return mock data
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      const dataToUpdate: any = { ...updateData };
       
-      let filteredBusinesses = [...mockBusinesses];
-      
-      if (filters?.query) {
-        const query = filters.query.toLowerCase();
-        filteredBusinesses = filteredBusinesses.filter(business => 
-          business.business_name.toLowerCase().includes(query) ||
-          business.description?.toLowerCase().includes(query) ||
-          business.specialized_categories.some(cat => cat.toLowerCase().includes(query))
-        );
+      // Transform location if provided
+      if (updateData.location) {
+        dataToUpdate.location = `POINT(${updateData.location.longitude} ${updateData.location.latitude})`;
       }
-      
-      if (filters?.business_type && filters.business_type.length > 0) {
-        filteredBusinesses = filteredBusinesses.filter(business => 
-          filters.business_type!.includes(business.business_type)
-        );
+
+      const { data, error } = await supabase
+        .from('businesses')
+        .update(dataToUpdate)
+        .eq('id', businessId)
+        .select(`
+          *,
+          category:business_categories(*),
+          owner:profiles(*)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
       }
-      
-      if (filters?.rating_above) {
-        filteredBusinesses = filteredBusinesses.filter(business => 
-          business.avg_rating >= filters.rating_above!
-        );
-      }
-      
-      return {
-        businesses: filteredBusinesses,
-        products: mockProducts,
-        services: [],
-        total_results: filteredBusinesses.length,
-        search_time_ms: 500,
-        suggestions: ['Fresh produce', 'Electronics repair', 'Home services']
-      };
-    } catch (error) {
-      console.error('Error fetching businesses:', error);
-      throw new Error('Failed to fetch businesses');
-    }
-  },
 
-  // Get business by ID
-  getBusinessById: async (businessId: string): Promise<Business | null> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return mockBusinesses.find(business => business.id === businessId) || null;
-    } catch (error) {
-      console.error('Error fetching business by ID:', error);
-      throw new Error('Failed to fetch business details');
-    }
-  },
-
-  // Get businesses near a location
-  getNearbyBusinesses: async (location: Location, radiusKm: number = 5): Promise<Business[]> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      // For mock data, return all businesses with calculated distances
-      return mockBusinesses.map(business => ({
-        ...business,
-        // Mock distance calculation (simplified)
-        distance: Math.random() * radiusKm
-      })).sort((a, b) => (a.distance || 0) - (b.distance || 0));
-    } catch (error) {
-      console.error('Error fetching nearby businesses:', error);
-      throw new Error('Failed to fetch nearby businesses');
-    }
-  },
-
-  // Get products for a business
-  getBusinessProducts: async (businessId: string): Promise<Product[]> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return mockProducts.filter(product => product.business_id === businessId);
-    } catch (error) {
-      console.error('Error fetching business products:', error);
-      throw new Error('Failed to fetch business products');
-    }
-  },
-
-  // Get business services
-  getBusinessServices: async (businessId: string): Promise<Service[]> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      // Return mock services based on business type
-      const business = mockBusinesses.find(b => b.id === businessId);
-      if (!business) return [];
-      
-      if (business.business_type === 'services') {
-        return [
-          {
-            id: 'service-1',
-            business_id: businessId,
-            name: 'Computer Diagnosis & Repair',
-            description: 'Complete computer diagnosis and repair service',
-            base_price: 500,
-            price_type: 'fixed',
-            category: 'Computer Repair',
-            duration_minutes: 120,
-            is_available: true,
-            service_area_km: 10,
-            requirements: ['Bring your device', 'Valid ID'],
-            created_at: '2024-01-01T00:00:00Z',
-            updated_at: '2024-01-15T00:00:00Z'
-          }
-        ];
-      }
-      
-      return [];
-    } catch (error) {
-      console.error('Error fetching business services:', error);
-      throw new Error('Failed to fetch business services');
-    }
-  },
-
-  // Get business reviews
-  getBusinessReviews: async (businessId: string, page: number = 1, limit: number = 10): Promise<Review[]> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Return mock reviews
-      return [
-        {
-          id: 'review-1',
-          business_id: businessId,
-          customer_id: 'customer-1',
-          rating: 5,
-          title: 'Excellent service!',
-          comment: 'Very professional and quick service. Highly recommended!',
-          helpful_count: 12,
-          is_verified_purchase: true,
-          created_at: '2024-01-10T00:00:00Z',
-          updated_at: '2024-01-10T00:00:00Z'
-        },
-        {
-          id: 'review-2',
-          business_id: businessId,
-          customer_id: 'customer-2',
-          rating: 4,
-          title: 'Good quality products',
-          comment: 'Fresh products and timely delivery. Will order again.',
-          helpful_count: 8,
-          response_from_business: 'Thank you for your feedback! We appreciate your business.',
-          response_timestamp: '2024-01-11T00:00:00Z',
-          is_verified_purchase: true,
-          created_at: '2024-01-09T00:00:00Z',
-          updated_at: '2024-01-11T00:00:00Z'
-        }
-      ];
-    } catch (error) {
-      console.error('Error fetching business reviews:', error);
-      throw new Error('Failed to fetch business reviews');
-    }
-  },
-
-  // Update business profile (for business owners)
-  updateBusiness: async (businessId: string, updates: Partial<Business>): Promise<Business> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // In real implementation, this would update the database
-      const business = mockBusinesses.find(b => b.id === businessId);
-      if (!business) {
-        throw new Error('Business not found');
-      }
-      
-      const updatedBusiness = {
-        ...business,
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-      
-      return updatedBusiness;
+      return this.transformBusinessData(data);
     } catch (error) {
       console.error('Error updating business:', error);
-      throw new Error('Failed to update business');
-    }
-  },
-
-  // Get business analytics
-  getBusinessAnalytics: async (businessId: string, period: 'daily' | 'weekly' | 'monthly' | 'yearly'): Promise<BusinessAnalytics> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      const now = new Date();
-      const startDate = new Date(now);
-      
-      switch (period) {
-        case 'daily':
-          startDate.setDate(now.getDate() - 1);
-          break;
-        case 'weekly':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case 'monthly':
-          startDate.setMonth(now.getMonth() - 1);
-          break;
-        case 'yearly':
-          startDate.setFullYear(now.getFullYear() - 1);
-          break;
-      }
-      
-      return {
-        business_id: businessId,
-        period,
-        start_date: startDate.toISOString(),
-        end_date: now.toISOString(),
-        total_orders: Math.floor(Math.random() * 100) + 50,
-        total_revenue: Math.floor(Math.random() * 50000) + 10000,
-        average_order_value: Math.floor(Math.random() * 500) + 200,
-        new_customers: Math.floor(Math.random() * 20) + 5,
-        returning_customers: Math.floor(Math.random() * 30) + 15,
-        customer_satisfaction: 4.2 + Math.random() * 0.7,
-        top_products: [
-          {
-            product_id: 'product-1',
-            product_name: 'Fresh Bananas',
-            units_sold: 45,
-            revenue: 1575,
-            profit_margin: 0.3
-          }
-        ],
-        busiest_hours: Array.from({ length: 24 }, (_, hour) => ({
-          hour,
-          order_count: Math.floor(Math.random() * 10),
-          revenue: Math.floor(Math.random() * 2000)
-        })),
-        geographic_distribution: [
-          {
-            city: 'Mumbai',
-            order_count: 45,
-            revenue: 15000,
-            customer_count: 28
-          }
-        ],
-        created_at: now.toISOString()
-      };
-    } catch (error) {
-      console.error('Error fetching business analytics:', error);
-      throw new Error('Failed to fetch business analytics');
-    }
-  },
-
-  // Search businesses with advanced filters
-  searchBusinesses: async (query: string, filters?: SearchFilters): Promise<SearchResult> => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      let results = [...mockBusinesses];
-      
-      if (query) {
-        const searchTerm = query.toLowerCase();
-        results = results.filter(business =>
-          business.business_name.toLowerCase().includes(searchTerm) ||
-          business.description?.toLowerCase().includes(searchTerm) ||
-          business.specialized_categories.some(cat => cat.toLowerCase().includes(searchTerm))
-        );
-      }
-      
-      // Apply additional filters if provided
-      if (filters) {
-        if (filters.business_type?.length) {
-          results = results.filter(business => 
-            filters.business_type!.includes(business.business_type)
-          );
-        }
-        
-        if (filters.rating_above) {
-          results = results.filter(business => 
-            business.avg_rating >= filters.rating_above!
-          );
-        }
-        
-        if (filters.delivery_available) {
-          results = results.filter(business => business.delivery_available);
-        }
-      }
-      
-      return {
-        businesses: results,
-        products: mockProducts.filter(product =>
-          product.name.toLowerCase().includes(query.toLowerCase()) ||
-          product.description?.toLowerCase().includes(query.toLowerCase())
-        ),
-        services: [],
-        total_results: results.length,
-        search_time_ms: 400,
-        suggestions: ['Fresh produce', 'Electronics', 'Home services', 'Restaurants']
-      };
-    } catch (error) {
-      console.error('Error searching businesses:', error);
-      throw new Error('Failed to search businesses');
+      return null;
     }
   }
-};
 
-export default businessService;
+  /**
+   * Get businesses owned by a user
+   */
+  static async getMyBusinesses(ownerId: string): Promise<Business[]> {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select(`
+          *,
+          category:business_categories(*),
+          owner:profiles(*)
+        `)
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(this.transformBusinessData);
+    } catch (error) {
+      console.error('Error getting my businesses:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Delete/Deactivate a business
+   */
+  static async deactivateBusiness(businessId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ is_active: false })
+        .eq('id', businessId);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deactivating business:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Add a review for a business
+   */
+  static async addReview(reviewData: ReviewFormData): Promise<Review | null> {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert(reviewData)
+        .select(`
+          *,
+          customer:profiles(*)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error adding review:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get reviews for a business
+   */
+  static async getBusinessReviews(businessId: string): Promise<Review[]> {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          customer:profiles(*)
+        `)
+        .eq('business_id', businessId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting business reviews:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Add business to favorites
+   */
+  static async addToFavorites(customerId: string, businessId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .insert({ customer_id: customerId, business_id: businessId });
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Remove business from favorites
+   */
+  static async removeFromFavorites(customerId: string, businessId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('customer_id', customerId)
+        .eq('business_id', businessId);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get user's favorite businesses
+   */
+  static async getFavorites(customerId: string): Promise<Favorite[]> {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          *,
+          business:businesses(
+            *,
+            category:business_categories(*)
+          )
+        `)
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(fav => ({
+        ...fav,
+        business: fav.business ? this.transformBusinessData(fav.business) : undefined,
+      }));
+    } catch (error) {
+      console.error('Error getting favorites:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Check if business is in favorites
+   */
+  static async isFavorite(customerId: string, businessId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('customer_id', customerId)
+        .eq('business_id', businessId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+        throw error;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error('Error checking if favorite:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send message to business
+   */
+  static async sendMessage(messageData: MessageFormData): Promise<Message | null> {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert(messageData)
+        .select(`
+          *,
+          business:businesses(*),
+          customer:profiles(*)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get messages for a business (Business Owner view)
+   */
+  static async getBusinessMessages(businessId: string): Promise<Message[]> {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          business:businesses(*),
+          customer:profiles(*)
+        `)
+        .eq('business_id', businessId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting business messages:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get customer's message conversations
+   */
+  static async getCustomerMessages(customerId: string): Promise<Message[]> {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          business:businesses(*),
+          customer:profiles(*)
+        `)
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting customer messages:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Update message status
+   */
+  static async updateMessageStatus(
+    messageId: string, 
+    status: 'new' | 'read' | 'replied' | 'closed'
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ status })
+        .eq('id', messageId);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating message status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get business analytics
+   */
+  static async getBusinessAnalytics(
+    businessId: string, 
+    startDate?: string, 
+    endDate?: string
+  ): Promise<AnalyticsSummary> {
+    try {
+      let query = supabase
+        .from('business_analytics')
+        .select('*')
+        .eq('business_id', businessId)
+        .order('date', { ascending: false });
+
+      if (startDate) {
+        query = query.gte('date', startDate);
+      }
+
+      if (endDate) {
+        query = query.lte('date', endDate);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const analytics = data || [];
+
+      // Calculate summary
+      const summary: AnalyticsSummary = {
+        total_views: analytics.reduce((sum, item) => sum + item.views, 0),
+        total_inquiries: analytics.reduce((sum, item) => sum + item.inquiries, 0),
+        total_calls: analytics.reduce((sum, item) => sum + item.calls, 0),
+        total_messages: analytics.reduce((sum, item) => sum + item.messages, 0),
+        daily_analytics: analytics,
+        popular_days: [], // Could be calculated based on data
+        peak_hours: [], // Could be calculated based on data
+      };
+
+      return summary;
+    } catch (error) {
+      console.error('Error getting business analytics:', error);
+      return {
+        total_views: 0,
+        total_inquiries: 0,
+        total_calls: 0,
+        total_messages: 0,
+        daily_analytics: [],
+        popular_days: [],
+        peak_hours: [],
+      };
+    }
+  }
+
+  /**
+   * Upload business image
+   */
+  static async uploadBusinessImage(
+    businessId: string, 
+    imageUri: string, 
+    fileName: string
+  ): Promise<string | null> {
+    try {
+      // Convert image to blob
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+
+      const filePath = `businesses/${businessId}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('business-images')
+        .upload(filePath, blob, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('business-images')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error uploading business image:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Transform database business data to our Business interface
+   */
+  private static transformBusinessData(data: any): Business {
+    return {
+      ...data,
+      location: {
+        latitude: data.location ? parseFloat(data.location.coordinates[1]) : 0,
+        longitude: data.location ? parseFloat(data.location.coordinates[0]) : 0,
+      },
+      business_hours: data.business_hours || {},
+      services: data.services || [],
+      images: data.images || [],
+    };
+  }
+}

@@ -1,424 +1,650 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Switch,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
-
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
+import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 
-interface BusinessProfileScreenProps {
-  navigation: any;
+interface BusinessProfile {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  address: string;
+  phone: string;
+  email: string;
+  is_open: boolean;
+  delivery_radius: number;
+  min_order_amount: number;
+  delivery_fee: number;
+  estimated_delivery_time: number;
+  is_verified: boolean;
+  rating: number;
+  total_reviews: number;
 }
 
-const BusinessProfileScreen: React.FC<BusinessProfileScreenProps> = ({ navigation }) => {
-  const { t } = useTranslation();
-  const { user, signOut } = useAuthStore();
-  const [isEditing, setIsEditing] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [autoAcceptOrders, setAutoAcceptOrders] = useState(false);
-  const [businessData, setBusinessData] = useState({
-    businessName: user?.full_name || '',
-    email: user?.email || '',
-    phone: user?.phone_number || '',
-    address: '123 Business Street, Pune',
-    description: 'Your trusted local business providing quality products and services.',
-    website: 'https://mybusiness.com',
-  });
+interface UserProfile {
+  full_name: string;
+  phone: string;
+  user_type: string;
+  created_at: string;
+}
 
-  const handleSave = async () => {
+const BusinessProfileScreen: React.FC = () => {
+  const { theme, isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuthStore();
+  
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProfiles();
+  }, [user]);
+
+  const loadProfiles = async () => {
+    if (!user?.id) return;
+
     try {
-      // Save business profile data
-      console.log('Saving business profile:', businessData);
-      setIsEditing(false);
-      Alert.alert(t('profile.success'), t('profile.updateSuccess'));
+      // Load user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setUserProfile({
+          full_name: profile.full_name || '',
+          phone: profile.phone || '',
+          user_type: profile.user_type || '',
+          created_at: profile.created_at || '',
+        });
+      }
+
+      // Load business profile
+      const { data: business } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', user.id)
+        .single();
+
+      if (business) {
+        setBusinessProfile(business);
+      }
     } catch (error) {
-      console.error('Error saving profile:', error);
-      Alert.alert(t('errors.error'), t('errors.updateFailed'));
+      console.error('Error loading profiles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveBusinessProfile = async () => {
+    if (!user?.id || !businessProfile) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('businesses')
+        .upsert({
+          ...businessProfile,
+          owner_id: user.id,
+        });
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Business profile updated successfully');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating business profile:', error);
+      Alert.alert('Error', 'Failed to update business profile');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLogout = () => {
     Alert.alert(
-      t('profile.logout'),
-      t('profile.logoutConfirm'),
+      'Logout',
+      'Are you sure you want to logout?',
       [
-        { text: t('common.cancel'), style: 'cancel' },
-        { 
-          text: t('profile.logout'), 
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
           style: 'destructive',
-          onPress: () => signOut()
+          onPress: () => logout(),
         },
       ]
     );
   };
 
-  const menuItems = [
-    {
-      icon: 'storefront-outline',
-      title: t('business.businessInfo'),
-      onPress: () => setIsEditing(true),
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
     },
-    {
-      icon: 'analytics-outline',
-      title: t('business.analytics'),
-      onPress: () => navigation.navigate('Analytics'),
+    header: {
+      backgroundColor: theme.primary,
+      padding: 20,
+      paddingTop: 10,
     },
-    {
-      icon: 'receipt-outline',
-      title: t('business.orderManagement'),
-      onPress: () => navigation.navigate('OrderManagement'),
+    headerTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
     },
-    {
-      icon: 'create-outline',
-      title: t('business.aiContentGenerator'),
-      onPress: () => navigation.navigate('AIContentGenerator'),
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#ffffff',
     },
-    {
-      icon: 'notifications-outline',
-      title: t('profile.notifications'),
-      onPress: () => navigation.navigate('Notifications'),
+    headerActions: {
+      flexDirection: 'row',
+      gap: 12,
     },
-    {
-      icon: 'settings-outline',
-      title: t('profile.settings'),
-      onPress: () => navigation.navigate('Settings'),
+    headerButton: {
+      padding: 8,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: 20,
     },
-    {
-      icon: 'help-circle-outline',
-      title: t('profile.help'),
-      onPress: () => console.log('Help pressed'),
+    userInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
-  ];
+    avatar: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    avatarText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#ffffff',
+    },
+    userDetails: {
+      flex: 1,
+    },
+    userName: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#ffffff',
+    },
+    userEmail: {
+      fontSize: 14,
+      color: 'rgba(255, 255, 255, 0.8)',
+    },
+    userType: {
+      fontSize: 12,
+      color: 'rgba(255, 255, 255, 0.6)',
+      textTransform: 'capitalize',
+      marginTop: 2,
+    },
+    content: {
+      flex: 1,
+      padding: 20,
+    },
+    section: {
+      backgroundColor: theme.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.text,
+    },
+    editButton: {
+      padding: 8,
+    },
+    fieldContainer: {
+      marginBottom: 16,
+    },
+    fieldLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 8,
+    },
+    fieldValue: {
+      fontSize: 16,
+      color: theme.text,
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    textInput: {
+      fontSize: 16,
+      color: theme.text,
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    textArea: {
+      height: 100,
+      textAlignVertical: 'top',
+    },
+    switchContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    switchLabel: {
+      fontSize: 16,
+      color: theme.text,
+    },
+    statusIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    statusDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 8,
+    },
+    statusText: {
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    verifiedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#10B981',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      alignSelf: 'flex-start',
+    },
+    verifiedText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#ffffff',
+      marginLeft: 4,
+    },
+    ratingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    ratingText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginLeft: 8,
+    },
+    reviewCount: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginLeft: 8,
+    },
+    actionButtons: {
+      gap: 12,
+    },
+    actionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: theme.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    actionButtonText: {
+      fontSize: 16,
+      color: theme.text,
+      marginLeft: 12,
+      flex: 1,
+    },
+    logoutButton: {
+      backgroundColor: '#FEF2F2',
+      borderColor: '#FCA5A5',
+    },
+    logoutButtonText: {
+      color: '#DC2626',
+    },
+    saveButton: {
+      backgroundColor: theme.primary,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 16,
+    },
+    saveButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#ffffff',
+    },
+    cancelButton: {
+      backgroundColor: theme.textSecondary,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    cancelButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#ffffff',
+    },
+  });
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: theme.textSecondary }}>Loading profile...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profile.businessProfile')}</Text>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => setIsEditing(!isEditing)}
-        >
-          <Ionicons name={isEditing ? "close" : "pencil"} size={24} color="#007AFF" />
-        </TouchableOpacity>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Business Profile</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerButton} onPress={toggleTheme}>
+              <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.userInfo}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {userProfile?.full_name?.charAt(0)?.toUpperCase() || 'B'}
+            </Text>
+          </View>
+          <View style={styles.userDetails}>
+            <Text style={styles.userName}>
+              {userProfile?.full_name || 'Business Owner'}
+            </Text>
+            <Text style={styles.userEmail}>{user?.email}</Text>
+            <Text style={styles.userType}>
+              {userProfile?.user_type?.replace('_', ' ') || 'Business Owner'}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Profile Section */}
-        <Card style={styles.profileCard}>
-          <View style={styles.profileHeader}>
-            <View style={styles.avatarContainer}>
-              <Ionicons name="storefront" size={40} color="#007AFF" />
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.businessName}>{businessData.businessName}</Text>
-              <Text style={styles.businessEmail}>{businessData.email}</Text>
-            </View>
-          </View>
-
-          {isEditing ? (
-            <View style={styles.editForm}>
-              <Input
-                placeholder={t('profile.businessName')}
-                value={businessData.businessName}
-                onChangeText={(text) => setBusinessData({...businessData, businessName: text})}
-                style={styles.input}
-              />
-              <Input
-                placeholder={t('profile.email')}
-                value={businessData.email}
-                onChangeText={(text) => setBusinessData({...businessData, email: text})}
-                keyboardType="email-address"
-                style={styles.input}
-              />
-              <Input
-                placeholder={t('profile.phone')}
-                value={businessData.phone}
-                onChangeText={(text) => setBusinessData({...businessData, phone: text})}
-                keyboardType="phone-pad"
-                style={styles.input}
-              />
-              <Input
-                placeholder={t('profile.address')}
-                value={businessData.address}
-                onChangeText={(text) => setBusinessData({...businessData, address: text})}
-                multiline
-                style={styles.input}
-              />
-              <Input
-                placeholder={t('profile.description')}
-                value={businessData.description}
-                onChangeText={(text) => setBusinessData({...businessData, description: text})}
-                multiline
-                numberOfLines={3}
-                style={styles.input}
-              />
-              <Input
-                placeholder={t('profile.website')}
-                value={businessData.website}
-                onChangeText={(text) => setBusinessData({...businessData, website: text})}
-                keyboardType="url"
-                style={styles.input}
-              />
-              
-              <View style={styles.editActions}>
-                <Button
-                  title={t('common.cancel')}
-                  onPress={() => setIsEditing(false)}
-                  variant="outline"
-                  style={styles.cancelButton}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Business Information */}
+        {businessProfile ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Business Information</Text>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => isEditing ? saveBusinessProfile() : setIsEditing(true)}
+              >
+                <Ionicons 
+                  name={isEditing ? "checkmark" : "pencil"} 
+                  size={24} 
+                  color={theme.primary} 
                 />
-                <Button
-                  title={t('common.save')}
-                  onPress={handleSave}
-                  style={styles.saveButton}
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Business Name</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.textInput}
+                  value={businessProfile.name}
+                  onChangeText={(text) => setBusinessProfile(prev => prev ? { ...prev, name: text } : null)}
+                  placeholder="Enter business name"
                 />
-              </View>
+              ) : (
+                <Text style={styles.fieldValue}>{businessProfile.name}</Text>
+              )}
             </View>
-          ) : (
-            <View style={styles.profileDetails}>
-              <View style={styles.detailItem}>
-                <Ionicons name="call-outline" size={16} color="#666" />
-                <Text style={styles.detailText}>{businessData.phone}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Ionicons name="location-outline" size={16} color="#666" />
-                <Text style={styles.detailText}>{businessData.address}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Ionicons name="globe-outline" size={16} color="#666" />
-                <Text style={styles.detailText}>{businessData.website}</Text>
-              </View>
-            </View>
-          )}
-        </Card>
 
-        {/* Business Settings */}
-        <Card style={styles.settingsCard}>
-          <Text style={styles.sectionTitle}>{t('business.settings')}</Text>
-          
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="notifications-outline" size={20} color="#007AFF" />
-              <Text style={styles.settingText}>{t('profile.notifications')}</Text>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Description</Text>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.textInput, styles.textArea]}
+                  value={businessProfile.description}
+                  onChangeText={(text) => setBusinessProfile(prev => prev ? { ...prev, description: text } : null)}
+                  placeholder="Describe your business"
+                  multiline
+                />
+              ) : (
+                <Text style={styles.fieldValue}>{businessProfile.description}</Text>
+              )}
             </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: '#E5E5E7', true: '#007AFF' }}
-              thumbColor={'#fff'}
-            />
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Category</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.textInput}
+                  value={businessProfile.category}
+                  onChangeText={(text) => setBusinessProfile(prev => prev ? { ...prev, category: text } : null)}
+                  placeholder="Business category"
+                />
+              ) : (
+                <Text style={styles.fieldValue}>{businessProfile.category}</Text>
+              )}
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Address</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.textInput}
+                  value={businessProfile.address}
+                  onChangeText={(text) => setBusinessProfile(prev => prev ? { ...prev, address: text } : null)}
+                  placeholder="Business address"
+                />
+              ) : (
+                <Text style={styles.fieldValue}>{businessProfile.address}</Text>
+              )}
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Phone</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.textInput}
+                  value={businessProfile.phone}
+                  onChangeText={(text) => setBusinessProfile(prev => prev ? { ...prev, phone: text } : null)}
+                  placeholder="Business phone"
+                  keyboardType="phone-pad"
+                />
+              ) : (
+                <Text style={styles.fieldValue}>{businessProfile.phone}</Text>
+              )}
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Status</Text>
+              {isEditing ? (
+                <View style={styles.switchContainer}>
+                  <Text style={styles.switchLabel}>Currently Open</Text>
+                  <Switch
+                    value={businessProfile.is_open}
+                    onValueChange={(value) => setBusinessProfile(prev => prev ? { ...prev, is_open: value } : null)}
+                    trackColor={{ false: theme.border, true: theme.primary }}
+                    thumbColor={businessProfile.is_open ? '#ffffff' : '#f4f3f4'}
+                  />
+                </View>
+              ) : (
+                <View style={styles.statusIndicator}>
+                  <View style={[
+                    styles.statusDot,
+                    { backgroundColor: businessProfile.is_open ? '#10B981' : '#EF4444' }
+                  ]} />
+                  <Text style={[
+                    styles.statusText,
+                    { color: businessProfile.is_open ? '#10B981' : '#EF4444' }
+                  ]}>
+                    {businessProfile.is_open ? 'Open' : 'Closed'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {businessProfile.is_verified && (
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Verification Status</Text>
+                <View style={styles.verifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={16} color="#ffffff" />
+                  <Text style={styles.verifiedText}>VERIFIED BUSINESS</Text>
+                </View>
+              </View>
+            )}
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Customer Rating</Text>
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={20} color="#F59E0B" />
+                <Text style={styles.ratingText}>
+                  {businessProfile.rating?.toFixed(1) || '0.0'}
+                </Text>
+                <Text style={styles.reviewCount}>
+                  ({businessProfile.total_reviews || 0} reviews)
+                </Text>
+              </View>
+            </View>
+
+            {isEditing && (
+              <>
+                <TouchableOpacity style={styles.saveButton} onPress={saveBusinessProfile}>
+                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setIsEditing(false)}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="checkmark-circle-outline" size={20} color="#007AFF" />
-              <Text style={styles.settingText}>{t('business.autoAcceptOrders')}</Text>
-            </View>
-            <Switch
-              value={autoAcceptOrders}
-              onValueChange={setAutoAcceptOrders}
-              trackColor={{ false: '#E5E5E7', true: '#007AFF' }}
-              thumbColor={'#fff'}
-            />
-          </View>
-        </Card>
-
-        {/* Menu Items */}
-        <Card style={styles.menuCard}>
-          <Text style={styles.sectionTitle}>{t('profile.menu')}</Text>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Business Not Registered</Text>
+            <Text style={{ color: theme.textSecondary, marginBottom: 16 }}>
+              Complete your business registration to start serving customers.
+            </Text>
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={() => setBusinessProfile({
+                id: '',
+                name: '',
+                description: '',
+                category: '',
+                address: '',
+                phone: '',
+                email: user?.email || '',
+                is_open: true,
+                delivery_radius: 5,
+                min_order_amount: 0,
+                delivery_fee: 0,
+                estimated_delivery_time: 30,
+                is_verified: false,
+                rating: 0,
+                total_reviews: 0,
+              })}
             >
-              <View style={styles.menuLeft}>
-                <Ionicons name={item.icon as any} size={20} color="#007AFF" />
-                <Text style={styles.menuText}>{item.title}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#ccc" />
+              <Text style={styles.saveButtonText}>Register Business</Text>
             </TouchableOpacity>
-          ))}
-        </Card>
+          </View>
+        )}
 
-        {/* Logout Button */}
-        <View style={styles.logoutContainer}>
-          <Button
-            title={t('profile.logout')}
-            onPress={handleLogout}
-            variant="danger"
-            style={styles.logoutButton}
-          />
+        {/* Account Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account Settings</Text>
+          
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="person-outline" size={20} color={theme.text} />
+              <Text style={styles.actionButtonText}>Personal Information</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+              <Text style={styles.actionButtonText}>Notifications</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="shield-outline" size={20} color={theme.text} />
+              <Text style={styles.actionButtonText}>Privacy & Security</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="help-circle-outline" size={20} color={theme.text} />
+              <Text style={styles.actionButtonText}>Help & Support</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.logoutButton]}
+              onPress={handleLogout}
+            >
+              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+              <Text style={[styles.actionButtonText, styles.logoutButtonText]}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  editButton: {
-    padding: 4,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  profileCard: {
-    margin: 16,
-    padding: 16,
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#E3F2FD',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  businessName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  businessEmail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  profileDetails: {
-    gap: 12,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-  },
-  editForm: {
-    gap: 12,
-  },
-  input: {
-    marginBottom: 0,
-  },
-  editActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  saveButton: {
-    flex: 1,
-  },
-  settingsCard: {
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  settingText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  menuCard: {
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  menuText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  logoutContainer: {
-    padding: 16,
-  },
-  logoutButton: {
-    marginTop: 8,
-  },
-});
 
 export default BusinessProfileScreen;

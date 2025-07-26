@@ -1,308 +1,161 @@
-import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TextInputProps,
-    TextStyle,
-    TouchableOpacity,
-    View,
-    ViewStyle
-} from 'react-native';
-
-interface InputProps extends TextInputProps {
-  label?: string;
-  error?: string;
-  leftIcon?: keyof typeof Ionicons.glyphMap;
-  rightIcon?: keyof typeof Ionicons.glyphMap;
-  onRightIconPress?: () => void;
-  containerStyle?: ViewStyle;
-  inputStyle?: TextStyle;
-  labelStyle?: TextStyle;
-  errorStyle?: TextStyle;
-  variant?: 'outlined' | 'filled' | 'underlined';
-  size?: 'small' | 'medium' | 'large';
-  required?: boolean;
-}
+import { MotiView } from 'moti';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { COLORS, DIMENSIONS } from '../../config/constants';
+import { InputProps } from '../../types';
 
 const Input: React.FC<InputProps> = ({
   label,
+  placeholder,
+  value,
+  onChangeText,
   error,
-  leftIcon,
-  rightIcon,
-  onRightIconPress,
-  containerStyle,
-  inputStyle,
-  labelStyle,
-  errorStyle,
-  variant = 'outlined',
-  size = 'medium',
-  required = false,
-  secureTextEntry,
-  ...props
+  secureTextEntry = false,
+  keyboardType = 'default',
+  multiline = false,
+  numberOfLines = 1,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [isSecure, setIsSecure] = useState(secureTextEntry);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
+  const inputRef = useRef<TextInput>(null);
 
-  const getContainerStyle = (): ViewStyle => {
-    return {
-      ...styles.container,
-      ...containerStyle,
-    };
+  const handleFocus = () => {
+    setIsFocused(true);
   };
 
-  const getInputContainerStyle = (): ViewStyle => {
-    const baseStyle = {
-      ...styles.inputContainer,
-      ...styles[`${variant}Container`],
-      ...styles[`${size}Container`],
-    };
-
-    if (isFocused) {
-      return {
-        ...baseStyle,
-        ...styles[`${variant}Focused`],
-      };
-    }
-
-    if (error) {
-      return {
-        ...baseStyle,
-        ...styles[`${variant}Error`],
-      };
-    }
-
-    return baseStyle;
+  const handleBlur = () => {
+    setIsFocused(false);
   };
 
-  const getInputStyle = (): TextStyle => {
-    return {
-      ...styles.input,
-      ...styles[`${size}Input`],
-      ...inputStyle,
-    };
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
   };
 
-  const handleRightIconPress = () => {
-    if (secureTextEntry) {
-      setIsSecure(!isSecure);
-    } else if (onRightIconPress) {
-      onRightIconPress();
-    }
+  const getBorderColor = () => {
+    if (error) return COLORS.error;
+    if (isFocused) return COLORS.primary;
+    return COLORS.gray[300];
   };
 
-  const getRightIcon = () => {
-    if (secureTextEntry) {
-      return isSecure ? 'eye-off' : 'eye';
-    }
-    return rightIcon;
+  const getLabelColor = () => {
+    if (error) return COLORS.error;
+    if (isFocused) return COLORS.primary;
+    return COLORS.gray[600];
   };
 
   return (
-    <View style={getContainerStyle()}>
+    <MotiView
+      style={styles.container}
+      animate={{
+        scale: 1,
+      }}
+      transition={{
+        type: 'timing',
+        duration: 150,
+      }}
+    >
       {label && (
-        <Text style={[styles.label, styles[`${size}Label`], labelStyle]}>
+        <Text style={[styles.label, { color: getLabelColor() }]}>
           {label}
-          {required && <Text style={styles.required}> *</Text>}
         </Text>
       )}
       
-      <View style={getInputContainerStyle()}>
-        {leftIcon && (
-          <Ionicons 
-            name={leftIcon} 
-            size={styles[`${size}Icon`].fontSize} 
-            color={isFocused ? '#667eea' : '#6c757d'} 
-            style={styles.leftIcon} 
-          />
-        )}
-        
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            borderColor: getBorderColor(),
+            borderWidth: isFocused ? 2 : 1,
+            minHeight: multiline ? numberOfLines * 24 + 24 : 48,
+          },
+        ]}
+      >
         <TextInput
-          {...props}
-          style={getInputStyle()}
-          secureTextEntry={isSecure}
-          onFocus={(e) => {
-            setIsFocused(true);
-            props.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setIsFocused(false);
-            props.onBlur?.(e);
-          }}
-          placeholderTextColor="#9ca3af"
+          ref={inputRef}
+          style={[
+            styles.input,
+            {
+              textAlignVertical: multiline ? 'top' : 'center',
+              height: multiline ? numberOfLines * 24 + 16 : undefined,
+            },
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.gray[500]}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          secureTextEntry={secureTextEntry && !isPasswordVisible}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={multiline ? numberOfLines : 1}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         
-        {(rightIcon || secureTextEntry) && (
-          <TouchableOpacity onPress={handleRightIconPress} style={styles.rightIconContainer}>
-            <Ionicons 
-              name={getRightIcon() as keyof typeof Ionicons.glyphMap} 
-              size={styles[`${size}Icon`].fontSize} 
-              color={isFocused ? '#667eea' : '#6c757d'} 
-              style={styles.rightIcon} 
-            />
+        {secureTextEntry && (
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPress={togglePasswordVisibility}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.eyeIcon}>
+              {isPasswordVisible ? '👁️' : '🙈'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
       
       {error && (
-        <Text style={[styles.error, errorStyle]}>
-          {error}
-        </Text>
+        <MotiView
+          from={{ opacity: 0, translateY: -10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 200 }}
+        >
+          <Text style={styles.errorText}>{error}</Text>
+        </MotiView>
       )}
-    </View>
+    </MotiView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: DIMENSIONS.PADDING.md,
   },
-  
   label: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    marginBottom: DIMENSIONS.PADDING.xs,
+    color: COLORS.gray[700],
   },
-  
-  required: {
-    color: '#dc3545',
-  },
-  
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
+    backgroundColor: COLORS.white,
+    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+    paddingHorizontal: DIMENSIONS.PADDING.md,
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
   },
-  
   input: {
     flex: 1,
-    fontFamily: 'System',
-    color: '#374151',
-  },
-  
-  leftIcon: {
-    marginRight: 12,
-  },
-  
-  rightIconContainer: {
-    padding: 4,
-  },
-  
-  rightIcon: {
-    marginLeft: 12,
-  },
-  
-  error: {
-    color: '#dc3545',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  
-  // Variant styles
-  outlinedContainer: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#ffffff',
-  },
-  
-  filledContainer: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  
-  underlinedContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingHorizontal: 0,
-    backgroundColor: 'transparent',
-  },
-  
-  // Focused states
-  outlinedFocused: {
-    borderColor: '#667eea',
-    borderWidth: 2,
-  },
-  
-  filledFocused: {
-    backgroundColor: '#f3f4f6',
-    borderColor: '#667eea',
-  },
-  
-  underlinedFocused: {
-    borderBottomColor: '#667eea',
-    borderBottomWidth: 2,
-  },
-  
-  // Error states
-  outlinedError: {
-    borderColor: '#dc3545',
-    borderWidth: 2,
-  },
-  
-  filledError: {
-    borderColor: '#dc3545',
-  },
-  
-  underlinedError: {
-    borderBottomColor: '#dc3545',
-  },
-  
-  // Size variants
-  smallContainer: {
-    minHeight: 36,
-  },
-  
-  mediumContainer: {
-    minHeight: 44,
-  },
-  
-  largeContainer: {
-    minHeight: 52,
-  },
-  
-  smallInput: {
-    fontSize: 14,
-    paddingVertical: 8,
-  },
-  
-  mediumInput: {
     fontSize: 16,
-    paddingVertical: 12,
+    color: COLORS.gray[900],
+    paddingVertical: DIMENSIONS.PADDING.sm,
   },
-  
-  largeInput: {
-    fontSize: 18,
-    paddingVertical: 16,
+  eyeButton: {
+    padding: DIMENSIONS.PADDING.xs,
+    marginLeft: DIMENSIONS.PADDING.xs,
   },
-  
-  smallLabel: {
-    fontSize: 14,
-  },
-  
-  mediumLabel: {
-    fontSize: 16,
-  },
-  
-  largeLabel: {
+  eyeIcon: {
     fontSize: 18,
   },
-  
-  smallIcon: {
-    fontSize: 16,
-  },
-  
-  mediumIcon: {
-    fontSize: 20,
-  },
-  
-  largeIcon: {
-    fontSize: 24,
+  errorText: {
+    fontSize: 12,
+    color: COLORS.error,
+    marginTop: DIMENSIONS.PADDING.xs,
+    marginLeft: DIMENSIONS.PADDING.xs,
   },
 });
 

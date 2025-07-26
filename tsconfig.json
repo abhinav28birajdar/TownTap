@@ -2,15 +2,9 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "skipLibCheck": true,
-    "noImplicitAny": false,
-    "lib": ["ES2017", "DOM", "ESNext"],
-    "jsx": "react-jsx",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     }
   },

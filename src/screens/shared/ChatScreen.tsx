@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
+    Alert,
     FlatList,
     KeyboardAvoidingView,
     Platform,
@@ -12,71 +12,114 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import type { Business, ChatMessage } from '../../types/index_location';
 
-import { useAuthStore } from '../../stores/authStore';
-import { ChatMessage } from '../../types';
+// Colors definition
+const COLORS = {
+  primary: '#2563eb',
+  secondary: '#10b981',
+  gray: {
+    100: '#f3f4f6',
+    200: '#e5e7eb',
+    400: '#9ca3af',
+    600: '#6b7280',
+    800: '#1f2937',
+  },
+  white: '#ffffff',
+  black: '#000000',
+};
 
-const ChatScreen: React.FC<any> = ({ navigation, route }) => {
-  const { t } = useTranslation();
-  const { user } = useAuthStore();
-  const { conversationId, businessId, customerId } = route.params || {};
-  
+interface ChatScreenProps {
+  business: Business;
+  onClose: () => void;
+}
+
+interface MessageBubbleProps {
+  message: ChatMessage;
+  isOwn: boolean;
+}
+
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
+  return (
+    <View style={[
+      styles.messageBubble,
+      isOwn ? styles.ownMessage : styles.otherMessage
+    ]}>
+      <Text style={[
+        styles.messageText,
+        isOwn ? styles.ownMessageText : styles.otherMessageText
+      ]}>
+        {message.message_text}
+      </Text>
+      <Text style={[
+        styles.messageTime,
+        isOwn ? styles.ownMessageTime : styles.otherMessageTime
+      ]}>
+        {new Date(message.created_at).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })}
+      </Text>
+    </View>
+  );
+};
+
+const ChatScreen: React.FC<ChatScreenProps> = ({ business, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     loadMessages();
-  }, [conversationId]);
+  }, []);
+
+  useEffect(() => {
+    // Scroll to bottom when new messages arrive
+    if (messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
 
   const loadMessages = async () => {
     try {
-      setLoading(true);
-      // Mock messages - replace with actual API call
+      // For demo purposes, let's create some mock messages
       const mockMessages: ChatMessage[] = [
         {
           id: '1',
-          conversation_id: conversationId || 'conv1',
-          sender_id: user?.user_type === 'customer' ? (businessId || 'business1') : (customerId || 'customer1'),
-          sender_type: user?.user_type === 'customer' ? 'business' : 'customer',
-          message: user?.user_type === 'customer' 
-            ? 'Hello! Thank you for your interest in our products. How can I help you today?'
-            : 'Hi! I would like to know more about your services.',
-          message_type: 'text',
-          timestamp: '2024-01-15T10:00:00Z',
+          conversation_id: 'conv-1',
+          sender_id: business.id,
+          sender_type: 'business',
+          message_text: `Hello! Welcome to ${business.business_name}. How can I help you today?`,
+          created_at: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
           is_read: true,
         },
         {
           id: '2',
-          conversation_id: conversationId || 'conv1',
-          sender_id: user?.id || '',
-          sender_type: (user?.user_type === 'customer' || user?.user_type === 'business') ? user.user_type : 'customer',
-          message: user?.user_type === 'customer'
-            ? 'I\'m looking for fresh vegetables. Do you have organic options?'
-            : 'Certainly! We offer a wide range of organic vegetables. What specific items are you looking for?',
-          message_type: 'text',
-          timestamp: '2024-01-15T10:05:00Z',
+          conversation_id: 'conv-1',
+          sender_id: 'customer-1',
+          sender_type: 'customer',
+          message_text: 'Hi! I\'m interested in your services. Are you currently open?',
+          created_at: new Date(Date.now() - 240000).toISOString(), // 4 minutes ago
           is_read: true,
         },
         {
           id: '3',
-          conversation_id: conversationId || 'conv1',
-          sender_id: user?.user_type === 'customer' ? (businessId || 'business1') : (customerId || 'customer1'),
-          sender_type: user?.user_type === 'customer' ? 'business' : 'customer',
-          message: user?.user_type === 'customer'
-            ? 'We have fresh organic tomatoes, carrots, spinach, and bell peppers available today. All are locally sourced!'
-            : 'That sounds great! What are the prices for tomatoes and carrots?',
-          message_type: 'text',
-          timestamp: '2024-01-15T10:10:00Z',
-          is_read: false,
+          conversation_id: 'conv-1',
+          sender_id: business.id,
+          sender_type: 'business',
+          message_text: 'Yes, we\'re open! Our hours are 9 AM to 8 PM. What specific service were you looking for?',
+          created_at: new Date(Date.now() - 180000).toISOString(), // 3 minutes ago
+          is_read: true,
         },
       ];
+
       setMessages(mockMessages);
     } catch (error) {
       console.error('Error loading messages:', error);
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'Failed to load messages. Please try again.');
     }
   };
 
@@ -85,136 +128,109 @@ const ChatScreen: React.FC<any> = ({ navigation, route }) => {
 
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
-      conversation_id: conversationId || 'conv1',
-      sender_id: user?.id || '',
-      sender_type: (user?.user_type === 'customer' || user?.user_type === 'business') ? user.user_type : 'customer',
-      message: inputText.trim(),
-      message_type: 'text',
-      timestamp: new Date().toISOString(),
+      conversation_id: 'conv-1',
+      sender_id: 'customer-1',
+      sender_type: 'customer',
+      message_text: inputText.trim(),
+      created_at: new Date().toISOString(),
       is_read: false,
     };
 
-    setMessages(prev => [...prev, newMessage]);
-    setInputText('');
+    try {
+      setLoading(true);
+      
+      // Add message to local state immediately for better UX
+      setMessages(prev => [...prev, newMessage]);
+      setInputText('');
 
-    // Scroll to bottom
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+      // Simulate sending message to backend
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Here you would send the message to your backend
-    console.log('Sending message:', newMessage);
-  };
+      // Simulate business response after a delay
+      setTimeout(() => {
+        const businessReply: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          conversation_id: 'conv-1',
+          sender_id: business.id,
+          sender_type: 'business',
+          message_text: 'Thank you for your message! I\'ll get back to you shortly.',
+          created_at: new Date().toISOString(),
+          is_read: false,
+        };
+        setMessages(prev => [...prev, businessReply]);
+      }, 2000);
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Alert.alert('Error', 'Failed to send message. Please try again.');
+      // Remove the message from local state if sending failed
+      setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderMessage = ({ item }: { item: ChatMessage }) => {
-    const isMyMessage = item.sender_id === user?.id;
-    
-    return (
-      <View style={[
-        styles.messageContainer,
-        isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer
-      ]}>
-        <View style={[
-          styles.messageBubble,
-          isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble
-        ]}>
-          <Text style={[
-            styles.messageText,
-            isMyMessage ? styles.myMessageText : styles.otherMessageText
-          ]}>
-            {item.message}
-          </Text>
-          <Text style={[
-            styles.messageTime,
-            isMyMessage ? styles.myMessageTime : styles.otherMessageTime
-          ]}>
-            {formatTime(item.timestamp)}
-          </Text>
-        </View>
-      </View>
-    );
+    const isOwn = item.sender_type === 'customer';
+    return <MessageBubble message={item} isOwn={isOwn} />;
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>
-              {user?.user_type === 'customer' ? t('chat.business') : t('chat.customer')}
-            </Text>
-            <Text style={styles.headerSubtitle}>{t('chat.online')}</Text>
-          </View>
-          <TouchableOpacity style={styles.moreButton}>
-            <Ionicons name="ellipsis-vertical" size={24} color="#333" />
-          </TouchableOpacity>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onClose} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+        </TouchableOpacity>
+        <View style={styles.headerInfo}>
+          <Text style={styles.businessName}>{business.business_name}</Text>
+          <Text style={styles.businessStatus}>
+            {business.category?.icon} {business.category?.name}
+          </Text>
         </View>
+        <TouchableOpacity style={styles.callButton}>
+          <Ionicons name="call" size={24} color={COLORS.white} />
+        </TouchableOpacity>
+      </View>
 
-        {/* Messages */}
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          style={styles.messagesList}
-          contentContainerStyle={styles.messagesContainer}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
+      {/* Messages */}
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        style={styles.messagesList}
+        contentContainerStyle={styles.messagesContainer}
+        showsVerticalScrollIndicator={false}
+      />
 
-        {/* Input */}
+      {/* Input Area */}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
         <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.textInput}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder={t('chat.typeMessage')}
-              multiline
-              maxLength={1000}
-            />
-            <TouchableOpacity style={styles.attachButton}>
-              <Ionicons name="attach-outline" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Type a message..."
+            value={inputText}
+            onChangeText={setInputText}
+            multiline
+            maxLength={500}
+            placeholderTextColor={COLORS.gray[400]}
+          />
           <TouchableOpacity
             style={[
               styles.sendButton,
-              inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+              (!inputText.trim() || loading) && styles.sendButtonDisabled
             ]}
             onPress={sendMessage}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() || loading}
           >
             <Ionicons 
-              name="send" 
+              name={loading ? "hourglass" : "send"} 
               size={20} 
-              color={inputText.trim() ? "#fff" : "#999"} 
+              color={COLORS.white} 
             />
           </TouchableOpacity>
         </View>
@@ -226,139 +242,124 @@ const ChatScreen: React.FC<any> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.gray[100],
   },
   header: {
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 15,
+    paddingVertical: 15,
+    paddingTop: Platform.OS === 'ios' ? 50 : 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   backButton: {
-    padding: 4,
-    marginRight: 12,
+    padding: 5,
+    marginRight: 15,
   },
   headerInfo: {
     flex: 1,
   },
-  headerTitle: {
+  businessName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 'bold',
+    color: COLORS.white,
   },
-  headerSubtitle: {
+  businessStatus: {
     fontSize: 14,
-    color: '#34C759',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
   },
-  moreButton: {
-    padding: 4,
+  callButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
   },
   messagesList: {
     flex: 1,
   },
   messagesContainer: {
-    padding: 16,
-    paddingBottom: 8,
-  },
-  messageContainer: {
-    marginBottom: 12,
-  },
-  myMessageContainer: {
-    alignItems: 'flex-end',
-  },
-  otherMessageContainer: {
-    alignItems: 'flex-start',
+    padding: 15,
+    flexGrow: 1,
   },
   messageBubble: {
     maxWidth: '80%',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
+    marginVertical: 4,
+    padding: 12,
+    borderRadius: 18,
   },
-  myMessageBubble: {
-    backgroundColor: '#007AFF',
+  ownMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.primary,
     borderBottomRightRadius: 4,
   },
-  otherMessageBubble: {
-    backgroundColor: '#fff',
+  otherMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.white,
     borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   messageText: {
     fontSize: 16,
     lineHeight: 20,
-    marginBottom: 4,
   },
-  myMessageText: {
-    color: '#fff',
+  ownMessageText: {
+    color: COLORS.white,
   },
   otherMessageText: {
-    color: '#333',
+    color: COLORS.gray[800],
   },
   messageTime: {
     fontSize: 12,
+    marginTop: 4,
   },
-  myMessageTime: {
+  ownMessageTime: {
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'right',
   },
   otherMessageTime: {
-    color: '#999',
+    color: COLORS.gray[400],
+    textAlign: 'left',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: COLORS.white,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  inputWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: '#f8f8f8',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    maxHeight: 100,
+    borderTopColor: COLORS.gray[200],
   },
   textInput: {
     flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     fontSize: 16,
-    color: '#333',
-    textAlignVertical: 'top',
-    maxHeight: 80,
-  },
-  attachButton: {
-    padding: 4,
-    marginLeft: 8,
+    maxHeight: 100,
+    marginRight: 10,
+    color: COLORS.gray[800],
   },
   sendButton: {
+    backgroundColor: COLORS.primary,
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  sendButtonActive: {
-    backgroundColor: '#007AFF',
-  },
-  sendButtonInactive: {
-    backgroundColor: '#e0e0e0',
-  },
-  loadingContainer: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
+  sendButtonDisabled: {
+    backgroundColor: COLORS.gray[400],
   },
 });
 

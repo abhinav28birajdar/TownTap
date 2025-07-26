@@ -1,95 +1,206 @@
-// Location Store using Zustand
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import { create } from 'zustand';
-import { Location } from '../types';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { Address, Location as LocationType } from '../types';
 
 interface LocationStore {
-  // State properties
-  latitude: number | null;
-  longitude: number | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  isLoading: boolean;
+  // State
+  currentLocation: LocationType | null;
+  location: LocationType | null; // Alias for currentLocation
+  selectedAddress: Address | null;
+  savedAddresses: Address[];
+  loading: boolean;
   error: string | null;
-
+  permissionGranted: boolean;
+  
   // Actions
-  setLocation: (location: Location) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  getCurrentLocation: () => Promise<void>;
+  requestLocationPermission: () => Promise<boolean>;
+  getCurrentLocation: () => Promise<LocationType | null>;
+  setCurrentLocation: (location: LocationType) => void;
+  setLocation: (location: LocationType) => void; // Alias for setCurrentLocation
+  setSelectedAddress: (address: Address | null) => void;
+  addSavedAddress: (address: Address) => void;
+  updateSavedAddress: (addressId: string, updates: Partial<Address>) => void;
+  removeSavedAddress: (addressId: string) => void;
+  setDefaultAddress: (addressId: string) => void;
   clearError: () => void;
 }
 
-export const useLocationStore = create<LocationStore>((set, get) => ({
-  // Initial state
-  latitude: null,
-  longitude: null,
-  address: null,
-  city: null,
-  state: null,
-  country: null,
-  isLoading: false,
-  error: null,
-
-  // Actions
-  setLocation: (location) => {
-    set({
-      latitude: location.latitude,
-      longitude: location.longitude,
-      address: location.address || null,
-      city: location.city || null,
-      state: location.state || null,
-      country: location.country || null,
+export const useLocationStore = create<LocationStore>()(
+  persist(
+    (set, get) => ({
+      // Initial State
+      currentLocation: null,
+      location: null,
+      selectedAddress: null,
+      savedAddresses: [],
+      loading: false,
       error: null,
-    });
-  },
+      permissionGranted: false,
 
-  setLoading: (isLoading) => {
-    set({ isLoading });
-  },
+      // Actions
+      requestLocationPermission: async () => {
+        try {
+          set({ loading: true, error: null });
+          
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          const granted = status === 'granted';
+          
+          set({ permissionGranted: granted, loading: false });
+          return granted;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Failed to request location permission',
+            permissionGranted: false 
+          });
+          return false;
+        }
+      },
 
-  setError: (error) => {
-    set({ error, isLoading: false });
-  },
+      getCurrentLocation: async () => {
+        try {
+          set({ loading: true, error: null });
+          
+          // Check permission first
+          const { status } = await Location.getForegroundPermissionsAsync();
+          if (status !== 'granted') {
+            const granted = await get().requestLocationPermission();
+            if (!granted) {
+              set({ loading: false, error: 'Location permission denied' });
+              return null;
+            }
+          }
 
-  clearError: () => {
-    set({ error: null });
-  },
+          // Get current location
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High,
+          });
 
-  getCurrentLocation: async () => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      // TODO: Implement actual location services when dependencies are available
-      // const { status } = await Location.requestForegroundPermissionsAsync();
-      // if (status !== 'granted') {
-      //   throw new Error('Location permission not granted');
-      // }
-      // const location = await Location.getCurrentPositionAsync({});
-      
-      // Mock implementation for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock coordinates (Pune, India)
-      const mockLocation = {
-        latitude: 18.5204,
-        longitude: 73.8567,
-        address: 'Pune, Maharashtra, India',
-      };
+          const currentLocation: LocationType = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
 
-      set({
-        latitude: mockLocation.latitude,
-        longitude: mockLocation.longitude,
-        address: mockLocation.address,
-        isLoading: false,
-        error: null,
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to get location',
-        isLoading: false,
-      });
+          set({ 
+            currentLocation, 
+            location: currentLocation,
+            loading: false, 
+            permissionGranted: true 
+          });
+
+          return currentLocation;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Failed to get current location' 
+          });
+          return null;
+        }
+      },
+
+      setCurrentLocation: (location: LocationType) => {
+        set({ currentLocation: location, location: location });
+      },
+
+      setLocation: (location: LocationType) => {
+        set({ currentLocation: location, location: location });
+      },
+
+      setSelectedAddress: (address: Address | null) => {
+        set({ selectedAddress: address });
+      },
+
+      addSavedAddress: (address: Address) => {
+        const savedAddresses = get().savedAddresses;
+        const newAddress = {
+          ...address,
+          id: address.id || Date.now().toString(),
+        };
+
+        // If this is the first address or marked as default, make it default
+        if (savedAddresses.length === 0 || address.isDefault) {
+          // Remove default from other addresses
+          const updatedAddresses = savedAddresses.map(addr => ({
+            ...addr,
+            isDefault: false,
+          }));
+          
+          set({ 
+            savedAddresses: [...updatedAddresses, { ...newAddress, isDefault: true }],
+            selectedAddress: newAddress,
+          });
+        } else {
+          set({ 
+            savedAddresses: [...savedAddresses, newAddress],
+          });
+        }
+      },
+
+      updateSavedAddress: (addressId: string, updates: Partial<Address>) => {
+        const savedAddresses = get().savedAddresses;
+        const updatedAddresses = savedAddresses.map(address =>
+          address.id === addressId ? { ...address, ...updates } : address
+        );
+
+        // If setting as default, remove default from others
+        if (updates.isDefault) {
+          const finalAddresses = updatedAddresses.map(address => ({
+            ...address,
+            isDefault: address.id === addressId,
+          }));
+          
+          const defaultAddress = finalAddresses.find(addr => addr.isDefault);
+          set({ 
+            savedAddresses: finalAddresses,
+            selectedAddress: defaultAddress || get().selectedAddress,
+          });
+        } else {
+          set({ savedAddresses: updatedAddresses });
+        }
+      },
+
+      removeSavedAddress: (addressId: string) => {
+        const savedAddresses = get().savedAddresses;
+        const filteredAddresses = savedAddresses.filter(
+          address => address.id !== addressId
+        );
+
+        // If removing default address, set first address as default
+        const removedAddress = savedAddresses.find(addr => addr.id === addressId);
+        if (removedAddress?.isDefault && filteredAddresses.length > 0) {
+          filteredAddresses[0].isDefault = true;
+          set({ 
+            savedAddresses: filteredAddresses,
+            selectedAddress: filteredAddresses[0],
+          });
+        } else {
+          set({ 
+            savedAddresses: filteredAddresses,
+            selectedAddress: get().selectedAddress?.id === addressId 
+              ? null 
+              : get().selectedAddress,
+          });
+        }
+      },
+
+      setDefaultAddress: (addressId: string) => {
+        get().updateSavedAddress(addressId, { isDefault: true });
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+    }),
+    {
+      name: 'location-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        savedAddresses: state.savedAddresses,
+        selectedAddress: state.selectedAddress,
+        permissionGranted: state.permissionGranted,
+      }),
     }
-  },
-}));
+  )
+);

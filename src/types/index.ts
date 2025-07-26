@@ -1,610 +1,381 @@
-// Global types for the TownTap application
+import { Business, Inquiry, Order, OrderItem, Product, Profile, Service, ServiceRequest } from './database';
 
-export type UserRole = 'customer' | 'business' | 'admin';
-export type AppLanguage = 'en' | 'hi';
+// Re-export database types
+export { Business, Inquiry, Order, OrderItem, Product, Profile, Service, ServiceRequest };
 
-// Core User Types
+// Category Type
+export interface Category {
+  id: string;
+  name: string;
+  icon_url?: string;
+  description?: string;
+  interaction_type: 'type_a' | 'type_b' | 'type_c';
+  is_active: boolean;
+}
+
+// User Authentication Types
 export interface User {
   id: string;
   email: string;
-  full_name: string;
-  phone_number?: string;
-  user_type: UserRole;
-  avatar_url?: string;
-  fcm_token?: string;
-  locale?: AppLanguage;
-  preferences?: UserPreferences;
-  created_at: string;
-  updated_at: string;
+  phone?: string;
+  profile: Profile;
 }
 
-export interface UserPreferences {
-  notifications_enabled: boolean;
-  language: AppLanguage;
-  delivery_updates: boolean;
-  promotional_offers: boolean;
-  ai_suggestions: boolean;
-  theme: 'light' | 'dark' | 'auto';
+export interface AuthState {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
 }
 
-// Business Types
-export interface Business {
-  id: string;
-  business_name: string;
-  description?: string;
-  logo_url?: string;
-  banner_url?: string;
-  address_line1: string;
-  address_line2?: string;
-  city: string;
-  state: string;
-  zip_code: string;
+// Location Types
+export interface Location {
   latitude: number;
   longitude: number;
-  geojson_point?: any;
-  contact_phone: string;
-  contact_email?: string;
-  website?: string;
-  business_type: 'restaurant' | 'grocery' | 'pharmacy' | 'electronics' | 'clothing' | 'services' | 'electrician' | 'plumber' | 'other';
-  specialized_categories: string[];
-  operating_hours: OperatingHours;
-  delivery_available: boolean;
-  delivery_radius_km: number;
-  min_order_value: number;
-  delivery_charge: number;
-  avg_rating: number;
-  total_reviews: number;
-  is_approved: boolean;
-  status: 'active' | 'inactive' | 'suspended' | 'pending_approval';
-  owner_id: string;
-  bank_account_info_encrypted?: string;
-  social_media_links?: SocialMediaLinks;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface OperatingHours {
-  monday: DayHours;
-  tuesday: DayHours;
-  wednesday: DayHours;
-  thursday: DayHours;
-  friday: DayHours;
-  saturday: DayHours;
-  sunday: DayHours;
-}
-
-export interface DayHours {
-  open: string; // HH:MM format
-  close: string; // HH:MM format
-  is_closed: boolean;
-}
-
-export interface SocialMediaLinks {
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-  whatsapp?: string;
-}
-
-// Product and Service Types
-export interface Product {
-  id: string;
-  business_id: string;
-  name: string;
-  description?: string;
-  price: number;
-  discount_price?: number;
-  image_urls: string[];
-  category: string;
-  subcategory?: string;
-  unit: string;
-  stock_quantity?: number;
-  is_available: boolean;
-  tags: string[];
-  sku?: string;
-  weight?: number;
-  dimensions?: ProductDimensions;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ProductDimensions {
-  length: number;
-  width: number;
-  height: number;
-  unit: 'cm' | 'inch';
-}
-
-export interface Service {
-  id: string;
-  business_id: string;
-  name: string;
-  description?: string;
-  base_price: number;
-  price_type: 'fixed' | 'hourly' | 'custom';
-  category: string;
-  subcategory?: string;
-  duration_minutes?: number;
-  is_available: boolean;
-  service_area_km?: number;
-  requirements?: string[];
-  created_at: string;
-  updated_at: string;
-}
-
-// Order and Transaction Types
-export interface Order {
-  id: string;
-  customer_id: string;
-  business_id: string;
-  order_type: 'product' | 'service';
-  items: OrderItem[];
-  service_details?: ServiceBooking;
-  subtotal: number;
-  delivery_charge: number;
-  service_charge: number;
-  discount_amount: number;
-  tax_amount: number;
-  total_amount: number;
-  status: OrderStatus;
-  payment_status: PaymentStatus;
-  payment_method: PaymentMethod;
-  delivery_address?: Address;
-  billing_address?: Address;
-  delivery_instructions?: string;
-  estimated_delivery_time?: string;
-  actual_delivery_time?: string;
-  tracking_id?: string;
-  cancellation_reason?: string;
-  rating?: number;
-  review?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'refunded';
-export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'partially_refunded';
-export type PaymentMethod = 'cash' | 'card' | 'upi' | 'wallet' | 'net_banking';
-
-export interface OrderItem {
-  id: string;
-  product_id?: string;
-  service_id?: string;
-  name: string;
-  image_url?: string;
-  quantity: number;
-  unit_price: number;
-  total_price: number;
-  special_instructions?: string;
-  customizations?: ProductCustomization[];
-}
-
-export interface ProductCustomization {
-  option_name: string;
-  selected_value: string;
-  additional_price: number;
-}
-
-export interface ServiceBooking {
-  service_id: string;
-  scheduled_date: string;
-  scheduled_time: string;
-  duration_minutes: number;
-  service_address: Address;
-  special_requirements?: string;
-  technician_id?: string;
-  completion_status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 }
 
 export interface Address {
   id?: string;
-  user_id?: string;
-  label: string; // e.g., "Home", "Office", "Other"
-  address_line1: string;
-  address_line2?: string;
-  landmark?: string;
+  label: string;
+  addressLine1: string;
+  addressLine2?: string;
   city: string;
   state: string;
-  zip_code: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  is_default: boolean;
-  address_type: 'home' | 'work' | 'other';
-  created_at?: string;
-}
-
-// AI Service Types
-export type AIContentType = 'PROMOTIONAL_CAPTION' | 'OFFER_HEADLINE' | 'PRODUCT_DESCRIPTION' | 'RESPONSE_TEMPLATE' | 'REMINDER_MESSAGE' | 'PERFORMANCE_SUMMARY' | 'CHAT_RESPONSE';
-export type AITone = 'FESTIVE' | 'FORMAL' | 'CASUAL' | 'URGENT' | 'EMPATHETIC' | 'PROFESSIONAL' | 'FRIENDLY';
-export type AIPlatform = 'INSTAGRAM' | 'WHATSAPP' | 'FACEBOOK' | 'WEBSITE' | 'EMAIL' | 'SMS' | 'CHAT_BOT';
-
-export interface AIRequest {
-  prompt: string;
-  content_type: AIContentType;
-  platform: AIPlatform;
-  tone: AITone;
-  language: AppLanguage;
-  business_context?: BusinessContext;
-  customer_context?: CustomerContext;
-}
-
-export interface BusinessContext {
-  business_name: string;
-  business_type: string;
-  specializations: string[];
-  recent_products?: Product[];
-  recent_orders?: Order[];
-  performance_data?: any;
-}
-
-export interface CustomerContext {
+  zipCode: string;
   location: Location;
-  preferences: string[];
-  recent_searches: string[];
-  order_history: Order[];
+  isDefault?: boolean;
 }
 
-export interface AIResponse {
+// Business Types
+export interface BusinessProfile extends Business {
+  categories?: any[];
+  products?: Product[];
+  services?: Service[];
+  distance?: number;
+  business_name?: string;
+  category?: string;
+  rating?: number;
+  review_count?: number;
+  is_open?: boolean;
+}
+
+export interface BusinessRegistration {
+  name: string;
+  description: string;
+  businessType: 'type_a' | 'type_b' | 'type_c';
+  categories: string[];
+  address: Address;
+  contactPhone: string;
+  operatingHours: OperatingHours;
+  deliveryRadius?: number;
+  logoUrl?: string;
+}
+
+export interface OperatingHours {
+  [key: string]: {
+    isOpen: boolean;
+    openTime: string;
+    closeTime: string;
+  };
+}
+
+// Cart & Order Types
+export interface CartItem {
+  id: string;
+  product: Product;
+  quantity: number;
+  specialInstructions?: string;
+}
+
+export interface Cart {
+  items: CartItem[];
+  businessId: string;
+  totalAmount: number;
+  deliveryCharge: number;
+}
+
+// Extended Product type with business info
+export interface ProductWithBusiness extends Product {
+  business?: Business;
+}
+
+// Extended Profile type
+export interface ExtendedProfile extends Profile {
+  business_name?: string;
+}
+
+// Business Types Constants
+export const BUSINESS_TYPES = {
+  TYPE_A: 'type_a',
+  TYPE_B: 'type_b', 
+  TYPE_C: 'type_c',
+  ORDER_BUY: 'type_a',
+  BOOK_SERVICE: 'type_b',
+  INQUIRE_CONSULT: 'type_c'
+} as const;
+
+export interface OrderWithItems extends Order {
+  items: (OrderItem & { product: Product })[];
+  business: Business;
+  order_number?: string;
+  status?: string;
+  customer_name?: string;
+}
+
+// Service Request Types
+export interface ServiceRequestForm {
+  businessId: string;
+  serviceId?: string;
+  problemDescription: string;
+  photos: string[];
+  serviceAddress: Address;
+  preferredDate?: string;
+  preferredTimeSlot?: string;
+}
+
+export interface ServiceRequestWithDetails extends ServiceRequest {
+  business: Business;
+  service?: Service;
+  customer: Profile;
+}
+
+// AI Types
+export interface AIContentRequest {
+  businessId: string;
+  promptText: string;
+  contentType: string;
+  platform: string;
+  tone: string;
+  language: string;
+}
+
+export interface AIContentResponse {
   content: string;
   suggestions?: string[];
-  confidence_score?: number;
-  metadata?: {
-    model_used: string;
-    processing_time_ms: number;
-    tokens_used?: number;
+}
+
+export interface AICustomerAssistantRequest {
+  customerId: string;
+  queryText: string;
+  location: Location;
+  language: string;
+}
+
+export interface AICustomerAssistantResponse {
+  response: string;
+  suggestedBusinesses?: BusinessProfile[];
+}
+
+export interface AIPerformanceInsight {
+  summary: string;
+  actionableTips: string[];
+  metrics: {
+    totalRevenue: number;
+    totalOrders: number;
+    newCustomers: number;
+    avgRating: number;
+    periodComparison: {
+      revenueChange: number;
+      ordersChange: number;
+      customersChange: number;
+    };
   };
 }
 
-export interface AIPromptHistory {
-  id: string;
-  profile_id: string;
-  feature_type: 'content_gen' | 'customer_ai' | 'insights' | 'interaction_suggest';
-  input_prompt: string;
-  ai_response: string;
-  meta_data?: any;
-  cost?: number;
-  language: AppLanguage;
-  created_at: string;
+// Navigation Types
+export interface RootStackParamList {
+  // Auth Stack
+  Onboarding: undefined;
+  Login: undefined;
+  SignUp: undefined;
+  
+  // Customer Stack
+  CustomerTabs: undefined;
+  BusinessDetail: { businessId: string };
+  ProductDetail: { productId: string };
+  ServiceDetail: { serviceId: string };
+  Cart: undefined;
+  Checkout: undefined;
+  OrderTracking: { orderId: string };
+  ServiceRequest: { businessId: string; serviceId?: string };
+  AIAssistant: undefined;
+  
+  // Business Stack
+  BusinessTabs: undefined;
+  BusinessOnboarding: undefined;
+  AIContentGenerator: undefined;
+  OrderManagement: undefined;
+  ServiceRequestManagement: undefined;
+  Analytics: undefined;
+  
+  // Shared Stack
+  Chat: { conversationId: string };
+  Profile: undefined;
+  Settings: undefined;
+  Notifications: undefined;
 }
 
-// Chat and Communication Types
-export interface ChatMessage {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  sender_type: 'customer' | 'business' | 'ai' | 'system';
-  message: string;
-  message_type: 'text' | 'image' | 'voice' | 'ai_suggestion' | 'order_update' | 'location';
-  attachment_urls?: string[];
-  ai_metadata?: {
-    suggestion_type: string;
-    confidence: number;
-    generated_responses?: string[];
+export interface CustomerTabParamList {
+  Home: undefined;
+  Search: undefined;
+  Orders: undefined;
+  Profile: undefined;
+}
+
+export interface BusinessTabParamList {
+  Dashboard: undefined;
+  Orders: undefined;
+  AITools: undefined;
+  Analytics: undefined;
+  Profile: undefined;
+}
+
+// Search & Filter Types
+export interface SearchFilters {
+  category?: string;
+  priceRange?: {
+    min: number;
+    max: number;
   };
-  timestamp: string;
-  is_read: boolean;
-  reply_to_message_id?: string;
+  rating?: number;
+  distance?: number;
+  isOpen?: boolean;
+  businessType?: 'type_a' | 'type_b' | 'type_c';
 }
 
-export interface Conversation {
-  id: string;
-  customer_id: string;
-  business_id: string;
-  last_message: string;
-  last_message_timestamp: string;
-  unread_count_customer: number;
-  unread_count_business: number;
-  is_active: boolean;
-  created_at: string;
-}
-
-// Location and Geography Types
-export interface Location {
-  latitude: number;
-  longitude: number;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  timestamp?: string;
-  accuracy?: number; // in meters
-}
-
-export interface BusinessLocation extends Location {
-  business_id: string;
-  distance?: number; // in kilometers
-  estimated_travel_time?: number; // in minutes
-}
-
-export interface DeliveryZone {
-  id: string;
-  business_id: string;
-  zone_name: string;
-  coordinates: Location[]; // Polygon coordinates
-  delivery_charge: number;
-  estimated_delivery_time_minutes: number;
-  is_active: boolean;
+export interface SearchResult {
+  businesses: BusinessProfile[];
+  products: Product[];
+  services: Service[];
+  totalCount: number;
 }
 
 // Notification Types
 export interface Notification {
   id: string;
-  user_id: string;
+  type: 'order' | 'service_request' | 'inquiry' | 'general' | 'promotion';
   title: string;
-  body: string;
-  type: NotificationType;
-  data?: any;
-  image_url?: string;
-  action_url?: string;
-  is_read: boolean;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  scheduled_for?: string;
-  expires_at?: string;
-  created_at: string;
-}
-
-export type NotificationType = 
-  | 'order_placed' 
-  | 'order_confirmed' 
-  | 'order_ready' 
-  | 'order_delivered' 
-  | 'order_cancelled'
-  | 'payment_success' 
-  | 'payment_failed'
-  | 'promotion' 
-  | 'discount_offer'
-  | 'new_business' 
-  | 'business_update'
-  | 'ai_suggestion' 
-  | 'system_update'
-  | 'security_alert'
-  | 'maintenance';
-
-// Review and Rating Types
-export interface Review {
-  id: string;
-  business_id: string;
-  customer_id: string;
-  order_id?: string;
-  rating: number; // 1-5
-  title?: string;
-  comment?: string;
-  images?: string[];
-  helpful_count: number;
-  response_from_business?: string;
-  response_timestamp?: string;
-  is_verified_purchase: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Analytics and Insights Types
-export interface BusinessAnalytics {
-  business_id: string;
-  period: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  start_date: string;
-  end_date: string;
-  total_orders: number;
-  total_revenue: number;
-  average_order_value: number;
-  new_customers: number;
-  returning_customers: number;
-  customer_satisfaction: number;
-  top_products: ProductPerformance[];
-  busiest_hours: HourlyData[];
-  geographic_distribution: GeographicData[];
-  created_at: string;
-}
-
-export interface ProductPerformance {
-  product_id: string;
-  product_name: string;
-  units_sold: number;
-  revenue: number;
-  profit_margin: number;
-}
-
-export interface HourlyData {
-  hour: number; // 0-23
-  order_count: number;
-  revenue: number;
-}
-
-export interface GeographicData {
-  city: string;
-  order_count: number;
-  revenue: number;
-  customer_count: number;
-}
-
-// Promotion and Marketing Types
-export interface Promotion {
-  id: string;
-  business_id: string;
-  title: string;
-  description: string;
-  image_url?: string;
-  promotion_type: 'percentage' | 'fixed_amount' | 'buy_one_get_one' | 'free_delivery';
-  discount_value: number;
-  min_order_value?: number;
-  max_discount_amount?: number;
-  applicable_products?: string[]; // product IDs
-  applicable_categories?: string[];
-  promo_code?: string;
-  usage_limit?: number;
-  usage_count: number;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  target_audience?: 'all' | 'new_customers' | 'returning_customers' | 'premium_customers';
-  created_at: string;
-}
-
-// System Configuration Types
-export interface AppConfig {
-  maintenance_mode: boolean;
-  min_app_version: string;
-  force_update: boolean;
-  api_base_url: string;
-  support_email: string;
-  support_phone: string;
-  terms_url: string;
-  privacy_policy_url: string;
-  default_delivery_radius_km: number;
-  max_delivery_radius_km: number;
-  currency: string;
-  timezone: string;
-  supported_languages: AppLanguage[];
-  feature_flags: FeatureFlags;
-}
-
-export interface FeatureFlags {
-  ai_content_generation: boolean;
-  ai_customer_assistance: boolean;
-  voice_ordering: boolean;
-  ar_product_preview: boolean;
-  live_tracking: boolean;
-  multi_vendor_ordering: boolean;
-  subscription_services: boolean;
-  loyalty_program: boolean;
-}
-
-// Error and API Response Types
-export interface APIResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: APIError;
-  metadata?: {
-    total_count?: number;
-    page?: number;
-    limit?: number;
-    has_more?: boolean;
-  };
-}
-
-export interface APIError {
-  code: string;
   message: string;
-  details?: any;
+  data?: any;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// Chat Types
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  message: string;
+  messageType: 'text' | 'image' | 'ai_suggestion';
   timestamp: string;
-  request_id?: string;
+  isRead: boolean;
 }
 
-// Search and Filter Types
-export interface SearchFilters {
-  query?: string;
-  business_type?: string[];
-  categories?: string[];
-  price_range?: {
-    min: number;
-    max: number;
+export interface Conversation {
+  id: string;
+  participants: Profile[];
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  updatedAt: string;
+}
+
+// Payment Types
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'upi' | 'wallet' | 'cod';
+  displayName: string;
+  details: any;
+  isDefault: boolean;
+}
+
+// Analytics Types
+export interface BusinessAnalytics {
+  period: 'daily' | 'weekly' | 'monthly';
+  revenue: number;
+  orders: number;
+  customers: number;
+  avgRating: number;
+  topProducts: { product: Product; sales: number }[];
+  topServices: { service: Service; bookings: number }[];
+  customerFeedback: { positive: number; negative: number; neutral: number };
+}
+
+// Error Types
+export interface APIError {
+  message: string;
+  code?: string;
+  details?: any;
+}
+
+// Form Types
+export interface LoginForm {
+  email: string;
+  password: string;
+}
+
+export interface SignUpForm {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  userType: 'customer' | 'business';
+  acceptTerms: boolean;
+}
+
+export interface ContactForm {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
+
+// Utility Types
+export interface ApiResponse<T> {
+  data?: T;
+  error?: APIError;
+  loading?: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
   };
-  rating_above?: number;
-  delivery_available?: boolean;
-  max_delivery_time?: number; // in minutes
-  distance_km?: number;
-  open_now?: boolean;
-  sort_by?: 'relevance' | 'distance' | 'rating' | 'delivery_time' | 'price_low_to_high' | 'price_high_to_low';
-  location?: Location;
 }
 
-export interface SearchResult {
-  businesses: Business[];
-  products: Product[];
-  services: Service[];
-  total_results: number;
-  search_time_ms: number;
-  suggestions?: string[];
+// Component Props Types
+export interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  loading?: boolean;
+  icon?: string;
 }
 
-// Cart and Wishlist Types
-export interface CartItem {
-  id: string;
-  business_id: string;
-  product_id?: string;
-  service_id?: string;
-  name: string;
-  image_url?: string;
-  price: number;
-  quantity: number;
-  customizations?: ProductCustomization[];
-  special_instructions?: string;
-  added_at: string;
+export interface InputProps {
+  label?: string;
+  placeholder?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onSubmitEditing?: () => void;
+  returnKeyType?: string;
+  error?: string;
+  secureTextEntry?: boolean;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
-export interface Cart {
-  user_id: string;
-  items: CartItem[];
-  total_items: number;
-  subtotal: number;
-  estimated_delivery_charge: number;
-  estimated_total: number;
-  last_updated: string;
-}
-
-export interface WishlistItem {
-  id: string;
-  user_id: string;
-  business_id?: string;
-  product_id?: string;
-  service_id?: string;
-  added_at: string;
-}
-
-// Export utility types
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-export type UpdateFields<T> = Partial<Omit<T, 'id' | 'created_at' | 'updated_at'>>;
-
-// Auth State Types
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-// Category Types
-export interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  description?: string;
-  color?: string;
-  business_types: string[];
-  is_active: boolean;
-  sort_order: number;
-  created_at: string;
-}
-
-// Store State Types
-export interface CartState {
-  items: CartItem[];
-  business_id: string | null;
-  total_items: number;
-  subtotal: number;
-  addItem: (businessId: string, item: Omit<CartItem, 'id' | 'added_at'>) => void;
-  removeItem: (itemId: string) => void;
-  updateItemQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartTotal: () => number;
-  getItemCount: () => number;
-}
-
-export interface LocationState {
-  latitude: number | null;
-  longitude: number | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  isLoading: boolean;
-  error: string | null;
-  setLocation: (location: Location) => void;
-  getCurrentLocation: () => Promise<void>;
-  clearError: () => void;
+export interface CardProps {
+  children: React.ReactNode;
+  padding?: 'sm' | 'md' | 'lg';
+  shadow?: boolean;
+  borderRadius?: 'sm' | 'md' | 'lg';
+  backgroundColor?: string;
 }

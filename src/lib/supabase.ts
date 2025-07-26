@@ -1,28 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
-import Constants from 'expo-constants';
 
-// Get Supabase configuration from environment variables
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Replace these with your actual Supabase project credentials
+const supabaseUrl = 'https://larexqjixguxwfvelei.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcmV4cWppeGd1eHdmdmVsZWVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTE1NzQsImV4cCI6MjA2OTA4NzU3NH0.RABFVyqAxjvzfAQxPet0542M0JJeGLZ4psWdnp7E6gg';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
-}
-
-// Create Supabase client with React Native specific configuration
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Use AsyncStorage for token persistence in React Native
-    storage: AsyncStorage,
-    // Enable automatic token refresh
     autoRefreshToken: true,
-    // Persist session across app restarts
     persistSession: true,
-    // Detect session in URL (useful for deep linking)
     detectSessionInUrl: false,
+    storage: AsyncStorage,
   },
-  // Enable real-time subscriptions
   realtime: {
     params: {
       eventsPerSecond: 10,
@@ -30,304 +19,388 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Database type definitions (these will be generated from your Supabase schema)
-export interface Database {
-  public: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          email: string;
-          phone_number?: string;
-          full_name: string;
-          user_type: 'customer' | 'business' | 'admin';
-          fcm_token?: string;
-          locale: 'en' | 'hi';
-          avatar_url?: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          email: string;
-          phone_number?: string;
-          full_name: string;
-          user_type: 'customer' | 'business' | 'admin';
-          fcm_token?: string;
-          locale?: 'en' | 'hi';
-          avatar_url?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          phone_number?: string;
-          full_name?: string;
-          user_type?: 'customer' | 'business' | 'admin';
-          fcm_token?: string;
-          locale?: 'en' | 'hi';
-          avatar_url?: string;
-          updated_at?: string;
-        };
-      };
-      businesses: {
-        Row: {
-          id: string;
-          name: string;
-          logo_url?: string;
-          description: string;
-          address_line1: string;
-          city: string;
-          state: string;
-          zip_code: string;
-          latitude: number;
-          longitude: number;
-          contact_phone: string;
-          operating_hours: any;
-          delivery_radius_km: number;
-          business_type: 'type_a' | 'type_b' | 'type_c';
-          specialized_categories: string[];
-          is_approved: boolean;
-          status: 'active' | 'inactive' | 'suspended';
-          avg_rating: number;
-          total_reviews: number;
-          bank_account_info_encrypted?: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          name: string;
-          logo_url?: string;
-          description: string;
-          address_line1: string;
-          city: string;
-          state: string;
-          zip_code: string;
-          latitude: number;
-          longitude: number;
-          contact_phone: string;
-          operating_hours: any;
-          delivery_radius_km: number;
-          business_type: 'type_a' | 'type_b' | 'type_c';
-          specialized_categories: string[];
-          is_approved?: boolean;
-          status?: 'active' | 'inactive' | 'suspended';
-          avg_rating?: number;
-          total_reviews?: number;
-          bank_account_info_encrypted?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          name?: string;
-          logo_url?: string;
-          description?: string;
-          address_line1?: string;
-          city?: string;
-          state?: string;
-          zip_code?: string;
-          latitude?: number;
-          longitude?: number;
-          contact_phone?: string;
-          operating_hours?: any;
-          delivery_radius_km?: number;
-          business_type?: 'type_a' | 'type_b' | 'type_c';
-          specialized_categories?: string[];
-          is_approved?: boolean;
-          status?: 'active' | 'inactive' | 'suspended';
-          avg_rating?: number;
-          total_reviews?: number;
-          bank_account_info_encrypted?: string;
-          updated_at?: string;
-        };
-      };
-      // Add more table types as needed
-    };
-    Views: {
-      // Add view types here
-    };
-    Functions: {
-      // Add function types here
-    };
-    Enums: {
-      user_type: 'customer' | 'business' | 'admin';
-      business_type: 'type_a' | 'type_b' | 'type_c';
-      order_status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
-      payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
-    };
-  };
-}
+// For demo purposes, we'll use mock data when Supabase is not configured
+export const isSupabaseConfigured = () => {
+  return true; // Supabase is now configured
+};
 
-// Helper functions for common Supabase operations
-export const supabaseHelpers = {
-  // Get current user profile
-  async getCurrentUserProfile() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+// Mock data for demo
+export const mockBusinessCategories = [
+  { id: '1', name: 'Stationary', icon: '📝', description: 'Stationery shops, office supplies, books', created_at: new Date().toISOString() },
+  { id: '2', name: 'Salon & Beauty', icon: '💇', description: 'Hair salons, beauty parlors, spas', created_at: new Date().toISOString() },
+  { id: '3', name: 'Bookstore', icon: '📚', description: 'Book shops, libraries, educational materials', created_at: new Date().toISOString() },
+  { id: '4', name: 'Carpenter', icon: '🔨', description: 'Furniture making, wood work, repairs', created_at: new Date().toISOString() },
+  { id: '5', name: 'Study Center', icon: '🎓', description: 'Coaching centers, tuition classes, education', created_at: new Date().toISOString() },
+  { id: '6', name: 'Library', icon: '📖', description: 'Public libraries, reading rooms', created_at: new Date().toISOString() },
+  { id: '7', name: 'Grocery', icon: '🛒', description: 'Grocery stores, supermarkets, daily needs', created_at: new Date().toISOString() },
+  { id: '8', name: 'Restaurant', icon: '🍽️', description: 'Restaurants, cafes, food outlets', created_at: new Date().toISOString() },
+  { id: '9', name: 'Medical', icon: '⚕️', description: 'Hospitals, clinics, pharmacies', created_at: new Date().toISOString() },
+  { id: '10', name: 'Electronics', icon: '📱', description: 'Mobile shops, computer stores, electronics', created_at: new Date().toISOString() },
+];
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      return null;
-    }
-
-    return data;
+export const mockBusinesses = [
+  {
+    id: '1',
+    owner_id: 'demo-business-1',
+    category_id: '1',
+    business_name: 'Ram Stationary Store',
+    description: 'Complete stationary items, notebooks, pens, office supplies',
+    phone_number: '+91 9876543210',
+    whatsapp_number: '+91 9876543210',
+    email: 'ram.stationary@gmail.com',
+    location: { latitude: 19.0760, longitude: 72.8777 },
+    address: 'Shop No. 15, Mumbai Central, Mumbai',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400008',
+    landmark: 'Near Railway Station',
+    business_hours: {},
+    services: ['Notebooks', 'Pens', 'Office Supplies', 'Printing'],
+    images: [],
+    rating: 4.2,
+    total_reviews: 25,
+    is_verified: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    distance_km: 0.5,
+    category: { id: '1', name: 'Stationary', icon: '📝', description: 'Stationery shops', created_at: new Date().toISOString() }
   },
-
-  // Upload file to Supabase Storage
-  async uploadFile(bucket: string, path: string, file: File | Blob, options?: { upsert?: boolean }) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, options);
-
-    if (error) {
-      console.error('Error uploading file:', error);
-      return { data: null, error };
-    }
-
-    // Get public URL for the uploaded file
-    const { data: urlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(data.path);
-
-    return { data: { ...data, publicUrl: urlData.publicUrl }, error: null };
+  {
+    id: '2',
+    owner_id: 'demo-business-2',
+    category_id: '2',
+    business_name: 'Beauty Palace Salon',
+    description: 'Professional hair cutting, styling, beauty treatments',
+    phone_number: '+91 9876543211',
+    whatsapp_number: '+91 9876543211',
+    email: 'beauty.palace@gmail.com',
+    location: { latitude: 19.0750, longitude: 72.8770 },
+    address: 'Shop No. 22, Linking Road, Bandra',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400050',
+    landmark: 'Near Bandra Station',
+    business_hours: {},
+    services: ['Hair Cut', 'Hair Styling', 'Facial', 'Manicure', 'Pedicure'],
+    images: [],
+    rating: 4.5,
+    total_reviews: 42,
+    is_verified: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    distance_km: 0.8,
+    category: { id: '2', name: 'Salon & Beauty', icon: '💇', description: 'Hair salons, beauty parlors', created_at: new Date().toISOString() }
   },
+  {
+    id: '3',
+    owner_id: 'demo-business-3',
+    category_id: '4',
+    business_name: 'Sharma Carpentry Works',
+    description: 'Custom furniture, wood work, home repairs',
+    phone_number: '+91 9876543212',
+    whatsapp_number: '+91 9876543212',
+    email: 'sharma.carpentry@gmail.com',
+    location: { latitude: 19.0740, longitude: 72.8760 },
+    address: 'Workshop 5, Industrial Area, Andheri',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400053',
+    landmark: 'Near Metro Station',
+    business_hours: {},
+    services: ['Custom Furniture', 'Wood Repair', 'Door Installation', 'Kitchen Cabinets'],
+    images: [],
+    rating: 4.7,
+    total_reviews: 18,
+    is_verified: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    distance_km: 1.2,
+    category: { id: '4', name: 'Carpenter', icon: '🔨', description: 'Furniture making, wood work', created_at: new Date().toISOString() }
+  }
+];
 
-  // Get signed URL for private files
-  async getSignedUrl(bucket: string, path: string, expiresIn: number = 3600) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, expiresIn);
+// Auth helper functions
+export const signUp = async (email: string, password: string, userData: any) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: userData,
+    },
+  });
+  return { data, error };
+};
 
-    return { data, error };
-  },
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  return { data, error };
+};
 
-  // Subscribe to real-time changes
-  subscribeToTable(
-    table: string,
-    filter?: string,
-    value?: any,
-    callback?: (payload: any) => void
-  ) {
-    let query = supabase.channel(`realtime-${table}`).on(
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut();
+  return { error };
+};
+
+export const getCurrentUser = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  return { user, error };
+};
+
+// Database helper functions
+export const getProfile = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  return { data, error };
+};
+
+export const updateProfile = async (userId: string, updates: any) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single();
+  return { data, error };
+};
+
+export const getBusiness = async (businessId: string) => {
+  const { data, error } = await supabase
+    .from('businesses')
+    .select(`
+      *,
+      categories(name, icon_url),
+      products(*),
+      services(*)
+    `)
+    .eq('id', businessId)
+    .single();
+  return { data, error };
+};
+
+export const getBusinessesByLocation = async (latitude: number, longitude: number, radius: number = 10) => {
+  const { data, error } = await supabase.rpc('get_businesses_within_radius', {
+    lat: latitude,
+    lng: longitude,
+    radius_km: radius
+  });
+  return { data, error };
+};
+
+export const getCategories = async () => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('is_active', true)
+    .order('name');
+  return { data, error };
+};
+
+// Real-time subscriptions
+export const subscribeToOrders = (businessId: string, callback: (payload: any) => void) => {
+  return supabase
+    .channel('orders')
+    .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table,
-        ...(filter && value && { filter: `${filter}=eq.${value}` }),
+        table: 'orders',
+        filter: `business_id=eq.${businessId}`,
       },
-      callback || ((payload) => console.log('Change received!', payload))
-    );
-
-    return query.subscribe();
-  },
-
-  // Check if user has permission for a specific operation
-  async checkPermission(operation: string, resourceId?: string) {
-    // Implement RLS-based permission checking
-    // This would typically be handled by Supabase RLS policies
-    return true;
-  },
-
-  // Call Supabase Edge Function
-  async callEdgeFunction(functionName: string, body?: any) {
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body,
-    });
-
-    if (error) {
-      console.error(`Error calling Edge Function ${functionName}:`, error);
-      return { data: null, error };
-    }
-
-    return { data, error: null };
-  },
+      callback
+    )
+    .subscribe();
 };
 
-// Authentication helpers
-export const authHelpers = {
-  // Sign up with email and password
-  async signUpWithEmail(email: string, password: string, userData: any) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: userData,
+export const subscribeToServiceRequests = (businessId: string, callback: (payload: any) => void) => {
+  return supabase
+    .channel('service_requests')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'service_requests',
+        filter: `business_id=eq.${businessId}`,
       },
-    });
-
-    return { data, error };
-  },
-
-  // Sign in with email and password
-  async signInWithEmail(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { data, error };
-  },
-
-  // Sign in with phone OTP
-  async signInWithPhone(phone: string) {
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone,
-    });
-
-    return { data, error };
-  },
-
-  // Verify OTP
-  async verifyOtp(phone: string, token: string) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone,
-      token,
-      type: 'sms',
-    });
-
-    return { data, error };
-  },
-
-  // Sign out
-  async signOut() {
-    const { error } = await supabase.auth.signOut();
-    return { error };
-  },
-
-  // Reset password
-  async resetPassword(email: string) {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-    return { data, error };
-  },
-
-  // Update password
-  async updatePassword(password: string) {
-    const { data, error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    return { data, error };
-  },
-
-  // Get current session
-  async getSession() {
-    const { data, error } = await supabase.auth.getSession();
-    return { data, error };
-  },
-
-  // Listen to auth state changes
-  onAuthStateChange(callback: (event: string, session: any) => void) {
-    return supabase.auth.onAuthStateChange(callback);
-  },
+      callback
+    )
+    .subscribe();
 };
 
-export default supabase;
+// AI Integration helper functions
+export const generateAIContent = async (payload: {
+  businessId: string;
+  promptText: string;
+  contentType: string;
+  platform: string;
+  tone: string;
+  language: string;
+}) => {
+  const { data, error } = await supabase.functions.invoke('generate-ai-content', {
+    body: payload,
+  });
+  return { data, error };
+};
+
+export const getAICustomerSuggestions = async (payload: {
+  businessId: string;
+  customerId: string;
+  contextType: string;
+  contextId: string;
+  customerQuery?: string;
+  language: string;
+}) => {
+  const { data, error } = await supabase.functions.invoke('ai-customer-interaction', {
+    body: payload,
+  });
+  return { data, error };
+};
+
+export const getPerformanceInsights = async (payload: {
+  businessId: string;
+  reportPeriod: string;
+  language: string;
+}) => {
+  const { data, error } = await supabase.functions.invoke('get-performance-summary', {
+    body: payload,
+  });
+  return { data, error };
+};
+
+export const customerAIAssistant = async (payload: {
+  customerId: string;
+  queryText: string;
+  latitude: number;
+  longitude: number;
+  language: string;
+}) => {
+  const { data, error } = await supabase.functions.invoke('customer-ai-assistant', {
+    body: payload,
+  });
+  return { data, error };
+};
+
+// Additional functions for business and customer screens
+export const getBusinessCategories = async () => {
+  if (!isSupabaseConfigured()) {
+    return { data: mockBusinessCategories, error: null };
+  }
+  
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('is_active', true);
+  
+  return { data: data || mockBusinessCategories, error };
+};
+
+export const getNearbyBusinesses = async (latitude: number, longitude: number, radius = 10) => {
+  if (!isSupabaseConfigured()) {
+    return { data: mockBusinesses, error: null };
+  }
+  
+  // For now, return mock data. In real implementation, you'd use PostGIS or similar
+  const { data, error } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('is_approved', true);
+  
+  return { data: data || mockBusinesses, error };
+};
+
+export const getPopularProducts = async (limit = 10) => {
+  if (!isSupabaseConfigured()) {
+    return { data: [], error: null };
+  }
+  
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, businesses(name)')
+    .eq('is_available', true)
+    .limit(limit);
+  
+  return { data: data || [], error };
+};
+
+export const getBusinessAnalytics = async (businessId: string) => {
+  if (!isSupabaseConfigured()) {
+    return { 
+      data: {
+        totalOrders: 45,
+        totalRevenue: 12500,
+        averageRating: 4.2,
+        totalCustomers: 23
+      }, 
+      error: null 
+    };
+  }
+  
+  // Aggregate analytics data
+  const { data, error } = await supabase
+    .from('orders')
+    .select('total_amount')
+    .eq('business_id', businessId);
+  
+  if (error) return { data: null, error };
+  
+  const totalOrders = data.length;
+  const totalRevenue = data.reduce((sum, order) => sum + order.total_amount, 0);
+  
+  return { 
+    data: {
+      totalOrders,
+      totalRevenue,
+      averageRating: 4.2, // Mock for now
+      totalCustomers: Math.floor(totalOrders * 0.7) // Mock calculation
+    }, 
+    error: null 
+  };
+};
+
+export const getRecentOrders = async (businessId: string, limit = 5) => {
+  if (!isSupabaseConfigured()) {
+    return { 
+      data: [
+        {
+          id: '1',
+          customer_id: 'cust1',
+          business_id: businessId,
+          total_amount: 350,
+          delivery_charge: 30,
+          platform_commission_amount: 25,
+          order_status: 'pending',
+          payment_status: 'paid',
+          payment_method: 'upi',
+          delivery_option: 'delivery',
+          delivery_address_json: {},
+          order_notes: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          order_number: 'ORD001',
+          status: 'pending',
+          customer_name: 'John Doe'
+        }
+      ], 
+      error: null 
+    };
+  }
+  
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, profiles(full_name)')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  
+  return { data: data || [], error };
+};

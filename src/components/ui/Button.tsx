@@ -1,179 +1,167 @@
+import * as Haptics from 'expo-haptics';
+import { MotiView } from 'moti';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { ActivityIndicator, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { COLORS, DIMENSIONS } from '../../config/constants';
+import { ButtonProps } from '../../types';
 
-interface ButtonProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  fullWidth?: boolean;
+interface ButtonStyles {
+  container: ViewStyle;
+  text: TextStyle;
 }
 
 const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
   variant = 'primary',
-  size = 'medium',
+  size = 'md',
   disabled = false,
   loading = false,
   icon,
-  style,
-  textStyle,
-  fullWidth = false,
 }) => {
-  const getButtonStyle = (): ViewStyle => {
-    const baseStyle: ViewStyle = {
-      ...styles.button,
-      ...styles[`${size}Button`],
+  const handlePress = () => {
+    if (!disabled && !loading) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      onPress();
+    }
+  };
+
+  const getButtonStyles = (): ButtonStyles => {
+    const baseContainer: ViewStyle = {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+      paddingHorizontal: DIMENSIONS.PADDING.lg,
     };
 
-    if (fullWidth) {
-      baseStyle.width = '100%';
-    }
+    const baseText: TextStyle = {
+      fontWeight: '600',
+      textAlign: 'center',
+    };
 
-    if (disabled || loading) {
-      return {
-        ...baseStyle,
-        ...styles.disabledButton,
-        ...style,
-      };
-    }
+    // Size variations
+    const sizeStyles = {
+      sm: {
+        container: { 
+          paddingVertical: DIMENSIONS.PADDING.sm,
+          paddingHorizontal: DIMENSIONS.PADDING.md,
+          minHeight: 36,
+        },
+        text: { fontSize: 14 },
+      },
+      md: {
+        container: { 
+          paddingVertical: DIMENSIONS.PADDING.md,
+          minHeight: 48,
+        },
+        text: { fontSize: 16 },
+      },
+      lg: {
+        container: { 
+          paddingVertical: DIMENSIONS.PADDING.lg,
+          minHeight: 56,
+        },
+        text: { fontSize: 18 },
+      },
+    };
+
+    // Variant styles
+    const variantStyles = {
+      primary: {
+        container: {
+          backgroundColor: disabled ? COLORS.gray[300] : COLORS.primary,
+          borderWidth: 0,
+        },
+        text: {
+          color: disabled ? COLORS.gray[500] : COLORS.white,
+        },
+      },
+      secondary: {
+        container: {
+          backgroundColor: disabled ? COLORS.gray[100] : COLORS.secondary,
+          borderWidth: 0,
+        },
+        text: {
+          color: disabled ? COLORS.gray[500] : COLORS.white,
+        },
+      },
+      outline: {
+        container: {
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: disabled ? COLORS.gray[300] : COLORS.primary,
+        },
+        text: {
+          color: disabled ? COLORS.gray[500] : COLORS.primary,
+        },
+      },
+      ghost: {
+        container: {
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+        },
+        text: {
+          color: disabled ? COLORS.gray[500] : COLORS.primary,
+        },
+      },
+    };
 
     return {
-      ...baseStyle,
-      ...styles[`${variant}Button`],
-      ...style,
+      container: {
+        ...baseContainer,
+        ...sizeStyles[size].container,
+        ...variantStyles[variant].container,
+      },
+      text: {
+        ...baseText,
+        ...sizeStyles[size].text,
+        ...variantStyles[variant].text,
+      },
     };
   };
 
-  const getTextStyle = (): TextStyle => {
-    const baseTextStyle: TextStyle = {
-      ...styles.buttonText,
-      ...styles[`${size}Text`],
-    };
-
-    if (disabled || loading) {
-      return {
-        ...baseTextStyle,
-        ...styles.disabledText,
-        ...textStyle,
-      };
-    }
-
-    return {
-      ...baseTextStyle,
-      ...styles[`${variant}Text`],
-      ...textStyle,
-    };
-  };
+  const styles = getButtonStyles();
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.8}
-      style={getButtonStyle()}
+    <MotiView
+      animate={{
+        scale: disabled || loading ? 1 : 1,
+      }}
+      transition={{
+        type: 'timing',
+        duration: 150,
+      }}
     >
-      {loading && <ActivityIndicator size="small" color={getTextStyle().color} style={styles.loader} />}
-      {!loading && icon && icon}
-      <Text style={getTextStyle()}>{title}</Text>
-    </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={handlePress}
+        disabled={disabled || loading}
+        activeOpacity={0.8}
+        onPressIn={() => {
+          if (!disabled && !loading) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        }}
+      >
+        {loading ? (
+          <ActivityIndicator 
+            size="small" 
+            color={variant === 'outline' || variant === 'ghost' ? COLORS.primary : COLORS.white} 
+          />
+        ) : (
+          <>
+            {icon && (
+              <Text style={[styles.text, { marginRight: 8 }]}>
+                {icon}
+              </Text>
+            )}
+            <Text style={styles.text}>{title}</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </MotiView>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  
-  // Size variants
-  smallButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  mediumButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  largeButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-
-  // Color variants
-  primaryButton: {
-    backgroundColor: '#667eea',
-  },
-  secondaryButton: {
-    backgroundColor: '#f8f9fa',
-    borderColor: '#e9ecef',
-  },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#667eea',
-  },
-  ghostButton: {
-    backgroundColor: 'transparent',
-  },
-  dangerButton: {
-    backgroundColor: '#dc3545',
-  },
-
-  // Text styles
-  buttonText: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  smallText: {
-    fontSize: 14,
-  },
-  mediumText: {
-    fontSize: 16,
-  },
-  largeText: {
-    fontSize: 18,
-  },
-
-  // Text color variants
-  primaryText: {
-    color: '#ffffff',
-  },
-  secondaryText: {
-    color: '#495057',
-  },
-  outlineText: {
-    color: '#667eea',
-  },
-  ghostText: {
-    color: '#667eea',
-  },
-  dangerText: {
-    color: '#ffffff',
-  },
-
-  // Disabled styles
-  disabledButton: {
-    backgroundColor: '#e9ecef',
-    borderColor: '#dee2e6',
-  },
-  disabledText: {
-    color: '#6c757d',
-  },
-
-  loader: {
-    marginRight: 8,
-  },
-});
 
 export default Button;

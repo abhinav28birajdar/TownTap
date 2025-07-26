@@ -3,168 +3,80 @@ import * as Localization from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import { en } from './en';
-import { hi } from './hi';
+// Import translations
+import en from './en';
+import hi from './hi';
 
-// Language detection
-const getDeviceLanguage = () => {
-  const locale = Localization.getLocales()[0];
-  const languageCode = locale.languageCode;
-  
-  // Support only English and Hindi for now
-  return ['en', 'hi'].includes(languageCode || '') ? (languageCode || 'en') : 'en';
-};
-
-// Language persistence
-const languageDetector: any = {
-  type: 'languageDetector',
+const LANGUAGE_DETECTOR = {
+  type: 'languageDetector' as const,
   async: true,
   detect: async (callback: (lang: string) => void) => {
     try {
-      // Try to get saved language from AsyncStorage
-      const savedLanguage = await AsyncStorage.getItem('user-language');
+      // Get saved language preference
+      const savedLanguage = await AsyncStorage.getItem('language');
       if (savedLanguage) {
-        callback(savedLanguage);
-      } else {
-        // Fallback to device language
-        const deviceLanguage = getDeviceLanguage();
-        callback(deviceLanguage || 'en');
+        return callback(savedLanguage);
       }
+      
+      // Fallback to device locale
+      const deviceLocale = Localization.getLocales()[0]?.languageCode || 'en';
+      
+      // Check if we support the device language
+      const supportedLanguages = ['en', 'hi'];
+      const selectedLanguage = supportedLanguages.includes(deviceLocale) 
+        ? deviceLocale 
+        : 'en'; // Default to English
+      
+      callback(selectedLanguage);
     } catch (error) {
-      console.error('Error detecting language:', error);
-      callback('en'); // Fallback to English
+      callback('en');
     }
   },
   init: () => {},
   cacheUserLanguage: async (language: string) => {
     try {
-      await AsyncStorage.setItem('user-language', language);
+      await AsyncStorage.setItem('language', language);
     } catch (error) {
-      console.error('Error caching language:', error);
+      console.error('Failed to cache language:', error);
     }
   },
 };
 
-// Initialize i18next
 i18n
-  .use(languageDetector)
+  .use(LANGUAGE_DETECTOR as any)
   .use(initReactI18next)
   .init({
-    // Resources
-    resources: {
-      en: {
-        translation: en,
-      },
-      hi: {
-        translation: hi,
-      },
-    },
-
-    // Fallback language
     fallbackLng: 'en',
-
-    // Debug mode (set to false in production)
     debug: __DEV__,
-
-    // Interpolation options
+    
+    resources: {
+      en: { translation: en },
+      hi: { translation: hi },
+    },
+    
     interpolation: {
-      escapeValue: false, // React already escapes values
+      escapeValue: false,
     },
-
-    // React options
+    
     react: {
-      useSuspense: false, // Important for React Native
+      useSuspense: false,
     },
-
-    // Default namespace
-    defaultNS: 'translation',
-
-    // Detect RTL languages (Hindi is LTR, but useful for future)
-    initImmediate: false,
   });
 
-// Helper functions
-export const i18nHelpers = {
-  // Change language
-  changeLanguage: async (language: 'en' | 'hi') => {
-    try {
-      await i18n.changeLanguage(language);
-      await AsyncStorage.setItem('user-language', language);
-    } catch (error) {
-      console.error('Error changing language:', error);
-    }
-  },
+export default i18n;
 
-  // Get current language
-  getCurrentLanguage: () => i18n.language,
-
-  // Check if current language is RTL
-  isRTL: () => i18n.dir() === 'rtl',
-
-  // Get supported languages
-  getSupportedLanguages: () => ['en', 'hi'],
-
-  // Get language name
-  getLanguageName: (code: 'en' | 'hi') => {
-    const names = {
-      en: 'English',
-      hi: 'हिंदी',
-    };
-    return names[code] || 'Unknown';
-  },
-
-  // Format number with locale
-  formatNumber: (number: number, language?: 'en' | 'hi') => {
-    const locale = language || i18n.language;
-    const localeMap = {
-      en: 'en-IN', // Indian English for currency
-      hi: 'hi-IN', // Hindi (India)
-    };
-    return new Intl.NumberFormat(localeMap[locale as keyof typeof localeMap]).format(number);
-  },
-
-  // Format currency
-  formatCurrency: (amount: number, language?: 'en' | 'hi') => {
-    const locale = language || i18n.language;
-    const localeMap = {
-      en: 'en-IN',
-      hi: 'hi-IN',
-    };
-    return new Intl.NumberFormat(localeMap[locale as keyof typeof localeMap], {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-  },
-
-  // Format date
-  formatDate: (date: Date | string, language?: 'en' | 'hi') => {
-    const locale = language || i18n.language;
-    const localeMap = {
-      en: 'en-IN',
-      hi: 'hi-IN',
-    };
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat(localeMap[locale as keyof typeof localeMap], {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(dateObj);
-  },
-
-  // Format time
-  formatTime: (date: Date | string, language?: 'en' | 'hi') => {
-    const locale = language || i18n.language;
-    const localeMap = {
-      en: 'en-IN',
-      hi: 'hi-IN',
-    };
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat(localeMap[locale as keyof typeof localeMap], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    }).format(dateObj);
-  },
+// Helper function to change language
+export const changeLanguage = async (language: string) => {
+  try {
+    await i18n.changeLanguage(language);
+    await AsyncStorage.setItem('language', language);
+  } catch (error) {
+    console.error('Failed to change language:', error);
+  }
 };
 
-export default i18n;
+// Helper function to get current language
+export const getCurrentLanguage = () => i18n.language;
+
+// Helper function to get available languages
+export const getAvailableLanguages = () => ['en', 'hi'];

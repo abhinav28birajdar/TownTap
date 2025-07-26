@@ -1,517 +1,499 @@
-import React, { useState } from 'react';
-import {
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { MotiView } from 'moti';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import { COLORS, DIMENSIONS } from '../../config/constants';
+import { getBusinessAnalytics, getRecentOrders } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
+import type { Order } from '../../types';
 
-const { width } = Dimensions.get('window');
-
-interface DashboardStats {
-  todaysSales: number;
+interface DashboardMetrics {
+  totalRevenue: number;
   totalOrders: number;
-  newCustomers: number;
-  avgRating: number;
-  pendingOrders: number;
+  averageRating: number;
+  totalCustomers: number;
 }
 
-interface RecentActivity {
-  id: string;
-  type: 'order' | 'review' | 'customer';
-  title: string;
-  subtitle: string;
-  time: string;
-  status?: string;
-}
+const DashboardScreen: React.FC = () => {
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  
+  // State
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-const mockStats: DashboardStats = {
-  todaysSales: 12500,
-  totalOrders: 45,
-  newCustomers: 8,
-  avgRating: 4.6,
-  pendingOrders: 3,
-};
+  // Load dashboard data
+  const loadDashboardData = async (isRefresh = false) => {
+    if (!user?.id) return;
 
-const mockRecentActivity: RecentActivity[] = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'New Order #1234',
-    subtitle: 'Rajesh Kumar - ₹350',
-    time: '2 min ago',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    type: 'review',
-    title: 'New Review',
-    subtitle: 'Priya Sharma gave 5 stars',
-    time: '15 min ago',
-  },
-  {
-    id: '3',
-    type: 'order',
-    title: 'Order Completed',
-    subtitle: 'Amit Patel - ₹780',
-    time: '1 hour ago',
-    status: 'completed',
-  },
-  {
-    id: '4',
-    type: 'customer',
-    title: 'New Customer',
-    subtitle: 'Sunita Devi joined',
-    time: '2 hours ago',
-  },
-];
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
 
-export default function BusinessDashboardScreen() {
-  const user = useAuthStore((state) => state.user);
-  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('today');
+      // Fetch analytics and recent orders in parallel
+      const [analyticsResponse, ordersResponse] = await Promise.all([
+        getBusinessAnalytics(user.id),
+        getRecentOrders(user.id, 5)
+      ]);
 
-  const StatCard = ({ title, value, subtitle, icon, color }: {
-    title: string;
-    value: string | number;
-    subtitle?: string;
-    icon: string;
-    color: string;
-  }) => (
-    <View style={[styles.statCard, { borderLeftColor: color }]}>
-      <View style={styles.statHeader}>
-        <Text style={styles.statIcon}>{icon}</Text>
-        <Text style={styles.statTitle}>{title}</Text>
+      if (analyticsResponse.data) {
+        setMetrics(analyticsResponse.data);
+      }
+
+      if (ordersResponse.data) {
+        setRecentOrders(ordersResponse.data);
+      }
+
+      if (analyticsResponse.error || ordersResponse.error) {
+        throw new Error('Failed to load dashboard data');
+      }
+
+    } catch (error: any) {
+      Alert.alert(t('common.error'), error.message || 'Failed to load dashboard');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [user?.id]);
+
+  const handleRefresh = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    loadDashboardData(true);
+  };
+
+  const renderMetricCard = (
+    title: string,
+    value: string | number,
+    icon: string,
+    color: string,
+    delay: number = 0
+  ) => (
+    <MotiView
+      from={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ 
+        type: 'spring',
+        damping: 15,
+        stiffness: 200,
+        delay: delay * 100
+      }}
+      style={[styles.metricCard, { borderLeftColor: color }]}
+    >
+      <View style={styles.metricHeader}>
+        <Text style={styles.metricIcon}>{icon}</Text>
+        <Text style={styles.metricTitle}>{title}</Text>
       </View>
-      <Text style={styles.statValue}>{value}</Text>
-      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
-    </View>
+      <Text style={[styles.metricValue, { color }]}>{value}</Text>
+    </MotiView>
   );
 
-  const QuickActionCard = ({ title, icon, onPress }: {
-    title: string;
-    icon: string;
-    onPress: () => void;
-  }) => (
-    <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
-      <Text style={styles.quickActionIcon}>{icon}</Text>
-      <Text style={styles.quickActionTitle}>{title}</Text>
-    </TouchableOpacity>
-  );
-
-  const ActivityItem = ({ item }: { item: RecentActivity }) => (
-    <View style={styles.activityItem}>
-      <View style={styles.activityIcon}>
-        <Text style={styles.activityIconText}>
-          {item.type === 'order' ? '🛒' : item.type === 'review' ? '⭐' : '👤'}
+  const renderOrderItem = (order: Order, index: number) => (
+    <MotiView
+      key={order.id}
+      from={{ opacity: 0, translateX: -50 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ 
+        type: 'timing',
+        duration: 300,
+        delay: index * 100
+      }}
+      style={styles.orderItem}
+    >
+      <View style={styles.orderHeader}>
+        <Text style={styles.orderNumber}>#{order.id.slice(-6)}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.order_status) }]}>
+          <Text style={styles.statusText}>{order.order_status}</Text>
+        </View>
+      </View>
+      <Text style={styles.orderCustomer}>{(order as any).customer_name || 'Anonymous'}</Text>
+      <View style={styles.orderFooter}>
+        <Text style={styles.orderAmount}>₹{order.total_amount}</Text>
+        <Text style={styles.orderDate}>
+          {new Date(order.created_at).toLocaleDateString()}
         </Text>
       </View>
-      <View style={styles.activityContent}>
-        <Text style={styles.activityTitle}>{item.title}</Text>
-        <Text style={styles.activitySubtitle}>{item.subtitle}</Text>
-      </View>
-      <View style={styles.activityMeta}>
-        <Text style={styles.activityTime}>{item.time}</Text>
-        {item.status && (
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: item.status === 'pending' ? '#ff9800' : '#4caf50' }
-          ]}>
-            <Text style={styles.statusText}>
-              {item.status === 'pending' ? 'Pending' : 'Completed'}
-            </Text>
-          </View>
-        )}
-      </View>
-    </View>
+    </MotiView>
   );
+
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'pending': return COLORS.warning[500];
+      case 'confirmed': return COLORS.info[500];
+      case 'preparing': return COLORS.warning[600];
+      case 'ready': return COLORS.success[500];
+      case 'completed': return COLORS.success[600];
+      case 'cancelled': return COLORS.error[500];
+      default: return COLORS.gray[500];
+    }
+  };
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  if (isLoading && !metrics) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'timing', duration: 500, loop: true }}
+          >
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
+          </MotiView>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary[500]]}
+            tintColor={COLORS.primary[500]}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Good morning!</Text>
-            <Text style={styles.businessName}>{user?.full_name || 'Business Owner'}</Text>
+        <MotiView
+          from={{ opacity: 0, translateY: -20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 500 }}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('business.dashboard.title')}</Text>
+            <Text style={styles.subtitle}>
+              {t('business.dashboard.welcome', { name: user?.profile?.full_name || 'Business' })}
+            </Text>
           </View>
-          <TouchableOpacity style={styles.profileButton}>
-            <Text style={styles.profileIcon}>👤</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Period Selector */}
-        <View style={styles.periodSelector}>
-          {(['today', 'week', 'month'] as const).map((period) => (
-            <TouchableOpacity
-              key={period}
-              style={[
-                styles.periodButton,
-                selectedPeriod === period && styles.periodButtonActive
-              ]}
-              onPress={() => setSelectedPeriod(period)}
-            >
-              <Text style={[
-                styles.periodButtonText,
-                selectedPeriod === period && styles.periodButtonTextActive
-              ]}>
-                {period.charAt(0).toUpperCase() + period.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Stats Cards */}
-        <View style={styles.statsGrid}>
-          <StatCard
-            title="Today's Sales"
-            value={`₹${mockStats.todaysSales.toLocaleString()}`}
-            subtitle="+12% from yesterday"
-            icon="💰"
-            color="#4caf50"
-          />
-          <StatCard
-            title="Total Orders"
-            value={mockStats.totalOrders}
-            subtitle="3 pending"
-            icon="📦"
-            color="#2196F3"
-          />
-          <StatCard
-            title="New Customers"
-            value={mockStats.newCustomers}
-            subtitle="This week"
-            icon="👥"
-            color="#ff9800"
-          />
-          <StatCard
-            title="Average Rating"
-            value={mockStats.avgRating}
-            subtitle="Based on 120 reviews"
-            icon="⭐"
-            color="#9c27b0"
-          />
-        </View>
+        </MotiView>
 
         {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            <QuickActionCard
-              title="Add Product"
-              icon="➕"
-              onPress={() => console.log('Add Product')}
-            />
-            <QuickActionCard
-              title="AI Content"
-              icon="🤖"
-              onPress={() => console.log('AI Content')}
-            />
-            <QuickActionCard
-              title="View Orders"
-              icon="📋"
-              onPress={() => console.log('View Orders')}
-            />
-            <QuickActionCard
-              title="Analytics"
-              icon="📊"
-              onPress={() => console.log('Analytics')}
-            />
-          </View>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.activityList}>
-            {mockRecentActivity.map((item) => (
-              <ActivityItem key={item.id} item={item} />
-            ))}
-          </View>
-        </View>
-
-        {/* AI Insights Card */}
-        <TouchableOpacity style={styles.aiInsightsCard}>
-          <View style={styles.aiInsightsContent}>
-            <Text style={styles.aiInsightsIcon}>🤖</Text>
-            <View style={styles.aiInsightsText}>
-              <Text style={styles.aiInsightsTitle}>AI Business Insights</Text>
-              <Text style={styles.aiInsightsSubtitle}>
-                Get AI-powered insights about your business performance
-              </Text>
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 500, delay: 200 }}
+        >
+          <Card>
+            <Text style={styles.sectionTitle}>{t('business.dashboard.quickActions')}</Text>
+            <View style={styles.actionButtons}>
+              <Button
+                title={t('business.dashboard.addProduct')}
+                onPress={() => {/* Navigate to add product */}}
+                variant="primary"
+                size="sm"
+                icon="➕"
+              />
+              <Button
+                title={t('business.dashboard.viewOrders')}
+                onPress={() => {/* Navigate to orders */}}
+                variant="outline"
+                size="sm"
+                icon="📦"
+              />
+              <Button
+                title={t('business.dashboard.analytics')}
+                onPress={() => {/* Navigate to analytics */}}
+                variant="secondary"
+                size="sm"
+                icon="📊"
+              />
             </View>
-            <Text style={styles.aiInsightsArrow}>→</Text>
-          </View>
-        </TouchableOpacity>
+          </Card>
+        </MotiView>
+
+        {/* Metrics Overview */}
+        {metrics && (
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 500, delay: 400 }}
+          >
+            <Card>
+              <Text style={styles.sectionTitle}>{t('business.dashboard.overview')}</Text>
+              <View style={styles.metricsGrid}>
+                {renderMetricCard(
+                  t('business.dashboard.totalRevenue'),
+                  formatCurrency(metrics.totalRevenue),
+                  '💰',
+                  COLORS.success[500],
+                  0
+                )}
+                {renderMetricCard(
+                  t('business.dashboard.totalOrders'),
+                  metrics.totalOrders.toString(),
+                  '📦',
+                  COLORS.info[500],
+                  1
+                )}
+                {renderMetricCard(
+                  t('business.dashboard.avgOrderValue'),
+                  formatCurrency(metrics.totalOrders > 0 ? metrics.totalRevenue / metrics.totalOrders : 0),
+                  '📈',
+                  COLORS.warning[500],
+                  2
+                )}
+                {renderMetricCard(
+                  t('business.dashboard.customers'),
+                  metrics.totalCustomers.toString(),
+                  '👥',
+                  COLORS.purple[500],
+                  3
+                )}
+              </View>
+            </Card>
+          </MotiView>
+        )}
+
+        {/* Revenue Breakdown */}
+        {metrics && (
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 500, delay: 600 }}
+          >
+            <Card>
+              <Text style={styles.sectionTitle}>{t('business.dashboard.revenue')}</Text>
+              <View style={styles.revenueGrid}>
+                {renderMetricCard(
+                  t('business.dashboard.today'),
+                  formatCurrency(Math.floor(metrics.totalRevenue * 0.1)), // Mock today's revenue
+                  '📅',
+                  COLORS.success[600],
+                  0
+                )}
+                {renderMetricCard(
+                  t('business.dashboard.thisWeek'),
+                  formatCurrency(Math.floor(metrics.totalRevenue * 0.4)), // Mock week revenue
+                  '📊',
+                  COLORS.info[600],
+                  1
+                )}
+                {renderMetricCard(
+                  t('business.dashboard.thisMonth'),
+                  formatCurrency(metrics.totalRevenue), // Total revenue as month
+                  '📈',
+                  COLORS.warning[600],
+                  2
+                )}
+              </View>
+            </Card>
+          </MotiView>
+        )}
+
+        {/* Recent Orders */}
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 500, delay: 800 }}
+        >
+          <Card>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('business.dashboard.recentOrders')}</Text>
+              <Button
+                title={t('common.viewAll')}
+                onPress={() => {/* Navigate to all orders */}}
+                variant="ghost"
+                size="sm"
+              />
+            </View>
+            
+            {recentOrders.length > 0 ? (
+              <View style={styles.ordersList}>
+                {recentOrders.map((order, index) => renderOrderItem(order, index))}
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>
+                  {t('business.dashboard.noOrders')}
+                </Text>
+              </View>
+            )}
+          </Card>
+        </MotiView>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
   },
   scrollView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
+  scrollContent: {
+    padding: DIMENSIONS.PADDING.md,
   },
-  greeting: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 4,
-  },
-  businessName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileIcon: {
-    fontSize: 20,
+  loadingText: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
   },
-  periodSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    gap: 8,
-  },
-  periodButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+  header: {
+    marginBottom: DIMENSIONS.PADDING.lg,
     alignItems: 'center',
   },
-  periodButtonActive: {
-    backgroundColor: '#2196F3',
-  },
-  periodButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  periodButtonTextActive: {
-    color: '#fff',
-  },
-  statsGrid: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    gap: 12,
-  },
-  statCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  statTitle: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: 24,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    color: COLORS.text.primary,
+    textAlign: 'center',
   },
-  statSubtitle: {
-    fontSize: 12,
-    color: '#999',
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
+    marginTop: DIMENSIONS.PADDING.sm,
+    lineHeight: 24,
   },
-  section: {
-    marginTop: 24,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+    marginBottom: DIMENSIONS.PADDING.md,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: DIMENSIONS.PADDING.md,
   },
-  sectionTitle: {
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: DIMENSIONS.PADDING.sm,
+  },
+  metricsGrid: {
+    gap: DIMENSIONS.PADDING.md,
+  },
+  revenueGrid: {
+    gap: DIMENSIONS.PADDING.md,
+  },
+  metricCard: {
+    backgroundColor: COLORS.white,
+    padding: DIMENSIONS.PADDING.md,
+    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+    borderLeftWidth: 4,
+    borderColor: COLORS.gray[200],
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: DIMENSIONS.PADDING.sm,
+  },
+  metricIcon: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    marginRight: DIMENSIONS.PADDING.sm,
   },
-  seeAllText: {
+  metricTitle: {
     fontSize: 14,
-    color: '#2196F3',
+    color: COLORS.text.secondary,
     fontWeight: '500',
   },
-  quickActionsGrid: {
+  metricValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text.primary,
+  },
+  ordersList: {
+    gap: DIMENSIONS.PADDING.sm,
+  },
+  orderItem: {
+    backgroundColor: COLORS.gray[50],
+    padding: DIMENSIONS.PADDING.md,
+    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  orderHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  quickActionCard: {
-    width: (width - 64) / 2,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: DIMENSIONS.PADDING.xs,
   },
-  quickActionIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  quickActionTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    textAlign: 'center',
-  },
-  activityList: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityIconText: {
+  orderNumber: {
     fontSize: 16,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 2,
-  },
-  activitySubtitle: {
-    fontSize: 12,
-    color: '#666',
-  },
-  activityMeta: {
-    alignItems: 'flex-end',
-  },
-  activityTime: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 4,
+    fontWeight: '600',
+    color: COLORS.text.primary,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    paddingHorizontal: DIMENSIONS.PADDING.sm,
+    paddingVertical: DIMENSIONS.PADDING.xs,
+    borderRadius: DIMENSIONS.BORDER_RADIUS.sm,
   },
   statusText: {
-    fontSize: 10,
-    color: '#fff',
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.white,
+    textTransform: 'uppercase',
   },
-  aiInsightsCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginVertical: 24,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#2196F3',
-    borderStyle: 'dashed',
+  orderCustomer: {
+    fontSize: 14,
+    color: COLORS.text.secondary,
+    marginBottom: DIMENSIONS.PADDING.sm,
   },
-  aiInsightsContent: {
+  orderFooter: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  aiInsightsIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  aiInsightsText: {
-    flex: 1,
-  },
-  aiInsightsTitle: {
+  orderAmount: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
+    color: COLORS.success[600],
   },
-  aiInsightsSubtitle: {
-    fontSize: 14,
-    color: '#666',
+  orderDate: {
+    fontSize: 12,
+    color: COLORS.text.secondary,
   },
-  aiInsightsArrow: {
-    fontSize: 20,
-    color: '#2196F3',
+  emptyState: {
+    padding: DIMENSIONS.PADDING.xl,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
   },
 });
+
+export default DashboardScreen;

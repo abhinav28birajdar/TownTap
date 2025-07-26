@@ -1,306 +1,350 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
-    SafeAreaView,
     ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
+import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../stores/authStore';
 
-interface UserProfile {
-  firstName: string;
-  lastName: string;
+interface PersonalInfo {
+  full_name: string;
   email: string;
   phone: string;
-  dateOfBirth: string;
-  gender: string;
+  user_type: string;
+  created_at: string;
 }
 
-export default function PersonalInformationScreen() {
-  const { t } = useTranslation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+91 98765 43210',
-    dateOfBirth: '1990-01-15',
-    gender: 'Male',
+const PersonalInformationScreen: React.FC = () => {
+  const { theme } = useTheme();
+  const navigation = useNavigation();
+  const { user } = useAuthStore();
+  
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    full_name: '',
+    email: '',
+    phone: '',
+    user_type: '',
+    created_at: '',
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  useEffect(() => {
+    loadPersonalInfo();
+  }, [user]);
 
-  const handleSave = () => {
-    // Here you would typically save to Supabase
-    setProfile(editedProfile);
-    setIsEditing(false);
-    Alert.alert('Success', 'Profile updated successfully');
+  const loadPersonalInfo = async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setPersonalInfo({
+          full_name: profile.full_name || '',
+          email: user.email || '',
+          phone: profile.phone || '',
+          user_type: profile.user_type || '',
+          created_at: profile.created_at || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading personal info:', error);
+    }
   };
 
-  const handleCancel = () => {
-    setEditedProfile(profile);
-    setIsEditing(false);
+  const savePersonalInfo = async () => {
+    if (!user?.id) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: personalInfo.full_name,
+          phone: personalInfo.phone,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Personal information updated successfully');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating personal info:', error);
+      Alert.alert('Error', 'Failed to update personal information');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const renderField = (
-    label: string,
-    value: string,
-    key: keyof UserProfile,
-    editable: boolean = true
-  ) => (
-    <View style={styles.fieldContainer}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {isEditing && editable ? (
-        <TextInput
-          style={styles.textInput}
-          value={editedProfile[key]}
-          onChangeText={(text) => setEditedProfile({ ...editedProfile, [key]: text })}
-          placeholder={label}
-        />
-      ) : (
-        <Text style={styles.fieldValue}>{value}</Text>
-      )}
-    </View>
-  );
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 20,
+      backgroundColor: theme.card,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    backButton: {
+      marginRight: 16,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: theme.text,
+      flex: 1,
+    },
+    editButton: {
+      padding: 8,
+    },
+    content: {
+      flex: 1,
+      padding: 20,
+    },
+    section: {
+      backgroundColor: theme.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginBottom: 16,
+    },
+    fieldContainer: {
+      marginBottom: 16,
+    },
+    fieldLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 8,
+    },
+    fieldValue: {
+      fontSize: 16,
+      color: theme.text,
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    textInput: {
+      fontSize: 16,
+      color: theme.text,
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    readOnlyField: {
+      backgroundColor: theme.backgroundSecondary || theme.background,
+      opacity: 0.7,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 16,
+    },
+    button: {
+      flex: 1,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    primaryButton: {
+      backgroundColor: theme.primary,
+    },
+    secondaryButton: {
+      backgroundColor: theme.textSecondary,
+    },
+    buttonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#ffffff',
+    },
+    accountTypeContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    accountTypeIcon: {
+      marginRight: 12,
+    },
+    accountTypeText: {
+      fontSize: 16,
+      color: theme.text,
+      textTransform: 'capitalize',
+    },
+    joinedDateText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontStyle: 'italic',
+    },
+  });
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backButtonText}>‹ Back</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personal Information</Text>
         <TouchableOpacity
           style={styles.editButton}
-          onPress={() => setIsEditing(!isEditing)}
+          onPress={() => isEditing ? savePersonalInfo() : setIsEditing(true)}
+          disabled={loading}
         >
-          <Text style={styles.editButtonText}>
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Text>
+          <Ionicons 
+            name={isEditing ? "checkmark" : "pencil"} 
+            size={24} 
+            color={theme.primary} 
+          />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Picture Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>👤</Text>
+        {/* Basic Information */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Basic Information</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Full Name</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.textInput}
+                value={personalInfo.full_name}
+                onChangeText={(text) => setPersonalInfo(prev => ({ ...prev, full_name: text }))}
+                placeholder="Enter your full name"
+                placeholderTextColor={theme.textSecondary}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>
+                {personalInfo.full_name || 'Not provided'}
+              </Text>
+            )}
           </View>
-          <TouchableOpacity style={styles.changePhotoButton}>
-            <Text style={styles.changePhotoText}>Change Photo</Text>
-          </TouchableOpacity>
+
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Email Address</Text>
+            <Text style={[styles.fieldValue, styles.readOnlyField]}>
+              {personalInfo.email || 'Not provided'}
+            </Text>
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Phone Number</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.textInput}
+                value={personalInfo.phone}
+                onChangeText={(text) => setPersonalInfo(prev => ({ ...prev, phone: text }))}
+                placeholder="Enter your phone number"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="phone-pad"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>
+                {personalInfo.phone || 'Not provided'}
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Personal Details */}
+        {/* Account Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personal Details</Text>
+          <Text style={styles.sectionTitle}>Account Information</Text>
           
-          {renderField('First Name', profile.firstName, 'firstName')}
-          {renderField('Last Name', profile.lastName, 'lastName')}
-          {renderField('Email', profile.email, 'email')}
-          {renderField('Phone Number', profile.phone, 'phone')}
-          {renderField('Date of Birth', profile.dateOfBirth, 'dateOfBirth')}
-          {renderField('Gender', profile.gender, 'gender')}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Account Type</Text>
+            <View style={styles.accountTypeContainer}>
+              <Ionicons 
+                name={personalInfo.user_type === 'business_owner' ? 'business' : 'person'} 
+                size={20} 
+                color={theme.primary}
+                style={styles.accountTypeIcon}
+              />
+              <Text style={styles.accountTypeText}>
+                {personalInfo.user_type.replace('_', ' ') || 'Not specified'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Member Since</Text>
+            <Text style={styles.joinedDateText}>
+              {formatDate(personalInfo.created_at)}
+            </Text>
+          </View>
         </View>
 
-        {/* Account Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Settings</Text>
-          
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Change Password</Text>
-            <Text style={styles.chevron}>›</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Two-Factor Authentication</Text>
-            <Text style={styles.chevron}>›</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Privacy Settings</Text>
-            <Text style={styles.chevron}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Save Button */}
+        {/* Action Buttons */}
         {isEditing && (
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => {
+                setIsEditing(false);
+                loadPersonalInfo(); // Reset changes
+              }}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.primaryButton]}
+              onPress={savePersonalInfo}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Saving...' : 'Save Changes'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
-  },
-  backButton: {
-    padding: 4,
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  editButton: {
-    padding: 4,
-  },
-  editButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
-  },
-  profileSection: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#F8F9FA',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    borderWidth: 3,
-    borderColor: '#E9ECEF',
-  },
-  avatarText: {
-    fontSize: 40,
-  },
-  changePhotoButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: '#007AFF',
-    borderRadius: 20,
-  },
-  changePhotoText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  section: {
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-    paddingVertical: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 16,
-    marginHorizontal: 20,
-  },
-  fieldContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  fieldLabel: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 4,
-  },
-  fieldValue: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    fontWeight: '500',
-  },
-  textInput: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  settingText: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    fontWeight: '500',
-  },
-  chevron: {
-    fontSize: 20,
-    color: '#CED4DA',
-    fontWeight: 'bold',
-  },
-  buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    gap: 12,
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E9ECEF',
-  },
-  cancelButtonText: {
-    color: '#666666',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-});
+export default PersonalInformationScreen;

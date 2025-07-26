@@ -32,34 +32,8 @@ yarn-error.*
 
 # local env files
 .env*.local
-.env
 
 # typescript
 *.tsbuildinfo
-
-# TownTap Specific
-# Supabase
-supabase/.branches
-supabase/.temp
-
-# AI Model Cache
-.ai_cache/
-
-# Temporary files
-*.tmp
-*.temp
-
-# VS Code
-.vscode/settings.json
-
-# Android
-android/app/build/
-android/.gradle/
-android/build/
-
-# iOS
-ios/build/
-ios/Pods/
-ios/Podfile.lock
 
 app-example
