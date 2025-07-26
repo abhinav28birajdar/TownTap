@@ -25,6 +25,11 @@ export default function TabLayout() {
   const { theme } = useTheme();
   const isBusinessUser = user?.profile?.user_type === 'business_owner';
 
+  // Don't render tabs if user is not authenticated
+  if (!user) {
+    return null;
+  }
+
   // Customer Tabs
   const customerTabs = [
     {

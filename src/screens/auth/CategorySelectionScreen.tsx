@@ -13,7 +13,7 @@ import { useTheme } from '../../context/ThemeContext';
 import AuthScreen from '../auth/AuthScreen';
 
 interface CategorySelectionScreenProps {
-  onComplete: (userType: 'customer' | 'business_owner') => void;
+  onComplete?: (userType: 'customer' | 'business_owner') => void;
 }
 
 const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onComplete }) => {
@@ -28,9 +28,10 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
 
   const handleAuthComplete = () => {
     setShowAuth(false);
-    if (selectedUserType) {
+    if (selectedUserType && onComplete) {
       onComplete(selectedUserType);
     }
+    // If no onComplete callback, the auth store should handle navigation automatically
   };
 
   const userTypes = [

@@ -12,7 +12,7 @@ interface AuthStore extends AuthState {
   checkAuth: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
   clearError: () => void;
-  // Removed loginDemo - no more demo users
+  completeOnboarding: () => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -22,6 +22,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       loading: false,
       error: null,
+      hasCompletedOnboarding: false,
 
       // Actions
       login: async (email: string, password: string) => {
@@ -141,12 +142,17 @@ export const useAuthStore = create<AuthStore>()(
       clearError: () => {
         set({ error: null });
       },
+
+      completeOnboarding: () => {
+        set({ hasCompletedOnboarding: true });
+      },
     }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,
+        hasCompletedOnboarding: state.hasCompletedOnboarding,
       }),
     }
   )

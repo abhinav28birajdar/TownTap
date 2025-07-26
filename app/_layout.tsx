@@ -10,6 +10,9 @@ import 'react-native-reanimated';
 // Import i18n configuration
 import '../src/i18n';
 
+// Import configuration
+import { initializeApp } from '../src/config/app';
+
 // Import stores to initialize
 import { useAuthStore } from '../src/stores/authStore';
 import { useLocationStore } from '../src/stores/locationStore';
@@ -45,8 +48,14 @@ export default function RootLayout() {
   const { requestLocationPermission } = useLocationStore();
 
   useEffect(() => {
-    const initializeApp = async () => {
+    const initializeApplication = async () => {
       try {
+        // Initialize app configuration
+        const initResult = await initializeApp();
+        if (!initResult.success) {
+          console.warn('App initialization had issues:', initResult.error);
+        }
+        
         // Check authentication status
         await checkAuth();
         
@@ -66,7 +75,7 @@ export default function RootLayout() {
     };
 
     if (loaded) {
-      initializeApp();
+      initializeApplication();
     }
   }, [loaded, checkAuth, requestLocationPermission]);
 

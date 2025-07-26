@@ -171,7 +171,7 @@ const PersonalInformationScreen: React.FC = () => {
       borderColor: theme.border,
     },
     readOnlyField: {
-      backgroundColor: theme.backgroundSecondary || theme.background,
+      backgroundColor: theme.background,
       opacity: 0.7,
     },
     buttonContainer: {

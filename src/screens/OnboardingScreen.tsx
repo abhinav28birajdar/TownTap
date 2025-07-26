@@ -3,11 +3,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/Button';
 import { COLORS } from '../config/constants';
+import { useAuthStore } from '../stores/authStore';
 
 const OnboardingScreen: React.FC = () => {
+  const { completeOnboarding } = useAuthStore();
+
   const handleGetStarted = () => {
-    // Navigation logic will be implemented later
-    console.log('Get started pressed');
+    completeOnboarding();
   };
 
   return (

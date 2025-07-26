@@ -1,10 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
-// Replace these with your actual Supabase project credentials
-const supabaseUrl = 'https://larexqjixguxwfvelei.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcmV4cWppeGd1eHdmdmVsZWVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTE1NzQsImV4cCI6MjA2OTA4NzU3NH0.RABFVyqAxjvzfAQxPet0542M0JJeGLZ4psWdnp7E6gg';
+// Supabase configuration from environment variables
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file.\n' +
+    'Required variables:\n' +
+    '- EXPO_PUBLIC_SUPABASE_URL\n' +
+    '- EXPO_PUBLIC_SUPABASE_ANON_KEY'
+  );
+}
+
+// Main Supabase client (for user operations)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
@@ -14,15 +26,47 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   realtime: {
     params: {
-      eventsPerSecond: 10,
+      eventsPerSecond: Number(process.env.EXPO_PUBLIC_REALTIME_EVENTS_PER_SECOND) || 10,
     },
   },
 });
 
-// For demo purposes, we'll use mock data when Supabase is not configured
-export const isSupabaseConfigured = () => {
-  return true; // Supabase is now configured
+// Admin Supabase client (for admin operations - if service key is available)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : null;
+
+// Test Supabase connection
+export const testSupabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('count', { count: 'exact' }).limit(1);
+    return { success: !error, error };
+  } catch (err) {
+    return { success: false, error: err };
+  }
 };
+
+// Check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return !!(
+    process.env.EXPO_PUBLIC_SUPABASE_URL && 
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY && 
+    process.env.EXPO_PUBLIC_SUPABASE_URL.includes('supabase.co')
+  );
+};
+
+// Get configuration info
+export const getSupabaseConfig = () => ({
+  url: process.env.EXPO_PUBLIC_SUPABASE_URL,
+  hasAnonKey: !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+  environment: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
+  realtimeEnabled: process.env.EXPO_PUBLIC_ENABLE_REALTIME === 'true',
+});
 
 // Mock data for demo
 export const mockBusinessCategories = [
