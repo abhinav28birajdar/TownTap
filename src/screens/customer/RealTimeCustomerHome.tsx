@@ -545,7 +545,9 @@ const RealTimeCustomerHome: React.FC = () => {
                 </View>
 
                 <View style={styles.businessInfo}>
-                  <Text style={styles.businessCategory}>{business.category}</Text>
+                  <Text style={styles.businessCategory}>
+                    {typeof business.category === 'string' ? business.category : ((business.category as any)?.name || 'Category')}
+                  </Text>
                   <View style={styles.businessRating}>
                     <Ionicons name="star" size={16} color="#F59E0B" />
                     <Text style={styles.ratingText}>{business.rating}</Text>

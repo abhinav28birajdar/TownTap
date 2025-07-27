@@ -251,7 +251,7 @@ const BusinessRegistrationScreen: React.FC = () => {
                 {businessCategories.map((category) => (
                   <Picker.Item 
                     key={category.id} 
-                    label={`${category.icon} ${category.name}`} 
+                    label={category.name} 
                     value={category.id} 
                   />
                 ))}

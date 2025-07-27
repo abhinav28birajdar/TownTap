@@ -10,7 +10,7 @@ export const initializeApp = async () => {
     // Log configuration in development
     logConfig();
     
-    // Test Supabase connection
+ 
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {

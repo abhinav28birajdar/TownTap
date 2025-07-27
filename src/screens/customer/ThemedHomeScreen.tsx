@@ -137,7 +137,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
         <View style={styles.businessInfo}>
           <Text style={styles.businessName}>{business.business_name}</Text>
           <Text style={styles.businessCategory}>
-            {business.category?.icon} {business.category?.name}
+            🏪 {business.category?.name}
           </Text>
           <Text style={styles.businessAddress}>{business.address}</Text>
           {business.distance_km && (
@@ -645,7 +645,7 @@ const ThemedHomeScreen: React.FC = () => {
             onPress={() => setSelectedCategory(category.id)}
           >
             <View style={styles.categoryIconContainer}>
-              <Text style={styles.categoryIcon}>{category.icon}</Text>
+              <Text style={styles.categoryIcon}>🏪</Text>
             </View>
             <Text style={[
               styles.categoryButtonText,

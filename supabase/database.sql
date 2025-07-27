@@ -1,9 +1,6 @@
 -- TownTap Real-Time Application Database Schema
 -- This script creates all tables and triggers for real-time functionality
 
--- Enable real-time for Supabase
-ALTER SYSTEM SET wal_level = logical;
-
 -- Enable the UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -25,13 +22,23 @@ CREATE TABLE public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Business categories table (must be created before businesses table)
+CREATE TABLE public.business_categories (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    icon TEXT,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Business profiles table
 CREATE TABLE public.businesses (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     owner_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
-    category TEXT NOT NULL,
+    category_id UUID REFERENCES public.business_categories(id),
     address TEXT NOT NULL,
     phone TEXT,
     email TEXT,
@@ -274,6 +281,26 @@ CREATE TABLE public.reviews (
 -- FUNCTIONS AND TRIGGERS
 -- ==============================================
 
+-- Function to automatically create profile on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, user_type)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'user_type', 'customer')
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to create profile on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -368,6 +395,54 @@ CREATE TRIGGER update_business_rating_trigger
     FOR EACH ROW 
     EXECUTE FUNCTION update_business_rating();
 
+-- Function to get nearby businesses
+CREATE OR REPLACE FUNCTION get_nearby_businesses(
+    user_lat DECIMAL(10,8),
+    user_lng DECIMAL(11,8),
+    radius_km INTEGER DEFAULT 10
+)
+RETURNS TABLE (
+    business_id UUID,
+    business_name TEXT,
+    distance_km DECIMAL(5,2)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        b.id,
+        b.name,
+        ROUND(
+            (6371 * acos(
+                cos(radians(user_lat)) * 
+                cos(radians(b.latitude)) * 
+                cos(radians(b.longitude) - radians(user_lng)) + 
+                sin(radians(user_lat)) * 
+                sin(radians(b.latitude))
+            ))::DECIMAL(5,2), 2
+        ) as distance
+    FROM public.businesses b
+    WHERE b.latitude IS NOT NULL 
+      AND b.longitude IS NOT NULL
+      AND b.is_open = true
+    HAVING distance <= radius_km
+    ORDER BY distance;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to clean up old cart items (for maintenance)
+CREATE OR REPLACE FUNCTION cleanup_old_cart_items()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM public.cart_items 
+    WHERE created_at < NOW() - INTERVAL '7 days';
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ==============================================
 -- ROW LEVEL SECURITY POLICIES
 -- ==============================================
@@ -375,6 +450,7 @@ CREATE TRIGGER update_business_rating_trigger
 -- Enable RLS on all tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.business_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_addresses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
@@ -393,9 +469,15 @@ CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH 
 -- Businesses policies
 CREATE POLICY "Anyone can view businesses" ON public.businesses FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Business owners can manage their business" ON public.businesses FOR ALL USING (
-    owner_id = auth.uid() OR 
+    owner_id = auth.uid()
+);
+CREATE POLICY "Business owners can insert their business" ON public.businesses FOR INSERT WITH CHECK (
+    owner_id = auth.uid() AND 
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND user_type = 'business_owner')
 );
+
+-- Business categories policies
+CREATE POLICY "Anyone can view business categories" ON public.business_categories FOR SELECT TO authenticated USING (true);
 
 -- Customer addresses policies
 CREATE POLICY "Customers can manage own addresses" ON public.customer_addresses FOR ALL USING (customer_id = auth.uid());
@@ -471,6 +553,19 @@ INSERT INTO public.categories (name, description, icon_url) VALUES
 ('Electronics', 'Electronics and gadgets', 'https://example.com/electronics-icon.png'),
 ('Stationary', 'Books, pens, and office supplies', 'https://example.com/stationary-icon.png');
 
+-- Insert sample business categories
+INSERT INTO public.business_categories (name, icon, description) VALUES
+('Stationary', '📝', 'Stationery shops, office supplies, books'),
+('Salon & Beauty', '💇', 'Hair salons, beauty parlors, spas'),
+('Bookstore', '📚', 'Book shops, libraries, educational materials'),
+('Carpenter', '🔨', 'Furniture making, wood work, repairs'),
+('Study Center', '🎓', 'Coaching centers, tuition classes, education'),
+('Library', '📖', 'Public libraries, reading rooms'),
+('Grocery', '🛒', 'Grocery stores, supermarkets, daily needs'),
+('Restaurant', '🍽️', 'Restaurants, cafes, food outlets'),
+('Medical', '⚕️', 'Hospitals, clinics, pharmacies'),
+('Electronics', '📱', 'Mobile shops, computer stores, electronics');
+
 -- Create indexes for better performance
 CREATE INDEX idx_orders_customer_id ON public.orders(customer_id);
 CREATE INDEX idx_orders_business_id ON public.orders(business_id);
@@ -480,8 +575,13 @@ CREATE INDEX idx_messages_participants ON public.messages(sender_id, recipient_i
 CREATE INDEX idx_messages_business_id ON public.messages(business_id);
 CREATE INDEX idx_products_business_id ON public.products(business_id);
 CREATE INDEX idx_products_category_id ON public.products(category_id);
-CREATE INDEX idx_businesses_category ON public.businesses(category);
+CREATE INDEX idx_businesses_category_id ON public.businesses(category_id);
 CREATE INDEX idx_businesses_location ON public.businesses(latitude, longitude);
+CREATE INDEX idx_profiles_user_type ON public.profiles(user_type);
+CREATE INDEX idx_cart_items_customer ON public.cart_items(customer_id);
+CREATE INDEX idx_notifications_user_read ON public.notifications(user_id, is_read);
+CREATE INDEX idx_reviews_business ON public.reviews(business_id);
+CREATE INDEX idx_products_availability ON public.products(is_available, business_id);
 
 -- Add comments to tables for documentation
 COMMENT ON TABLE public.profiles IS 'User profiles extending Supabase auth.users';

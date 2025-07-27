@@ -1,120 +1,271 @@
-# TownTap 🏪
+# TownTap - Local Business Discovery Platform
 
-A complete real-time mobile application connecting local businesses with customers, built with React Native and Supabase.
+A React Native application built with Expo that connects customers with local businesses for ordering products, booking services, and real-time communication.
 
-## ✨ Features
+## 🚀 Features
 
-### 🎯 Real-Time Business Dashboard
-- Live order tracking and management
-- Real-time customer messaging
-- Business analytics with live updates
-- Revenue tracking and insights
+### For Customers
+- Browse local businesses by category
+- Order products and book services
+- Real-time order tracking
+- In-app chat with business owners
+- Multiple payment methods
+- Order history and reviews
 
-### 👥 Dual User Types
-- **Customers**: Browse, order, and communicate with local businesses
-- **Business Owners**: Manage operations, orders, and customer relationships
+### For Business Owners
+- Business dashboard with analytics
+- Order management system
+- Customer communication tools
+- Product/service catalog management
+- Real-time notifications
+- Business profile management
 
-### 🔐 Complete Authentication System
-- Secure user registration and login
-- User type selection during onboarding
-- Profile management for both customers and businesses
-- Session persistence across app restarts
+## 🛠️ Tech Stack
 
-### 📱 Modern Mobile Experience
-- Clean, intuitive interface
-- Real-time updates without refresh
-- Smooth navigation and animations
-- Support for iOS and Android
+### Frontend
+- **React Native** with Expo SDK 53
+- **Expo Router** for navigation
+- **TypeScript** for type safety
+- **Zustand** for state management
+- **React Native Safe Area Context** for layout
+- **React Native Gesture Handler** for interactions
 
-## 🚀 Quick Start
+### Backend
+- **Supabase** for database and real-time features
+- **PostgreSQL** database with Row Level Security
+- **Real-time subscriptions** for live updates
+- **Authentication** with JWT tokens
 
-1. **Install dependencies:**
+### Additional Features
+- **Internationalization** (English/Hindi)
+- **Location Services** with expo-location
+- **Image Handling** with expo-image
+- **Maps Integration** with react-native-maps
+- **Animations** with Lottie and Moti
+
+## 📋 Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- Expo CLI
+- Expo Go app (for testing)
+- Supabase account
+
+## ⚡ Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/abhinav28birajdar/TownTap.git
+   cd TownTap
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Set up Supabase database:**
-   - Run the SQL script in `supabase/database_setup.sql`
-   - Enable real-time for all tables
-
-3. **Start the app:**
-   ```bash
-   npm start
+3. **Environment Setup**
+   - Copy `.env.example` to `.env`
+   - Add your Supabase credentials:
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    ```
 
-See `SETUP_INSTRUCTIONS.md` for detailed setup guide.
+4. **Database Setup**
+   - Create a new Supabase project
+   - Run the SQL script from `supabase/database.sql`
 
-## 🛠️ Tech Stack
+5. **Start Development Server**
+   ```bash
+   npx expo start
+   ```
 
-- **Frontend**: React Native + Expo
-- **Backend**: Supabase (PostgreSQL + Real-time)
-- **Authentication**: Supabase Auth
-- **Navigation**: Expo Router
-- **State Management**: Zustand
-- **Real-time**: Supabase Real-time subscriptions
+6. **Test on Device**
+   - Install Expo Go from App Store/Play Store
+   - Scan QR code from terminal
 
-## 📋 Project Structure
+## 📁 Project Structure
 
 ```
-app/                    # Expo Router pages
-├── (tabs)/            # Tab navigation
-│   ├── index.tsx      # Main screen (auth/dashboard)
-│   ├── explore.tsx    # Explore/Search
-│   ├── orders.tsx     # Orders management
-│   └── profile.tsx    # User profile
-src/
-├── components/        # Reusable UI components
-├── screens/          # Application screens
-│   ├── auth/         # Authentication screens
-│   ├── business/     # Business owner screens
-│   ├── customer/     # Customer screens
-│   └── shared/       # Shared screens
-├── stores/           # State management
-├── lib/              # Utilities and configurations
-└── types/            # TypeScript definitions
-supabase/
-└── database_setup.sql # Complete database schema
+TownTap/
+├── app/                          # Expo Router pages
+│   ├── (tabs)/                   # Tab navigation
+│   │   ├── index.tsx            # Home screen
+│   │   ├── explore.tsx          # Business discovery
+│   │   ├── orders.tsx           # Order management
+│   │   └── profile.tsx          # User profile
+│   ├── _layout.tsx              # Root layout
+│   └── +not-found.tsx           # 404 page
+├── src/
+│   ├── components/              # Reusable UI components
+│   │   ├── ui/                  # Basic UI elements
+│   │   └── PlaceholderScreen.tsx
+│   ├── screens/                 # Main screens
+│   │   ├── auth/               # Authentication screens
+│   │   ├── business/           # Business owner screens
+│   │   ├── customer/           # Customer screens
+│   │   └── shared/             # Shared screens
+│   ├── stores/                 # Zustand state management
+│   │   ├── authStore.ts        # Authentication state
+│   │   ├── cartStore.ts        # Shopping cart state
+│   │   └── locationStore.ts    # Location state
+│   ├── services/               # API services
+│   │   ├── aiService.ts        # AI integration
+│   │   └── businessService.ts  # Business operations
+│   ├── lib/                    # Core utilities
+│   │   └── supabase.ts         # Supabase client
+│   ├── context/                # React contexts
+│   ├── types/                  # TypeScript definitions
+│   ├── i18n/                   # Internationalization
+│   └── config/                 # Configuration files
+├── assets/                     # Static assets
+│   ├── images/                 # App images
+│   └── fonts/                  # Custom fonts
+├── supabase/
+│   ├── database.sql            # Complete database schema
+│   └── functions/              # Edge functions
+└── components/                 # Expo default components
 ```
 
-## 🎯 User Flow
+## 🗄️ Database Schema
 
-1. **App Launch** → Category Selection (Customer/Business)
-2. **Authentication** → Sign In or Sign Up
-3. **Customer Path** → 4-tab interface (Home, Explore, Orders, Profile)
-4. **Business Path** → 5-tab interface (Dashboard, Customers, Orders, Business, Profile)
+The application uses PostgreSQL with the following main tables:
 
-## 🔄 Real-time Features
+- **users** - User authentication and profiles
+- **businesses** - Business information and settings
+- **products** - Product catalog
+- **services** - Service offerings
+- **orders** - Order management
+- **chats** - Real-time messaging
+- **reviews** - Customer reviews
+- **notifications** - Push notifications
 
-- Live order status updates
-- Real-time business analytics
-- Instant messaging between customers and businesses
-- Live inventory and business hours updates
+All tables include Row Level Security policies for data protection.
 
-## 📊 Database Schema
+## 🔧 Development Commands
 
-Complete schema with 15+ tables including:
-- User profiles and authentication
-- Business information and categories
-- Orders and order items
-- Real-time messaging system
-- Analytics and reporting
-- Location-based services
+```bash
+# Start development server
+npm start
 
-## 🔐 Security
+# Start with cache cleared
+npm run start -- --clear
+
+# Build for production
+npm run build
+
+# Type checking
+npx tsc --noEmit
+
+# Linting
+npm run lint
+
+# Install Expo SDK compatible packages
+npx expo install --fix
+```
+
+## 📱 Building for Production
+
+### Android
+```bash
+npx eas build --platform android
+```
+
+### iOS
+```bash
+npx eas build --platform ios
+```
+
+## 🧪 Testing
+
+The app can be tested using:
+- **Expo Go** (development)
+- **Development builds** (production features)
+- **Web browser** (limited functionality)
+
+## 🌐 Environment Variables
+
+Required environment variables:
+
+```env
+# Supabase Configuration
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# App Configuration
+EXPO_PUBLIC_APP_NAME=TownTap
+EXPO_PUBLIC_APP_VERSION=1.0.0
+EXPO_PUBLIC_ENVIRONMENT=development
+
+# Feature Flags
+EXPO_PUBLIC_ENABLE_REALTIME=true
+EXPO_PUBLIC_ENABLE_ANALYTICS=false
+EXPO_PUBLIC_ENABLE_NOTIFICATIONS=true
+
+# API Configuration
+EXPO_PUBLIC_API_TIMEOUT=10000
+EXPO_PUBLIC_MAX_RETRIES=3
+
+# Location Defaults
+EXPO_PUBLIC_DEFAULT_LATITUDE=28.6139
+EXPO_PUBLIC_DEFAULT_LONGITUDE=77.2090
+EXPO_PUBLIC_DEFAULT_RADIUS=5000
+
+# Business Configuration
+EXPO_PUBLIC_MIN_ORDER_AMOUNT=100
+EXPO_PUBLIC_DEFAULT_DELIVERY_FEE=50
+EXPO_PUBLIC_DEFAULT_DELIVERY_TIME=30
+```
+
+## 🔐 Security Features
 
 - Row Level Security (RLS) on all database tables
-- Secure API endpoints
-- Real-time subscription authentication
-- Data validation and sanitization
+- JWT-based authentication
+- API rate limiting
+- Input validation and sanitization
+- Secure environment variable handling
 
-## 🌟 Key Highlights
+## 📈 Performance Optimizations
 
-- **100% Real Data**: No demo users or mock data
-- **Production Ready**: Complete authentication and database setup
-- **Scalable Architecture**: Built for growth and expansion
-- **Modern UI/UX**: Clean, intuitive design
-- **Real-time Everything**: Live updates across the entire app
+- Image optimization with Expo Image
+- Lazy loading of screens
+- Optimized bundle size
+- Efficient state management
+- Real-time subscription optimization
 
-## 📝 License
+## 🌍 Internationalization
+
+The app supports multiple languages:
+- English (default)
+- Hindi
+
+Language files are located in `src/i18n/`.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
 
 This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Contact: abhinav28birajdar@gmail.com
+
+## 📱 Screenshots
+
+[Add screenshots of your app here]
+
+---
+
+**TownTap** - Connecting communities, one tap at a time! 🏪📱

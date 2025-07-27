@@ -4,15 +4,15 @@ import { MotiView } from 'moti';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert,
-  Dimensions,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Dimensions,
+    FlatList,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -158,7 +158,9 @@ const HomeScreen: React.FC = () => {
           </View>
           <View style={styles.businessInfo}>
             <Text style={styles.businessName}>{business.business_name}</Text>
-            <Text style={styles.businessCategory}>{business.category}</Text>
+            <Text style={styles.businessCategory}>
+              {typeof business.category === 'string' ? business.category : ((business.category as any)?.name || 'Category')}
+            </Text>
             <Text style={styles.businessDistance}>
               {business.distance ? `${business.distance.toFixed(1)} km` : ''}
             </Text>
@@ -233,7 +235,7 @@ const HomeScreen: React.FC = () => {
           styles.categoryText,
           selectedCategory === category.id && styles.selectedCategoryText
         ]}>
-          {category.icon_url} {category.name}
+          {category.name}
         </Text>
       </TouchableOpacity>
     </MotiView>

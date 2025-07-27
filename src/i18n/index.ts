@@ -47,7 +47,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    debug: __DEV__,
+    debug: false, // Disable debug logging to reduce console noise
     
     resources: {
       en: { translation: en },
@@ -61,6 +61,11 @@ i18n
     react: {
       useSuspense: false,
     },
+
+    // Suppress verbose logging
+    initImmediate: false,
+    load: 'languageOnly',
+    cleanCode: true,
   });
 
 export default i18n;

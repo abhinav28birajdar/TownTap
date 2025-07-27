@@ -2,17 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { useTheme } from '../../src/context/ThemeContext';
 import CategorySelectionScreen from '../../src/screens/auth/CategorySelectionScreen';
-import BusinessDashboardScreen from '../../src/screens/business/BusinessDashboardScreen';
-import ThemedHomeScreen from '../../src/screens/customer/ThemedHomeScreen';
+import BusinessDashboardScreen from '../../src/screens/business/DashboardScreen';
+import CustomerHomeScreen from '../../src/screens/customer/HomeScreen';
 import OnboardingScreen from '../../src/screens/OnboardingScreen';
-import DebugScreen from '../../src/screens/shared/DebugScreen';
 import { useAuthStore } from '../../src/stores/authStore';
 
 export default function HomeScreen() {
   const { user, loading, checkAuth, hasCompletedOnboarding } = useAuthStore();
   const { theme } = useTheme();
   const [isInitializing, setIsInitializing] = useState(true);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     const initialize = async () => {
@@ -20,10 +18,6 @@ export default function HomeScreen() {
         await checkAuth();
       } catch (error) {
         console.error('Auth check failed:', error);
-        // Only show debug in development
-        if (__DEV__) {
-          setShowDebug(true);
-        }
       } finally {
         setIsInitializing(false);
       }
@@ -31,11 +25,6 @@ export default function HomeScreen() {
 
     initialize();
   }, [checkAuth]);
-
-  // Show debug screen if there are issues (development only)
-  if (showDebug && __DEV__) {
-    return <DebugScreen />;
-  }
 
   // Show loading screen while initializing
   if (isInitializing || loading) {
@@ -73,6 +62,6 @@ export default function HomeScreen() {
     return <BusinessDashboardScreen />;
   }
 
-  // Default to themed customer home screen
-  return <ThemedHomeScreen />;
+  // Default to customer home screen
+  return <CustomerHomeScreen />;
 }

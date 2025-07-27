@@ -185,7 +185,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ business, onClose }) => {
         <View style={styles.headerInfo}>
           <Text style={styles.businessName}>{business.business_name}</Text>
           <Text style={styles.businessStatus}>
-            {business.category?.icon} {business.category?.name}
+            🏪 {business.category?.name}
           </Text>
         </View>
         <TouchableOpacity style={styles.callButton}>
