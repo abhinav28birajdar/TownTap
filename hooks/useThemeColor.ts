@@ -16,6 +16,12 @@ export function useThemeColor(
   if (colorFromProps) {
     return colorFromProps;
   } else {
-    return Colors[theme][colorName];
+    const themeColors = Colors[theme];
+    const color = themeColors[colorName];
+    if (color === undefined) {
+      console.warn(`Color '${colorName}' not found in theme '${theme}'. Using fallback.`);
+      return theme === 'light' ? '#000000' : '#FFFFFF'; // Fallback colors
+    }
+    return color;
   }
 }

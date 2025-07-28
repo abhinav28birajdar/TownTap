@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { getCurrentUser, getProfile, signIn, signOut, signUp } from '../lib/supabase';
+import { createOrUpdateProfile, getCurrentUser, getProfile, signIn, signOut, signUp } from '../lib/supabase';
 import { AuthState, Profile, User } from '../types';
 
 interface AuthStore extends AuthState {
@@ -110,10 +110,24 @@ export const useAuthStore = create<AuthStore>()(
           
           if (user) {
             // Fetch user profile
-            const { data: profile, error: profileError } = await getProfile(user.id);
-            if (profileError) {
-              set({ user: null, loading: false, error: profileError.message });
-              return;
+            let { data: profile, error: profileError } = await getProfile(user.id);
+            
+            // If profile doesn't exist, try to create it from user metadata
+            if (profileError || !profile) {
+              const userData = user.user_metadata || {};
+              const { data: newProfile, error: createError } = await createOrUpdateProfile(user.id, {
+                full_name: userData.full_name || user.email?.split('@')[0] || '',
+                phone_number: userData.phone_number || user.phone || '',
+                user_type: userData.user_type || 'customer',
+              });
+              
+              if (createError) {
+                console.warn('Failed to create profile:', createError);
+                set({ user: null, loading: false, error: 'Failed to create user profile' });
+                return;
+              }
+              
+              profile = newProfile;
             }
 
             const userData: User = {

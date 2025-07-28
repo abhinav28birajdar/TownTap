@@ -288,10 +288,15 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, user_type)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email, ''),
     COALESCE(NEW.raw_user_meta_data->>'user_type', 'customer')
   );
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error but don't fail the user creation
+    RAISE WARNING 'Failed to create profile for user %: %', NEW.id, SQLERRM;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -463,7 +468,9 @@ ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can view business owner profiles" ON public.profiles FOR SELECT USING (user_type = 'business_owner');
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "System can insert profiles" ON public.profiles FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Businesses policies

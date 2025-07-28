@@ -196,6 +196,51 @@ export const getCurrentUser = async () => {
   return { user, error };
 };
 
+// Create or ensure profile exists
+export const createOrUpdateProfile = async (userId: string, userData: any) => {
+  try {
+    // First try to get existing profile
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (existingProfile) {
+      // Update existing profile
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: userData.full_name || existingProfile.full_name,
+          phone: userData.phone_number || existingProfile.phone,
+          user_type: userData.user_type || existingProfile.user_type,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+      return { data, error };
+    } else {
+      // Create new profile
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            full_name: userData.full_name || '',
+            phone: userData.phone_number || null,
+            user_type: userData.user_type || 'customer',
+          },
+        ])
+        .select()
+        .single();
+      return { data, error };
+    }
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
 // Database helper functions
 export const getProfile = async (userId: string) => {
   const { data, error } = await supabase

@@ -20,12 +20,17 @@ export class BusinessService {
     ownerId: string
   ): Promise<Business | null> {
     try {
+      // Transform business_name to name for database
+      const { business_name, ...restData } = businessData;
+      
       const { data, error } = await supabase
         .from('businesses')
         .insert({
           owner_id: ownerId,
-          ...businessData,
-          location: `POINT(${businessData.location.longitude} ${businessData.location.latitude})`,
+          name: business_name, // Map business_name to name
+          ...restData,
+          latitude: businessData.location.latitude,
+          longitude: businessData.location.longitude,
         })
         .select(`
           *,
@@ -478,9 +483,10 @@ export class BusinessService {
   private static transformBusinessData(data: any): Business {
     return {
       ...data,
+      business_name: data.name, // Map name to business_name for frontend
       location: {
-        latitude: data.location ? parseFloat(data.location.coordinates[1]) : 0,
-        longitude: data.location ? parseFloat(data.location.coordinates[0]) : 0,
+        latitude: data.latitude || 0,
+        longitude: data.longitude || 0,
       },
       business_hours: data.business_hours || {},
       services: data.services || [],

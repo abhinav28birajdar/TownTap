@@ -150,10 +150,18 @@ const BusinessRegistrationScreen: React.FC = () => {
         .map(service => service.trim())
         .filter(service => service.length > 0);
 
+      // Ensure location is set
+      const location = formData.location.latitude && formData.location.longitude 
+        ? formData.location 
+        : currentLocation || { latitude: 0, longitude: 0 };
+
       const registrationData: BusinessRegistration = {
         ...formData,
         services,
+        location,
       };
+
+      console.log('Registering business with data:', registrationData);
 
       const result = await BusinessService.registerBusiness(registrationData, user.id);
 
@@ -173,9 +181,9 @@ const BusinessRegistrationScreen: React.FC = () => {
       } else {
         Alert.alert('Error', 'Failed to register business. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error registering business:', error);
-      Alert.alert('Error', 'Failed to register business. Please try again.');
+      Alert.alert('Error', `Failed to register business: ${error.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
