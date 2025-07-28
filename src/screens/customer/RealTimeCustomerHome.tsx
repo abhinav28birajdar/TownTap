@@ -201,10 +201,10 @@ const RealTimeCustomerHome: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       padding: 20,
       paddingTop: 10,
     },
@@ -281,7 +281,7 @@ const RealTimeCustomerHome: React.FC = () => {
     sectionTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     seeAllButton: {
       paddingVertical: 4,
@@ -289,20 +289,20 @@ const RealTimeCustomerHome: React.FC = () => {
     },
     seeAllText: {
       fontSize: 14,
-      color: theme.primary,
+      color: theme.colors.primary,
       fontWeight: '600',
     },
     liveOrdersContainer: {
       marginBottom: 32,
     },
     orderCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 16,
       marginBottom: 12,
       borderWidth: 1,
-      borderColor: theme.border,
-      shadowColor: theme.shadow,
+      borderColor: theme.colors.border,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -317,7 +317,7 @@ const RealTimeCustomerHome: React.FC = () => {
     businessName: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     statusBadge: {
@@ -341,23 +341,23 @@ const RealTimeCustomerHome: React.FC = () => {
     },
     orderInfoText: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginLeft: 4,
     },
     orderAmount: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     businessCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 16,
       marginRight: 16,
       width: 280,
       borderWidth: 1,
-      borderColor: theme.border,
-      shadowColor: theme.shadow,
+      borderColor: theme.colors.border,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -372,7 +372,7 @@ const RealTimeCustomerHome: React.FC = () => {
     businessCardName: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     businessStatus: {
@@ -397,7 +397,7 @@ const RealTimeCustomerHome: React.FC = () => {
     },
     businessCategory: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     businessRating: {
       flexDirection: 'row',
@@ -406,7 +406,7 @@ const RealTimeCustomerHome: React.FC = () => {
     ratingText: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
       marginLeft: 4,
     },
     businessFooter: {
@@ -416,11 +416,11 @@ const RealTimeCustomerHome: React.FC = () => {
     },
     deliveryTime: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     distance: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     emptyState: {
       alignItems: 'center',
@@ -432,7 +432,7 @@ const RealTimeCustomerHome: React.FC = () => {
     },
     emptyStateText: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
   });
@@ -501,7 +501,7 @@ const RealTimeCustomerHome: React.FC = () => {
                 </View>
                 <View style={styles.orderDetails}>
                   <View style={styles.orderInfo}>
-                    <Ionicons name="bag" size={16} color={theme.textSecondary} />
+                    <Ionicons name="bag" size={16} color={theme.colors.textSecondary} />
                     <Text style={styles.orderInfoText}>{order.items_count} items</Text>
                   </View>
                   <Text style={styles.orderAmount}>₹{order.total_amount}</Text>

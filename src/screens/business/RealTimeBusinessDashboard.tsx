@@ -39,7 +39,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
   const { theme } = useTheme();
   
   return (
-    <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+    <View style={[styles.statCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       <View style={styles.statHeader}>
         <View style={[styles.statIcon, { backgroundColor: color + '20' }]}>
           <Ionicons name={icon as any} size={24} color={color} />
@@ -57,8 +57,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
           </View>
         )}
       </View>
-      <Text style={[styles.statValue, { color: theme.text }]}>{value}</Text>
-      <Text style={[styles.statTitle, { color: theme.textSecondary }]}>{title}</Text>
+      <Text style={[styles.statValue, { color: theme.colors.text }]}>{value}</Text>
+      <Text style={[styles.statTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
     </View>
   );
 };
@@ -205,7 +205,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -214,7 +214,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
         }
       >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: theme.primary }]}>
+        <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
           <View>
             <Text style={styles.welcomeText}>Welcome back!</Text>
             <Text style={styles.businessName}>
@@ -236,7 +236,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
         <View style={styles.content}>
           {/* Today's Overview */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               📊 Today's Overview
             </Text>
             
@@ -281,7 +281,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
 
           {/* Quick Actions */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               ⚡ Quick Actions
             </Text>
             
@@ -289,7 +289,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
               {quickActions.map((action, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.actionCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+                  style={[styles.actionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
                   onPress={action.onPress}
                 >
                   <View style={styles.actionHeader}>
@@ -302,7 +302,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
                       </View>
                     )}
                   </View>
-                  <Text style={[styles.actionTitle, { color: theme.text }]}>
+                  <Text style={[styles.actionTitle, { color: theme.colors.text }]}>
                     {action.title}
                   </Text>
                 </TouchableOpacity>
@@ -312,22 +312,22 @@ const RealTimeBusinessDashboard: React.FC = () => {
 
           {/* Business Performance */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               📈 Business Performance
             </Text>
             
-            <View style={[styles.performanceCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.performanceCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <View style={styles.performanceRow}>
-                <Text style={[styles.performanceLabel, { color: theme.textSecondary }]}>
+                <Text style={[styles.performanceLabel, { color: theme.colors.textSecondary }]}>
                   Total Orders
                 </Text>
-                <Text style={[styles.performanceValue, { color: theme.text }]}>
+                <Text style={[styles.performanceValue, { color: theme.colors.text }]}>
                   {stats.totalOrders}
                 </Text>
               </View>
               
               <View style={styles.performanceRow}>
-                <Text style={[styles.performanceLabel, { color: theme.textSecondary }]}>
+                <Text style={[styles.performanceLabel, { color: theme.colors.textSecondary }]}>
                   Completed Orders
                 </Text>
                 <Text style={[styles.performanceValue, { color: '#10B981' }]}>
@@ -336,7 +336,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
               </View>
               
               <View style={styles.performanceRow}>
-                <Text style={[styles.performanceLabel, { color: theme.textSecondary }]}>
+                <Text style={[styles.performanceLabel, { color: theme.colors.textSecondary }]}>
                   Success Rate
                 </Text>
                 <Text style={[styles.performanceValue, { color: '#10B981' }]}>

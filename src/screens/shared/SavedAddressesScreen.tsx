@@ -183,15 +183,15 @@ const SavedAddressesScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 20,
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: theme.colors.border,
     },
     backButton: {
       marginRight: 16,
@@ -199,7 +199,7 @@ const SavedAddressesScreen: React.FC = () => {
     headerTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     addButton: {
@@ -210,15 +210,15 @@ const SavedAddressesScreen: React.FC = () => {
       padding: 20,
     },
     addressCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     defaultAddressCard: {
-      borderColor: theme.primary,
+      borderColor: theme.colors.primary,
       borderWidth: 2,
     },
     addressHeader: {
@@ -230,10 +230,10 @@ const SavedAddressesScreen: React.FC = () => {
     addressName: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     defaultBadge: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: 12,
@@ -245,7 +245,7 @@ const SavedAddressesScreen: React.FC = () => {
     },
     addressText: {
       fontSize: 14,
-      color: theme.text,
+      color: theme.colors.text,
       lineHeight: 20,
       marginBottom: 12,
     },
@@ -262,11 +262,11 @@ const SavedAddressesScreen: React.FC = () => {
       borderWidth: 1,
     },
     setDefaultButton: {
-      borderColor: theme.primary,
+      borderColor: theme.colors.primary,
       backgroundColor: 'transparent',
     },
     editButton: {
-      borderColor: theme.textSecondary,
+      borderColor: theme.colors.textSecondary,
       backgroundColor: 'transparent',
     },
     deleteButton: {
@@ -279,10 +279,10 @@ const SavedAddressesScreen: React.FC = () => {
       marginLeft: 4,
     },
     setDefaultText: {
-      color: theme.primary,
+      color: theme.colors.primary,
     },
     editText: {
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     deleteText: {
       color: '#EF4444',
@@ -297,7 +297,7 @@ const SavedAddressesScreen: React.FC = () => {
     },
     emptyStateText: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
     modalContainer: {
@@ -307,7 +307,7 @@ const SavedAddressesScreen: React.FC = () => {
       alignItems: 'center',
     },
     modalContent: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 20,
       width: '90%',
@@ -322,7 +322,7 @@ const SavedAddressesScreen: React.FC = () => {
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     closeButton: {
       padding: 8,
@@ -333,17 +333,17 @@ const SavedAddressesScreen: React.FC = () => {
     inputLabel: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 8,
     },
     textInput: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     modalActions: {
       flexDirection: 'row',
@@ -357,10 +357,10 @@ const SavedAddressesScreen: React.FC = () => {
       alignItems: 'center',
     },
     cancelButton: {
-      backgroundColor: theme.textSecondary,
+      backgroundColor: theme.colors.textSecondary,
     },
     saveButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
     },
     modalButtonText: {
       fontSize: 16,
@@ -376,14 +376,14 @@ const SavedAddressesScreen: React.FC = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved Addresses</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowAddModal(true)}
         >
-          <Ionicons name="add" size={24} color={theme.primary} />
+          <Ionicons name="add" size={24} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -418,7 +418,7 @@ const SavedAddressesScreen: React.FC = () => {
                     style={[styles.actionButton, styles.setDefaultButton]}
                     onPress={() => setDefaultAddress(address.id)}
                   >
-                    <Ionicons name="star-outline" size={16} color={theme.primary} />
+                    <Ionicons name="star-outline" size={16} color={theme.colors.primary} />
                     <Text style={[styles.actionButtonText, styles.setDefaultText]}>
                       Set Default
                     </Text>
@@ -429,7 +429,7 @@ const SavedAddressesScreen: React.FC = () => {
                   style={[styles.actionButton, styles.editButton]}
                   onPress={() => editAddress(address)}
                 >
-                  <Ionicons name="pencil-outline" size={16} color={theme.textSecondary} />
+                  <Ionicons name="pencil-outline" size={16} color={theme.colors.textSecondary} />
                   <Text style={[styles.actionButtonText, styles.editText]}>
                     Edit
                   </Text>
@@ -471,7 +471,7 @@ const SavedAddressesScreen: React.FC = () => {
                 {editingAddress ? 'Edit Address' : 'Add New Address'}
               </Text>
               <TouchableOpacity style={styles.closeButton} onPress={resetForm}>
-                <Ionicons name="close" size={24} color={theme.textSecondary} />
+                <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -483,7 +483,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.name}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, name: text }))}
                   placeholder="Home, Work, etc."
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                 />
               </View>
 
@@ -494,7 +494,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.address_line_1}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, address_line_1: text }))}
                   placeholder="Street address"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                 />
               </View>
 
@@ -505,7 +505,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.address_line_2}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, address_line_2: text }))}
                   placeholder="Apartment, suite, etc."
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                 />
               </View>
 
@@ -516,7 +516,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.city}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, city: text }))}
                   placeholder="City"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                 />
               </View>
 
@@ -527,7 +527,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.state}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, state: text }))}
                   placeholder="State"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                 />
               </View>
 
@@ -538,7 +538,7 @@ const SavedAddressesScreen: React.FC = () => {
                   value={newAddress.postal_code}
                   onChangeText={(text) => setNewAddress(prev => ({ ...prev, postal_code: text }))}
                   placeholder="Postal code"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor={theme.colors.textSecondary}
                   keyboardType="numeric"
                 />
               </View>

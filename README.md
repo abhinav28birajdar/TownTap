@@ -1,6 +1,47 @@
-# TownTap - Local Business Discovery Platform
+# 🏪 TownTap - Local Business Community Platform
 
-A React Native application built with Expo that connects customers with local businesses for ordering products, booking services, and real-time communication.
+<div align="center">
+  <img src="./assets/images/icon.png" alt="TownTap Logo" width="120" height="120" style="border-radius: 20px;">
+  
+  **Connect • Discover • Support Local**
+  
+  *Your neighborhood business ecosystem in your pocket*
+
+  [![React Native](https://img.shields.io/badge/React%20Native-0.73-blue.svg)](https://reactnative.dev/)
+  [![Expo](https://img.shields.io/badge/Expo-SDK%2053-black.svg)](https://expo.dev/)
+  [![Supabase](https://img.shields.io/badge/Supabase-Database-green.svg)](https://supabase.com/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+</div>
+
+## 🌟 About TownTap
+
+TownTap is a modern, real-time local business platform that connects customers with neighborhood businesses. Built with React Native and powered by Supabase, it offers a comprehensive solution with a modern theme system, real-time functionality, and complete database architecture.
+
+## ✨ Completed Modern Features
+
+### 🎨 Modern Theme System
+- **Comprehensive Design Tokens**: Complete typography scale, color palettes, spacing system, and shadows
+- **Dark/Light Mode Support**: Automatic system detection with manual toggle capability
+- **Consistent UI Language**: Unified design across all screens and components
+
+### 🔧 Modern Component Library
+- **ModernButton**: Multiple variants (primary, secondary, outline, ghost) with proper TypeScript support
+- **ModernCard**: Elevated and outlined variants with consistent styling
+- **ModernInput**: Full-featured input component with icons and validation states
+- **Theme Integration**: All components use the modern theme system
+
+### 🏠 Enhanced User Experience
+- **ModernOnboardingScreen**: Streamlined user type selection without tabs
+- **ModernCustomerProfileScreen**: Clean, modern profile management
+- **ModernBusinessDashboardScreen**: Comprehensive business overview with real-time stats
+- **ModernOrderManagementScreen**: Advanced order management with status updates
+- **ModernCustomerOrderScreen**: Intuitive menu browsing and ordering interface
+
+### 🗄️ Complete Database Schema
+- **Comprehensive Tables**: Users, businesses, products, orders, reviews, analytics
+- **Row Level Security (RLS)**: Proper security policies for all tables
+- **Real-time Features**: Subscriptions for orders, messages, and notifications
+- **Optimized Performance**: Indexes and triggers for efficient operations
 
 ## 🚀 Features
 

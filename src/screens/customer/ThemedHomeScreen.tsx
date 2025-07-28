@@ -38,18 +38,18 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
   
   const styles = StyleSheet.create({
     businessCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
       marginHorizontal: 4,
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 5,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     businessHeader: {
       flexDirection: 'row',
@@ -62,25 +62,25 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
     businessName: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 6,
     },
     businessCategory: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginBottom: 4,
     },
     businessAddress: {
       fontSize: 13,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginBottom: 4,
       lineHeight: 18,
     },
     distance: {
       fontSize: 12,
-      color: theme.primary,
+      color: theme.colors.primary,
       fontWeight: '600',
-      backgroundColor: `${theme.primary}15`,
+      backgroundColor: `${theme.colors.primary}15`,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: 12,
@@ -89,7 +89,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
     businessRating: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: `${theme.warning}15`,
+      backgroundColor: `${theme.colors.warning}15`,
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: 12,
@@ -97,12 +97,12 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
     ratingText: {
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginLeft: 4,
     },
     reviewsText: {
       fontSize: 11,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginLeft: 4,
     },
     businessActions: {
@@ -119,10 +119,10 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
       gap: 6,
     },
     callButton: {
-      backgroundColor: theme.success,
+      backgroundColor: theme.colors.success,
     },
     messageButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
     },
     actionButtonText: {
       color: '#ffffff',
@@ -145,7 +145,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({
           )}
         </View>
         <View style={styles.businessRating}>
-          <Ionicons name="star" size={14} color={theme.warning} />
+          <Ionicons name="star" size={14} color={theme.colors.warning} />
           <Text style={styles.ratingText}>{business.rating.toFixed(1)}</Text>
           <Text style={styles.reviewsText}>({business.total_reviews})</Text>
         </View>
@@ -312,17 +312,17 @@ const ThemedHomeScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       paddingTop: 50,
       paddingBottom: 20,
       paddingHorizontal: 20,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
@@ -370,26 +370,26 @@ const ThemedHomeScreen: React.FC = () => {
     searchContainer: {
       paddingHorizontal: 20,
       paddingVertical: 15,
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
     },
     searchBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 16,
       paddingHorizontal: 15,
       paddingVertical: 12,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     searchInput: {
       flex: 1,
       marginLeft: 10,
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
     },
     categoriesContainer: {
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
       paddingBottom: 15,
     },
     categoriesContent: {
@@ -401,14 +401,14 @@ const ThemedHomeScreen: React.FC = () => {
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderRadius: 16,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       minWidth: 85,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     categoryButtonActive: {
-      backgroundColor: theme.primary,
-      borderColor: theme.primary,
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
     categoryIconContainer: {
       marginBottom: 6,
@@ -420,7 +420,7 @@ const ThemedHomeScreen: React.FC = () => {
     categoryButtonText: {
       fontSize: 12,
       fontWeight: '600',
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
     categoryButtonTextActive: {
@@ -439,19 +439,19 @@ const ThemedHomeScreen: React.FC = () => {
     iconContainer: {
       marginBottom: 20,
       padding: 20,
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
       borderRadius: 50,
     },
     emptyTitle: {
       fontSize: 22,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       textAlign: 'center',
       marginBottom: 10,
     },
     emptySubtitle: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
       lineHeight: 24,
       marginBottom: 30,
@@ -461,7 +461,7 @@ const ThemedHomeScreen: React.FC = () => {
       justifyContent: 'center',
     },
     permissionButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 30,
@@ -480,7 +480,7 @@ const ThemedHomeScreen: React.FC = () => {
       alignItems: 'center',
     },
     modalContent: {
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
       borderRadius: 20,
       padding: 24,
       width: width - 40,
@@ -495,17 +495,17 @@ const ThemedHomeScreen: React.FC = () => {
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     messageInput: {
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
       borderWidth: 1,
       borderRadius: 12,
       padding: 15,
       fontSize: 16,
-      color: theme.text,
-      backgroundColor: theme.background,
+      color: theme.colors.text,
+      backgroundColor: theme.colors.background,
       minHeight: 100,
       marginBottom: 20,
       textAlignVertical: 'top',
@@ -519,24 +519,24 @@ const ThemedHomeScreen: React.FC = () => {
       paddingVertical: 12,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
       alignItems: 'center',
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     cancelButtonText: {
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       fontSize: 16,
       fontWeight: '600',
     },
     sendButton: {
       flex: 1,
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       paddingVertical: 12,
       borderRadius: 12,
       alignItems: 'center',
     },
     sendButtonDisabled: {
-      backgroundColor: theme.textSecondary,
+      backgroundColor: theme.colors.textSecondary,
     },
     sendButtonText: {
       color: '#ffffff',
@@ -550,7 +550,7 @@ const ThemedHomeScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
           <View style={styles.iconContainer}>
-            <Ionicons name="location-outline" size={80} color={theme.primary} />
+            <Ionicons name="location-outline" size={80} color={theme.colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>Find Nearby Businesses</Text>
           <Text style={styles.emptySubtitle}>
@@ -594,17 +594,17 @@ const ThemedHomeScreen: React.FC = () => {
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={theme.textSecondary} />
+          <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search businesses..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={theme.textSecondary}
+            placeholderTextColor={theme.colors.textSecondary}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={theme.textSecondary} />
+              <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
@@ -673,14 +673,14 @@ const ThemedHomeScreen: React.FC = () => {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={handleRefresh}
-            tintColor={theme.primary}
-            colors={[theme.primary]}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.centerContent}>
             <View style={styles.iconContainer}>
-              <Ionicons name="business-outline" size={64} color={theme.textSecondary} />
+              <Ionicons name="business-outline" size={64} color={theme.colors.textSecondary} />
             </View>
             <Text style={styles.emptyTitle}>No businesses found</Text>
             <Text style={styles.emptySubtitle}>
@@ -709,7 +709,7 @@ const ThemedHomeScreen: React.FC = () => {
                 Message {selectedBusinessForMessage?.business_name}
               </Text>
               <TouchableOpacity onPress={() => setShowMessageModal(false)}>
-                <Ionicons name="close" size={24} color={theme.textSecondary} />
+                <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -720,7 +720,7 @@ const ThemedHomeScreen: React.FC = () => {
               onChangeText={setMessageText}
               multiline
               numberOfLines={4}
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={theme.colors.textSecondary}
             />
             
             <View style={styles.modalActions}>

@@ -103,15 +103,15 @@ const PersonalInformationScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 20,
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: theme.colors.border,
     },
     backButton: {
       marginRight: 16,
@@ -119,7 +119,7 @@ const PersonalInformationScreen: React.FC = () => {
     headerTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     editButton: {
@@ -130,17 +130,17 @@ const PersonalInformationScreen: React.FC = () => {
       padding: 20,
     },
     section: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     sectionTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 16,
     },
     fieldContainer: {
@@ -149,29 +149,29 @@ const PersonalInformationScreen: React.FC = () => {
     fieldLabel: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 8,
     },
     fieldValue: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     textInput: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     readOnlyField: {
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       opacity: 0.7,
     },
     buttonContainer: {
@@ -186,10 +186,10 @@ const PersonalInformationScreen: React.FC = () => {
       alignItems: 'center',
     },
     primaryButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
     },
     secondaryButton: {
-      backgroundColor: theme.textSecondary,
+      backgroundColor: theme.colors.textSecondary,
     },
     buttonText: {
       fontSize: 16,
@@ -200,22 +200,22 @@ const PersonalInformationScreen: React.FC = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     accountTypeIcon: {
       marginRight: 12,
     },
     accountTypeText: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       textTransform: 'capitalize',
     },
     joinedDateText: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       fontStyle: 'italic',
     },
   });
@@ -227,7 +227,7 @@ const PersonalInformationScreen: React.FC = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personal Information</Text>
         <TouchableOpacity
@@ -238,7 +238,7 @@ const PersonalInformationScreen: React.FC = () => {
           <Ionicons 
             name={isEditing ? "checkmark" : "pencil"} 
             size={24} 
-            color={theme.primary} 
+            color={theme.colors.primary} 
           />
         </TouchableOpacity>
       </View>
@@ -256,7 +256,7 @@ const PersonalInformationScreen: React.FC = () => {
                 value={personalInfo.full_name}
                 onChangeText={(text) => setPersonalInfo(prev => ({ ...prev, full_name: text }))}
                 placeholder="Enter your full name"
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor={theme.colors.textSecondary}
               />
             ) : (
               <Text style={styles.fieldValue}>
@@ -280,7 +280,7 @@ const PersonalInformationScreen: React.FC = () => {
                 value={personalInfo.phone}
                 onChangeText={(text) => setPersonalInfo(prev => ({ ...prev, phone: text }))}
                 placeholder="Enter your phone number"
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor={theme.colors.textSecondary}
                 keyboardType="phone-pad"
               />
             ) : (
@@ -301,7 +301,7 @@ const PersonalInformationScreen: React.FC = () => {
               <Ionicons 
                 name={personalInfo.user_type === 'business_owner' ? 'business' : 'person'} 
                 size={20} 
-                color={theme.primary}
+                color={theme.colors.primary}
                 style={styles.accountTypeIcon}
               />
               <Text style={styles.accountTypeText}>

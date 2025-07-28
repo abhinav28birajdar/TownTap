@@ -1,33 +1,21 @@
 import React from 'react';
-import PlaceholderScreen from '../../src/components/PlaceholderScreen';
-import OrderHistoryScreen from '../../src/screens/customer/OrderHistoryScreen';
+import ModernOrderManagementScreen from '../../src/screens/business/ModernOrderManagementScreen';
+import ModernCustomerOrderScreen from '../../src/screens/customer/ModernCustomerOrderScreen';
 import { useAuthStore } from '../../src/stores/authStore';
 
 export default function OrdersScreen() {
   const { user } = useAuthStore();
 
-  // If no user is logged in, show placeholder
+  // If no user is logged in, show customer order screen (they can browse menu)
   if (!user) {
-    return (
-      <PlaceholderScreen 
-        title="Orders" 
-        description="Please login to view your orders"
-        icon="📦"
-      />
-    );
+    return <ModernCustomerOrderScreen />;
   }
 
   // If user is a business owner, show order management
   if (user.profile?.user_type === 'business_owner') {
-    return (
-      <PlaceholderScreen 
-        title="Order Management" 
-        description="Manage incoming orders from customers"
-        icon="📋"
-      />
-    );
+    return <ModernOrderManagementScreen />;
   }
 
-  // For customers, show order history
-  return <OrderHistoryScreen />;
+  // For customers, show order screen for browsing and ordering
+  return <ModernCustomerOrderScreen />;
 }

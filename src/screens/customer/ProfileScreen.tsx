@@ -117,10 +117,10 @@ const CustomerProfileScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       padding: 20,
       paddingTop: 10,
     },
@@ -189,17 +189,17 @@ const CustomerProfileScreen: React.FC = () => {
       padding: 20,
     },
     section: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     sectionTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 16,
     },
     statsContainer: {
@@ -208,22 +208,22 @@ const CustomerProfileScreen: React.FC = () => {
     },
     statCard: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       padding: 12,
       alignItems: 'center',
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     statValue: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.primary,
+      color: theme.colors.primary,
       marginBottom: 4,
     },
     statLabel: {
       fontSize: 12,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
     actionButtons: {
@@ -233,17 +233,17 @@ const CustomerProfileScreen: React.FC = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 16,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     actionButtonIcon: {
       marginRight: 12,
     },
     actionButtonText: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     actionButtonChevron: {
@@ -267,12 +267,12 @@ const CustomerProfileScreen: React.FC = () => {
     },
     infoLabel: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     infoValue: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
     },
     loadingContainer: {
       flex: 1,
@@ -281,7 +281,7 @@ const CustomerProfileScreen: React.FC = () => {
     },
     loadingText: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginTop: 12,
     },
   });
@@ -386,54 +386,54 @@ const CustomerProfileScreen: React.FC = () => {
               style={styles.actionButton}
               onPress={() => navigateToScreen('Personal Information')}
             >
-              <Ionicons name="person-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="person-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Personal Information</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => navigateToScreen('Saved Addresses')}
             >
-              <Ionicons name="location-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="location-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Saved Addresses</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => navigateToScreen('Payment Methods')}
             >
-              <Ionicons name="card-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="card-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Payment Methods</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => navigateToScreen('Notifications')}
             >
-              <Ionicons name="notifications-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="notifications-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Notifications</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => navigateToScreen('Privacy & Security')}
             >
-              <Ionicons name="shield-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="shield-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Privacy & Security</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => navigateToScreen('Help & Support')}
             >
-              <Ionicons name="help-circle-outline" size={20} color={theme.text} style={styles.actionButtonIcon} />
+              <Ionicons name="help-circle-outline" size={20} color={theme.colors.text} style={styles.actionButtonIcon} />
               <Text style={styles.actionButtonText}>Help & Support</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={styles.actionButtonChevron} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} style={styles.actionButtonChevron} />
             </TouchableOpacity>
 
             <TouchableOpacity 

@@ -138,15 +138,15 @@ const OrderHistoryDetailScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 20,
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: theme.colors.border,
     },
     backButton: {
       marginRight: 16,
@@ -154,24 +154,24 @@ const OrderHistoryDetailScreen: React.FC = () => {
     headerTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     content: {
       flex: 1,
       padding: 20,
     },
     section: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     sectionTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 12,
     },
     orderInfo: {
@@ -181,12 +181,12 @@ const OrderHistoryDetailScreen: React.FC = () => {
     },
     orderLabel: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     orderValue: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
     },
     statusBadge: {
       paddingHorizontal: 12,
@@ -200,12 +200,12 @@ const OrderHistoryDetailScreen: React.FC = () => {
       color: '#ffffff',
     },
     itemCard: {
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       padding: 12,
       marginBottom: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     itemHeader: {
       flexDirection: 'row',
@@ -216,20 +216,20 @@ const OrderHistoryDetailScreen: React.FC = () => {
     itemName: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
       flex: 1,
     },
     itemPrice: {
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.primary,
+      color: theme.colors.primary,
     },
     itemDetails: {
       fontSize: 12,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     totalSection: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       borderRadius: 12,
       padding: 16,
       marginTop: 8,
@@ -242,18 +242,18 @@ const OrderHistoryDetailScreen: React.FC = () => {
     },
     addressText: {
       fontSize: 14,
-      color: theme.text,
+      color: theme.colors.text,
       lineHeight: 20,
     },
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     loadingText: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginTop: 12,
     },
   });
@@ -274,7 +274,7 @@ const OrderHistoryDetailScreen: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color={theme.text} />
+            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Order Not Found</Text>
         </View>
@@ -289,7 +289,7 @@ const OrderHistoryDetailScreen: React.FC = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Order Details</Text>
       </View>

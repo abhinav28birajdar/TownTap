@@ -70,7 +70,7 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
       alignItems: 'center',
@@ -84,13 +84,13 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
     title: {
       fontSize: 32,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       textAlign: 'center',
       marginBottom: 8,
     },
     subtitle: {
       fontSize: 18,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
       lineHeight: 24,
     },
@@ -99,13 +99,13 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
       padding: 20,
     },
     userTypeCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderWidth: 2,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
       borderRadius: 20,
       padding: 24,
       marginBottom: 20,
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 12,
@@ -126,17 +126,17 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
     userTypeTitle: {
       fontSize: 22,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 4,
     },
     userTypeSubtitle: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       lineHeight: 20,
     },
     userTypeDescription: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       lineHeight: 22,
       marginBottom: 16,
     },
@@ -154,7 +154,7 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
     featureText: {
       flex: 1,
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       lineHeight: 18,
     },
     selectButton: {
@@ -176,7 +176,7 @@ const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = ({ onCom
     },
     footerText: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
       lineHeight: 20,
     },

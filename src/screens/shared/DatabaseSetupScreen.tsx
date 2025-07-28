@@ -64,19 +64,19 @@ const DatabaseSetupScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: theme.text }]}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>
           Database Connection
         </Text>
         
-        <View style={[styles.statusCard, { backgroundColor: theme.card }]}>
-          <Text style={[styles.statusTitle, { color: theme.text }]}>
+        <View style={[styles.statusCard, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.statusTitle, { color: theme.colors.text }]}>
             Connection Status
           </Text>
           
           <View style={styles.statusRow}>
-            <Text style={[styles.statusLabel, { color: theme.textSecondary }]}>
+            <Text style={[styles.statusLabel, { color: theme.colors.textSecondary }]}>
               Supabase:
             </Text>
             <Text style={[
@@ -88,7 +88,7 @@ const DatabaseSetupScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
           </View>
 
           <View style={styles.statusRow}>
-            <Text style={[styles.statusLabel, { color: theme.textSecondary }]}>
+            <Text style={[styles.statusLabel, { color: theme.colors.textSecondary }]}>
               Database:
             </Text>
             <Text style={[
@@ -110,7 +110,7 @@ const DatabaseSetupScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: theme.primary }]}
+            style={[styles.button, { backgroundColor: theme.colors.primary }]}
             onPress={checkConnection}
             disabled={testing}
           >
@@ -121,10 +121,10 @@ const DatabaseSetupScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
 
           {!status.databaseReady && (
             <TouchableOpacity
-              style={[styles.button, styles.secondaryButton, { borderColor: theme.primary }]}
+              style={[styles.button, styles.secondaryButton, { borderColor: theme.colors.primary }]}
               onPress={handleSetupInstructions}
             >
-              <Text style={[styles.buttonSecondaryText, { color: theme.primary }]}>
+              <Text style={[styles.buttonSecondaryText, { color: theme.colors.primary }]}>
                 Setup Instructions
               </Text>
             </TouchableOpacity>
@@ -134,7 +134,7 @@ const DatabaseSetupScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
             style={[styles.button, styles.skipButton]}
             onPress={status.isConnected ? onComplete : handleContinueAnyway}
           >
-            <Text style={[styles.buttonSecondaryText, { color: theme.textSecondary }]}>
+            <Text style={[styles.buttonSecondaryText, { color: theme.colors.textSecondary }]}>
               {status.isConnected ? 'Continue' : 'Skip for Now'}
             </Text>
           </TouchableOpacity>

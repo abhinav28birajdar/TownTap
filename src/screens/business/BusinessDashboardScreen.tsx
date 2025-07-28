@@ -40,18 +40,18 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
   
   const styles = StyleSheet.create({
     statCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
       marginHorizontal: 4,
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 5,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
       flex: 1,
     },
     statHeader: {
@@ -71,12 +71,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
     statValue: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 4,
     },
     statTitle: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginBottom: 8,
     },
     statTrend: {
@@ -89,10 +89,10 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
       fontWeight: '600',
     },
     trendUp: {
-      color: theme.success,
+      color: theme.colors.success,
     },
     trendDown: {
-      color: theme.danger,
+      color: theme.colors.error,
     },
   });
 
@@ -110,7 +110,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
           <Ionicons 
             name={trendUp ? "trending-up" : "trending-down"} 
             size={14} 
-            color={trendUp ? theme.success : theme.danger} 
+            color={trendUp ? theme.colors.success : theme.colors.error} 
           />
           <Text style={[styles.trendText, trendUp ? styles.trendUp : styles.trendDown]}>
             {trend}
@@ -134,17 +134,17 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, color
   
   const styles = StyleSheet.create({
     actionCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 5,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     actionContent: {
       flexDirection: 'row',
@@ -165,12 +165,12 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, color
     actionTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 4,
     },
     actionDescription: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       lineHeight: 20,
     },
     actionArrow: {
@@ -189,7 +189,7 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, color
           <Text style={styles.actionDescription}>{description}</Text>
         </View>
         <View style={styles.actionArrow}>
-          <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
         </View>
       </View>
     </TouchableOpacity>
@@ -356,7 +356,7 @@ const BusinessDashboardScreen: React.FC = () => {
       title: 'Total Messages',
       value: '48',
       icon: 'chatbubbles',
-      color: theme.primary,
+      color: theme.colors.primary,
       trend: '+12%',
       trendUp: true,
     },
@@ -364,7 +364,7 @@ const BusinessDashboardScreen: React.FC = () => {
       title: 'New Customers',
       value: '23',
       icon: 'people',
-      color: theme.success,
+      color: theme.colors.success,
       trend: '+8%',
       trendUp: true,
     },
@@ -372,7 +372,7 @@ const BusinessDashboardScreen: React.FC = () => {
       title: 'Pending Orders',
       value: '7',
       icon: 'time',
-      color: theme.warning,
+      color: theme.colors.warning,
       trend: '-3%',
       trendUp: false,
     },
@@ -380,7 +380,7 @@ const BusinessDashboardScreen: React.FC = () => {
       title: 'Revenue Today',
       value: '₹5,240',
       icon: 'wallet',
-      color: theme.secondary,
+      color: theme.colors.secondary,
       trend: '+15%',
       trendUp: true,
     },
@@ -391,28 +391,28 @@ const BusinessDashboardScreen: React.FC = () => {
       title: 'Manage Orders',
       description: 'View and update customer orders',
       icon: 'receipt',
-      color: theme.primary,
+      color: theme.colors.primary,
       onPress: () => console.log('Manage Orders'),
     },
     {
       title: 'Customer Messages',
       description: 'Chat with customers and respond to inquiries',
       icon: 'chatbubbles',
-      color: theme.secondary,
+      color: theme.colors.secondary,
       onPress: () => console.log('Customer Messages'),
     },
     {
       title: 'Business Profile',
       description: 'Update your business information and services',
       icon: 'storefront',
-      color: theme.warning,
+      color: theme.colors.warning,
       onPress: () => console.log('Business Profile'),
     },
     {
       title: 'Analytics',
       description: 'View detailed business performance metrics',
       icon: 'analytics',
-      color: theme.success,
+      color: theme.colors.success,
       onPress: () => console.log('Analytics'),
     },
   ];
@@ -420,17 +420,17 @@ const BusinessDashboardScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       paddingTop: 50,
       paddingBottom: 20,
       paddingHorizontal: 20,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
@@ -470,7 +470,7 @@ const BusinessDashboardScreen: React.FC = () => {
     sectionTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 16,
       marginTop: 8,
     },
@@ -515,8 +515,8 @@ const BusinessDashboardScreen: React.FC = () => {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={handleRefresh}
-            tintColor={theme.primary}
-            colors={[theme.primary]}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
           />
         }
         showsVerticalScrollIndicator={false}

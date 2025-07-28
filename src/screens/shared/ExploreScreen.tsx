@@ -35,17 +35,17 @@ const ExploreScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       paddingTop: 50,
       paddingBottom: 20,
       paddingHorizontal: 20,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
@@ -65,40 +65,40 @@ const ExploreScreen: React.FC = () => {
     searchContainer: {
       paddingHorizontal: 20,
       paddingVertical: 15,
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
     },
     searchBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 16,
       paddingHorizontal: 15,
       paddingVertical: 12,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     searchInput: {
       flex: 1,
       marginLeft: 10,
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
     },
     content: {
       flex: 1,
       padding: 20,
     },
     itemCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
-      shadowColor: theme.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 5,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     itemContent: {
       flexDirection: 'row',
@@ -108,7 +108,7 @@ const ExploreScreen: React.FC = () => {
       width: 50,
       height: 50,
       borderRadius: 25,
-      backgroundColor: `${theme.primary}15`,
+      backgroundColor: `${theme.colors.primary}15`,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 16,
@@ -119,16 +119,16 @@ const ExploreScreen: React.FC = () => {
     itemTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 4,
     },
     itemSubtitle: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
     },
     itemMeta: {
       fontSize: 12,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginTop: 4,
     },
   });
@@ -137,7 +137,7 @@ const ExploreScreen: React.FC = () => {
     <TouchableOpacity style={styles.itemCard}>
       <View style={styles.itemContent}>
         <View style={styles.itemIcon}>
-          <Ionicons name={item.icon as any} size={24} color={theme.primary} />
+          <Ionicons name={item.icon as any} size={24} color={theme.colors.primary} />
         </View>
         <View style={styles.itemInfo}>
           <Text style={styles.itemTitle}>{item.name}</Text>
@@ -151,7 +151,7 @@ const ExploreScreen: React.FC = () => {
             <Text style={styles.itemMeta}>Rating: {item.rating} ⭐</Text>
           )}
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
       </View>
     </TouchableOpacity>
   );
@@ -171,13 +171,13 @@ const ExploreScreen: React.FC = () => {
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={theme.textSecondary} />
+          <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
           <TextInput
             style={styles.searchInput}
             placeholder={isBusinessUser ? "Search customers..." : "Search businesses..."}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={theme.textSecondary}
+            placeholderTextColor={theme.colors.textSecondary}
           />
         </View>
       </View>

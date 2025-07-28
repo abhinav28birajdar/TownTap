@@ -36,18 +36,18 @@ interface Business {
 const ModernHomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const { user } = useAuthStore();
-  const { businessCategories, nearbyBusinesses, getBusinessCategories, getNearbyBusinesses } = useLocationStore();
+  const { businessCategories, nearbyBusinesses, getBusinessCategories, getNearbyBusinesses, currentLocation } = useLocationStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const categories: Category[] = [
-    { id: 'all', name: 'All', icon: 'apps', color: COLORS.primary },
-    { id: 'grocery', name: 'Grocery', icon: 'basket', color: COLORS.success },
-    { id: 'restaurant', name: 'Food', icon: 'restaurant', color: COLORS.warning },
-    { id: 'pharmacy', name: 'Medical', icon: 'medical', color: COLORS.error },
-    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait', color: COLORS.info },
-    { id: 'stationary', name: 'Stationery', icon: 'pencil', color: COLORS.purple },
+    { id: 'all', name: 'All', icon: 'apps', color: COLORS.primary[500] },
+    { id: 'grocery', name: 'Grocery', icon: 'basket', color: COLORS.success[500] },
+    { id: 'restaurant', name: 'Food', icon: 'restaurant', color: COLORS.warning[500] },
+    { id: 'pharmacy', name: 'Medical', icon: 'medical', color: COLORS.error[500] },
+    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait', color: COLORS.info[500] },
+    { id: 'stationary', name: 'Stationery', icon: 'pencil', color: COLORS.purple[500] },
   ];
 
   const mockBusinesses: Business[] = [
@@ -84,7 +84,14 @@ const ModernHomeScreen: React.FC = () => {
   const loadData = async () => {
     try {
       await getBusinessCategories();
-      await getNearbyBusinesses();
+      
+      // Get nearby businesses with current location or default location
+      const searchParams = {
+        location: currentLocation || { latitude: 28.6139, longitude: 77.2090 }, // Default to Delhi
+        limit: 20,
+        offset: 0
+      };
+      await getNearbyBusinesses(searchParams);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -108,7 +115,7 @@ const ModernHomeScreen: React.FC = () => {
     <TouchableOpacity
       style={[
         styles.categoryCard,
-        { backgroundColor: selectedCategory === category.id ? category.color : theme.card },
+        { backgroundColor: selectedCategory === category.id ? category.color : theme.colors.card },
       ]}
       onPress={() => setSelectedCategory(category.id)}
       activeOpacity={0.7}
@@ -122,7 +129,7 @@ const ModernHomeScreen: React.FC = () => {
         style={[
           styles.categoryText,
           {
-            color: selectedCategory === category.id ? COLORS.white : theme.text,
+            color: selectedCategory === category.id ? COLORS.white : theme.colors.text,
           },
         ]}
       >
@@ -132,36 +139,36 @@ const ModernHomeScreen: React.FC = () => {
   );
 
   const BusinessCard = ({ business }: { business: Business }) => (
-    <TouchableOpacity style={[styles.businessCard, { backgroundColor: theme.card }]} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.businessCard, { backgroundColor: theme.colors.card }]} activeOpacity={0.7}>
       <View style={styles.businessImage}>
         <Ionicons name="storefront" size={40} color={COLORS.primary} />
       </View>
       <View style={styles.businessInfo}>
         <View style={styles.businessHeader}>
-          <Text style={[styles.businessName, { color: theme.text }]} numberOfLines={1}>
+          <Text style={[styles.businessName, { color: theme.colors.text }]} numberOfLines={1}>
             {business.business_name}
           </Text>
           <View style={styles.statusBadge}>
             <View style={[styles.statusDot, { backgroundColor: business.isOpen ? COLORS.success : COLORS.error }]} />
-            <Text style={[styles.statusText, { color: theme.textSecondary }]}>
+            <Text style={[styles.statusText, { color: theme.colors.textSecondary }]}>
               {business.isOpen ? 'Open' : 'Closed'}
             </Text>
           </View>
         </View>
-        <Text style={[styles.businessCategory, { color: theme.textSecondary }]}>{business.category}</Text>
+        <Text style={[styles.businessCategory, { color: theme.colors.textSecondary }]}>{business.category}</Text>
         <View style={styles.businessMeta}>
           <View style={styles.rating}>
             <Ionicons name="star" size={14} color={COLORS.warning} />
-            <Text style={[styles.ratingText, { color: theme.textSecondary }]}>{business.rating}</Text>
+            <Text style={[styles.ratingText, { color: theme.colors.textSecondary }]}>{business.rating}</Text>
           </View>
-          <Text style={[styles.distance, { color: theme.textSecondary }]}>{business.distance}</Text>
+          <Text style={[styles.distance, { color: theme.colors.textSecondary }]}>{business.distance}</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -170,24 +177,24 @@ const ModernHomeScreen: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.greeting, { color: theme.textSecondary }]}>Good morning</Text>
-            <Text style={[styles.userName, { color: theme.text }]}>
+            <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Good morning</Text>
+            <Text style={[styles.userName, { color: theme.colors.text }]}>
               {user?.profile?.full_name || 'User'}
             </Text>
           </View>
-          <TouchableOpacity style={[styles.locationButton, { backgroundColor: theme.card }]}>
+          <TouchableOpacity style={[styles.locationButton, { backgroundColor: theme.colors.card }]}>
             <Ionicons name="location" size={20} color={COLORS.primary} />
-            <Text style={[styles.locationText, { color: theme.text }]}>Current Location</Text>
+            <Text style={[styles.locationText, { color: theme.colors.text }]}>Current Location</Text>
           </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: theme.card }]}>
-          <Ionicons name="search" size={20} color={theme.textSecondary} />
+        <View style={[styles.searchContainer, { backgroundColor: theme.colors.card }]}>
+          <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
           <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
+            style={[styles.searchInput, { color: theme.colors.text }]}
             placeholder="Search businesses, products..."
-            placeholderTextColor={theme.textSecondary}
+            placeholderTextColor={theme.colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -198,7 +205,7 @@ const ModernHomeScreen: React.FC = () => {
 
         {/* Categories */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Categories</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Categories</Text>
           <FlatList
             data={categories}
             horizontal
@@ -212,7 +219,7 @@ const ModernHomeScreen: React.FC = () => {
         {/* Nearby Businesses */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Nearby Businesses</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Nearby Businesses</Text>
             <TouchableOpacity>
               <Text style={[styles.seeAllText, { color: COLORS.primary }]}>See All</Text>
             </TouchableOpacity>

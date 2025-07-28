@@ -20,17 +20,19 @@ export class BusinessService {
     ownerId: string
   ): Promise<Business | null> {
     try {
-      // Transform business_name to name for database
-      const { business_name, ...restData } = businessData;
+      // Extract location and business_name for proper mapping
+      const { business_name, location, phone_number, ...restData } = businessData;
       
       const { data, error } = await supabase
         .from('businesses')
         .insert({
           owner_id: ownerId,
           name: business_name, // Map business_name to name
+          phone: phone_number, // Map phone_number to phone
           ...restData,
-          latitude: businessData.location.latitude,
-          longitude: businessData.location.longitude,
+          location: location, // Store complete location object
+          latitude: location.latitude, // Keep for backward compatibility
+          longitude: location.longitude, // Keep for backward compatibility
         })
         .select(`
           *,

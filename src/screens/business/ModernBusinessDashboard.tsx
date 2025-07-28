@@ -131,30 +131,30 @@ const ModernBusinessDashboard: React.FC = () => {
     icon: string;
     color: string;
   }) => (
-    <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+    <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
       <View style={styles.statHeader}>
         <Ionicons name={icon as any} size={24} color={color} />
-        <Text style={[styles.statTitle, { color: theme.textSecondary }]}>{title}</Text>
+        <Text style={[styles.statTitle, { color: theme.colors.textSecondary }]}>{title}</Text>
       </View>
-      <Text style={[styles.statValue, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.statValue, { color: theme.colors.text }]}>{value}</Text>
     </View>
   );
 
   const QuickActionCard = ({ action }: { action: QuickAction }) => (
     <TouchableOpacity
-      style={[styles.quickActionCard, { backgroundColor: theme.card }]}
+      style={[styles.quickActionCard, { backgroundColor: theme.colors.card }]}
       onPress={action.onPress}
       activeOpacity={0.7}
     >
       <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}20` }]}>
         <Ionicons name={action.icon as any} size={28} color={action.color} />
       </View>
-      <Text style={[styles.quickActionTitle, { color: theme.text }]}>{action.title}</Text>
+      <Text style={[styles.quickActionTitle, { color: theme.colors.text }]}>{action.title}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -165,13 +165,13 @@ const ModernBusinessDashboard: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.greeting, { color: theme.textSecondary }]}>Good morning</Text>
-            <Text style={[styles.businessName, { color: theme.text }]}>
+            <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Good morning</Text>
+            <Text style={[styles.businessName, { color: theme.colors.text }]}>
               {business?.business_name || user?.profile?.full_name || 'Business Owner'}
             </Text>
           </View>
-          <TouchableOpacity style={[styles.notificationIcon, { backgroundColor: theme.card }]}>
-            <Ionicons name="notifications" size={24} color={theme.text} />
+          <TouchableOpacity style={[styles.notificationIcon, { backgroundColor: theme.colors.card }]}>
+            <Ionicons name="notifications" size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -209,7 +209,7 @@ const ModernBusinessDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
             {quickActions.map((action) => (
               <QuickActionCard key={action.id} action={action} />
@@ -219,9 +219,9 @@ const ModernBusinessDashboard: React.FC = () => {
 
         {/* Recent Activity */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
-          <View style={[styles.activityCard, { backgroundColor: theme.card }]}>
-            <Text style={[styles.activityText, { color: theme.textSecondary }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Recent Activity</Text>
+          <View style={[styles.activityCard, { backgroundColor: theme.colors.card }]}>
+            <Text style={[styles.activityText, { color: theme.colors.textSecondary }]}>
               No recent activity to show
             </Text>
           </View>

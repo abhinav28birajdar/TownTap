@@ -5,7 +5,7 @@ import { Platform, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useTheme } from '../../src/context/ThemeContext';
+import { useTheme } from '../../src/context/ModernThemeContext';
 import { useAuthStore } from '../../src/stores/authStore';
 
 // Centered icon component with proper alignment and theme support
@@ -78,23 +78,28 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.iconActive,
-        tabBarInactiveTintColor: theme.icon,
+        tabBarActiveTintColor: theme.colors.iconActive,
+        tabBarInactiveTintColor: theme.colors.iconInactive,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: {
-          backgroundColor: theme.tabBar,
-          borderTopColor: theme.tabBarBorder,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 5,
-          paddingTop: 5,
-          height: Platform.OS === 'ios' ? 80 : 60,
+          backgroundColor: theme.colors.tabBar,
+          borderTopColor: theme.colors.tabBarBorder,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          paddingTop: 8,
+          height: Platform.OS === 'ios' ? 88 : 68,
           ...Platform.select({
             ios: {
               position: 'absolute',
             },
             default: {},
           }),
+          ...theme.shadows.small,
+        },
+        tabBarLabelStyle: {
+          ...theme.typography.caption,
+          fontWeight: '500',
         },
       }}>
       

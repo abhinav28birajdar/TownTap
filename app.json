@@ -18,7 +18,8 @@
       },
       "edgeToEdgeEnabled": true,
       "statusBarStyle": "auto",
-      "statusBarTranslucent": true
+      "statusBarTranslucent": true,
+      "package": "com.iabhinavv28.TownTap"
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +41,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8fefc4f2-0dec-4946-9e86-cf8a1cf55fb6"
+      }
     }
   }
 }

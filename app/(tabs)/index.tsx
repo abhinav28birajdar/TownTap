@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { useTheme } from '../../src/context/ThemeContext';
-import CategorySelectionScreen from '../../src/screens/auth/CategorySelectionScreen';
-import BusinessDashboardScreen from '../../src/screens/business/DashboardScreen';
-import CustomerHomeScreen from '../../src/screens/customer/HomeScreen';
-import OnboardingScreen from '../../src/screens/OnboardingScreen';
+import { useTheme } from '../../src/context/ModernThemeContext';
+import ModernBusinessDashboardScreen from '../../src/screens/business/ModernBusinessDashboardScreen';
+import ModernHomeScreen from '../../src/screens/customer/ModernHomeScreen';
+import ModernOnboardingScreen from '../../src/screens/onboarding/ModernOnboardingScreen';
 import { useAuthStore } from '../../src/stores/authStore';
 
 export default function HomeScreen() {
@@ -33,12 +32,12 @@ export default function HomeScreen() {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.background
+        backgroundColor: theme.colors.background
       }}>
-        <ActivityIndicator size="large" color={theme.primary} />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={{ 
           marginTop: 16, 
-          color: theme.text,
+          color: theme.colors.text,
           fontSize: 16 
         }}>
           Loading TownTap...
@@ -47,21 +46,16 @@ export default function HomeScreen() {
     );
   }
 
-  // Show onboarding screen for first-time users
-  if (!hasCompletedOnboarding) {
-    return <OnboardingScreen />;
-  }
-
-  // If no user is logged in, show the category selection screen
-  if (!user) {
-    return <CategorySelectionScreen />;
+  // Show onboarding screen for first-time users or not logged in
+  if (!hasCompletedOnboarding || !user) {
+    return <ModernOnboardingScreen />;
   }
 
   // If user is a business owner, show business dashboard
   if (user.profile?.user_type === 'business_owner') {
-    return <BusinessDashboardScreen />;
+    return <ModernBusinessDashboardScreen />;
   }
 
   // Default to customer home screen
-  return <CustomerHomeScreen />;
+  return <ModernHomeScreen />;
 }

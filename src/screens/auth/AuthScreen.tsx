@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
@@ -164,7 +164,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
       flexDirection: 'row',
@@ -176,11 +176,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
     headerTitle: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     closeButton: {
       padding: 8,
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 20,
     },
     content: {
@@ -190,13 +190,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
     title: {
       fontSize: 28,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       textAlign: 'center',
       marginBottom: 8,
     },
     subtitle: {
       fontSize: 16,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
       marginBottom: 32,
     },
@@ -204,24 +204,24 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
       marginBottom: 24,
     },
     input: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
       borderRadius: 12,
       padding: 16,
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 16,
     },
     button: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       borderRadius: 12,
       padding: 16,
       alignItems: 'center',
       marginBottom: 16,
     },
     buttonDisabled: {
-      backgroundColor: theme.border,
+      backgroundColor: theme.colors.border,
     },
     buttonText: {
       color: '#ffffff',
@@ -233,14 +233,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
       marginBottom: 24,
     },
     toggleText: {
-      color: theme.primary,
+      color: theme.colors.primary,
       fontSize: 16,
       fontWeight: '600',
     },
     userTypeCard: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderWidth: 2,
-      borderColor: theme.primary,
+      borderColor: theme.colors.primary,
       borderRadius: 16,
       padding: 20,
       marginBottom: 24,
@@ -253,12 +253,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
     userTypeTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 8,
     },
     userTypeDescription: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
   });
@@ -274,7 +274,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </Text>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color={theme.text} />
+            <Ionicons name="close" size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -307,7 +307,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
               <TextInput
                 style={styles.input}
                 placeholder="Full Name"
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor={theme.colors.textSecondary}
                 value={formData.fullName}
                 onChangeText={(text) => setFormData({ ...formData, fullName: text })}
               />
@@ -316,7 +316,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
             <TextInput
               style={styles.input}
               placeholder="Email Address"
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={theme.colors.textSecondary}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               keyboardType="email-address"
@@ -326,7 +326,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
             <TextInput
               style={styles.input}
               placeholder="Password"
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={theme.colors.textSecondary}
               value={formData.password}
               onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry
@@ -336,7 +336,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
               <TextInput
                 style={styles.input}
                 placeholder="Phone Number (Optional)"
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor={theme.colors.textSecondary}
                 value={formData.phoneNumber}
                 onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
                 keyboardType="phone-pad"

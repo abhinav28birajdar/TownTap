@@ -141,10 +141,10 @@ const BusinessProfileScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
     },
     header: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       padding: 20,
       paddingTop: 10,
     },
@@ -209,12 +209,12 @@ const BusinessProfileScreen: React.FC = () => {
       padding: 20,
     },
     section: {
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -225,7 +225,7 @@ const BusinessProfileScreen: React.FC = () => {
     sectionTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
     },
     editButton: {
       padding: 8,
@@ -236,26 +236,26 @@ const BusinessProfileScreen: React.FC = () => {
     fieldLabel: {
       fontSize: 14,
       fontWeight: '600',
-      color: theme.text,
+      color: theme.colors.text,
       marginBottom: 8,
     },
     fieldValue: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     textInput: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     textArea: {
       height: 100,
@@ -266,23 +266,23 @@ const BusinessProfileScreen: React.FC = () => {
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     switchLabel: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
     },
     statusIndicator: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     statusDot: {
       width: 12,
@@ -313,20 +313,20 @@ const BusinessProfileScreen: React.FC = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 12,
-      backgroundColor: theme.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     ratingText: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: theme.text,
+      color: theme.colors.text,
       marginLeft: 8,
     },
     reviewCount: {
       fontSize: 14,
-      color: theme.textSecondary,
+      color: theme.colors.textSecondary,
       marginLeft: 8,
     },
     actionButtons: {
@@ -336,14 +336,14 @@ const BusinessProfileScreen: React.FC = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 16,
-      backgroundColor: theme.card,
+      backgroundColor: theme.colors.card,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.colors.border,
     },
     actionButtonText: {
       fontSize: 16,
-      color: theme.text,
+      color: theme.colors.text,
       marginLeft: 12,
       flex: 1,
     },
@@ -355,7 +355,7 @@ const BusinessProfileScreen: React.FC = () => {
       color: '#DC2626',
     },
     saveButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colors.primary,
       padding: 16,
       borderRadius: 12,
       alignItems: 'center',
@@ -367,7 +367,7 @@ const BusinessProfileScreen: React.FC = () => {
       color: '#ffffff',
     },
     cancelButton: {
-      backgroundColor: theme.textSecondary,
+      backgroundColor: theme.colors.textSecondary,
       padding: 16,
       borderRadius: 12,
       alignItems: 'center',
@@ -384,7 +384,7 @@ const BusinessProfileScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: theme.textSecondary }}>Loading profile...</Text>
+          <Text style={{ color: theme.colors.textSecondary }}>Loading profile...</Text>
         </View>
       </SafeAreaView>
     );
@@ -434,7 +434,7 @@ const BusinessProfileScreen: React.FC = () => {
                 <Ionicons 
                   name={isEditing ? "checkmark" : "pencil"} 
                   size={24} 
-                  color={theme.primary} 
+                  color={theme.colors.primary} 
                 />
               </TouchableOpacity>
             </View>
@@ -519,7 +519,7 @@ const BusinessProfileScreen: React.FC = () => {
                   <Switch
                     value={businessProfile.is_open}
                     onValueChange={(value) => setBusinessProfile(prev => prev ? { ...prev, is_open: value } : null)}
-                    trackColor={{ false: theme.border, true: theme.primary }}
+                    trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                     thumbColor={businessProfile.is_open ? '#ffffff' : '#f4f3f4'}
                   />
                 </View>
@@ -576,7 +576,7 @@ const BusinessProfileScreen: React.FC = () => {
         ) : (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Business Not Registered</Text>
-            <Text style={{ color: theme.textSecondary, marginBottom: 16 }}>
+            <Text style={{ color: theme.colors.textSecondary, marginBottom: 16 }}>
               Complete your business registration to start serving customers.
             </Text>
             <TouchableOpacity 
@@ -610,27 +610,27 @@ const BusinessProfileScreen: React.FC = () => {
           
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="person-outline" size={20} color={theme.text} />
+              <Ionicons name="person-outline" size={20} color={theme.colors.text} />
               <Text style={styles.actionButtonText}>Personal Information</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+              <Ionicons name="notifications-outline" size={20} color={theme.colors.text} />
               <Text style={styles.actionButtonText}>Notifications</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="shield-outline" size={20} color={theme.text} />
+              <Ionicons name="shield-outline" size={20} color={theme.colors.text} />
               <Text style={styles.actionButtonText}>Privacy & Security</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="help-circle-outline" size={20} color={theme.text} />
+              <Ionicons name="help-circle-outline" size={20} color={theme.colors.text} />
               <Text style={styles.actionButtonText}>Help & Support</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity 

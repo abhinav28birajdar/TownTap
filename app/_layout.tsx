@@ -26,7 +26,7 @@ function RootLayoutContent() {
   const { theme, isDark } = useTheme();
   
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />

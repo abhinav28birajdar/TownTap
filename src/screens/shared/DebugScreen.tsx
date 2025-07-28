@@ -45,59 +45,59 @@ const DebugScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView style={styles.content}>
-        <Text style={[styles.title, { color: theme.text }]}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>
           TownTap Debug Screen
         </Text>
 
         {/* Connection Status */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
             Connection Status
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             Status: {connectionStatus?.success ? '✅ Connected' : '❌ Failed'}
           </Text>
           {connectionStatus?.error && (
-            <Text style={[styles.error, { color: theme.danger }]}>
+            <Text style={[styles.error, { color: theme.colors.error }]}>
               Error: {String(connectionStatus.error)}
             </Text>
           )}
         </View>
 
         {/* Configuration */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
             Configuration
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             URL: {config?.url || 'Not set'}
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             Has Anon Key: {config?.hasAnonKey ? 'Yes' : 'No'}
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             Environment: {config?.environment}
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             Realtime: {config?.realtimeEnabled ? 'Enabled' : 'Disabled'}
           </Text>
         </View>
 
         {/* Auth State */}
-        <View style={[styles.card, { backgroundColor: theme.card }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
             Auth State
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             Loading: {loading ? 'Yes' : 'No'}
           </Text>
-          <Text style={[styles.text, { color: theme.textSecondary }]}>
+          <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
             User: {user ? `${user.email} (${user.profile?.user_type})` : 'None'}
           </Text>
           {error && (
-            <Text style={[styles.error, { color: theme.danger }]}>
+            <Text style={[styles.error, { color: theme.colors.error }]}>
               Error: {error}
             </Text>
           )}
@@ -105,14 +105,14 @@ const DebugScreen: React.FC = () => {
 
         {/* Actions */}
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.primary }]}
+          style={[styles.button, { backgroundColor: theme.colors.primary }]}
           onPress={checkAll}
         >
           <Text style={styles.buttonText}>Refresh Status</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.secondary }]}
+          style={[styles.button, { backgroundColor: theme.colors.secondary }]}
           onPress={testAuth}
         >
           <Text style={styles.buttonText}>Test Auth</Text>

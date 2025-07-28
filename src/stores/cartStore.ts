@@ -16,6 +16,10 @@ interface CartStore {
   updateItemQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   calculateTotal: () => void;
+  
+  // Computed getters
+  getTotalPrice: () => number;
+  getTotalItems: () => number;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -119,6 +123,17 @@ export const useCartStore = create<CartStore>()(
           totalAmount: subtotal + deliveryCharge,
           deliveryCharge,
         });
+      },
+
+      // Computed getters
+      getTotalPrice: () => {
+        const { totalAmount } = get();
+        return totalAmount;
+      },
+
+      getTotalItems: () => {
+        const { items } = get();
+        return items.reduce((total, item) => total + item.quantity, 0);
       },
     }),
     {
