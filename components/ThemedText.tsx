@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
-import { useTheme } from '../src/context/ThemeContext';
+import { useTheme } from '../src/context/ModernThemeContext';
 
 export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'subtitle' | 'link';

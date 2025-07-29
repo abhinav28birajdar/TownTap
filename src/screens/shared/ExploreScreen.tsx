@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ModernThemeContext';
 import { useAuthStore } from '../../stores/authStore';
 
 const ExploreScreen: React.FC = () => {

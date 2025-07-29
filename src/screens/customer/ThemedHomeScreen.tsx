@@ -15,7 +15,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ModernThemeContext';
 import { useLocationStore } from '../../stores/locationStoreNew';
 import type { Business } from '../../types/index_location';
 

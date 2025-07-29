@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../config/constants';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ModernThemeContext';
 import { BusinessService } from '../../services/businessService';
 import { useAuthStore } from '../../stores/authStore';
 

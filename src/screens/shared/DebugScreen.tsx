@@ -7,7 +7,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ModernThemeContext';
 import { getSupabaseConfig, supabase, testSupabaseConnection } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 

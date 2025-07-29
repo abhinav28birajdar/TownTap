@@ -185,6 +185,8 @@ The application uses PostgreSQL with the following main tables:
 
 All tables include Row Level Security policies for data protection.
 
+For database management including data deletion, refer to the SQL scripts in `supabase/deletion.sql`.
+
 ## 🔧 Development Commands
 
 ```bash

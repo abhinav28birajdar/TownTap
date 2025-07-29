@@ -17,7 +17,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useLocationStore } from '../src/stores/locationStore';
 
 // Import theme provider
-import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { ThemeProvider, useTheme } from '../src/context/ModernThemeContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
