@@ -288,6 +288,7 @@ export interface Product {
   stock_quantity: number;
   low_stock_threshold: number;
   images: string[];
+  image_urls?: string[]; // Alias for images
   weight: number | null;
   dimensions: ProductDimensions | null;
   is_active: boolean;
@@ -587,10 +588,15 @@ export type OrderItemUpdate = Partial<OrderItemInsert>;
 export type ReviewInsert = Omit<Review, 'id' | 'created_at' | 'updated_at' | 'helpful_count' | 'is_verified'>;
 export type ReviewUpdate = Partial<ReviewInsert>;
 
-export type ConversationInsert = Omit<Conversation, 'id' | 'created_at' | 'updated_at' | 'last_message_at'>;
+export type ConversationInsert = Omit<Conversation, 'id' | 'created_at' | 'updated_at' | 'last_message_at'> & {
+  order_id?: string | null;
+  is_active?: boolean;
+};
 export type ConversationUpdate = Partial<ConversationInsert>;
 
-export type MessageInsert = Omit<Message, 'id' | 'created_at' | 'is_read' | 'read_at'>;
+export type MessageInsert = Omit<Message, 'id' | 'created_at' | 'is_read' | 'read_at'> & {
+  attachment_url?: string | null;
+};
 export type MessageUpdate = Partial<MessageInsert>;
 
 export type NotificationInsert = Omit<Notification, 'id' | 'created_at' | 'is_read' | 'is_sent' | 'sent_at'> & {
@@ -897,6 +903,43 @@ export interface RouteInfo {
   duration: number; // in seconds
   coordinates: Location[];
 }
+
+// =====================================================
+// Additional Type Exports for Backwards Compatibility
+// =====================================================
+
+// Create aliases for commonly used types
+export type BusinessProfile = Business;
+export type Category = BusinessCategory;
+export type ProductWithBusiness = Product & { business: Business };
+
+// Payment related types
+export interface Payment {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded';
+  payment_method: string;
+  payment_intent_id: string | null;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PaymentInsert = Omit<Payment, 'id' | 'created_at' | 'updated_at'>;
+export type PaymentUpdate = Partial<PaymentInsert>;
+
+export interface Refund {
+  id: string;
+  payment_id: string;
+  amount: number;
+  reason: string;
+  status: 'pending' | 'succeeded' | 'failed';
+  created_at: string;
+}
+
+export type RefundInsert = Omit<Refund, 'id' | 'created_at'>;
 
 // =====================================================
 // Export all types

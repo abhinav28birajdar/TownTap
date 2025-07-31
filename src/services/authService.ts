@@ -39,8 +39,12 @@ export class AuthService {
           full_name: data.fullName,
           phone: data.phone,
           user_type: data.userType,
+          avatar_url: null,
+          is_verified: false,
           email_verified: false,
           phone_verified: false,
+          date_of_birth: null,
+          gender: null,
           language_preference: 'en',
           notification_preferences: {
             push: true,
@@ -48,6 +52,7 @@ export class AuthService {
             sms: true
           },
           referral_code: generateReferralCode(data.fullName),
+          referred_by: null,
         };
 
         const { data: profile, error: profileError } = await supabase

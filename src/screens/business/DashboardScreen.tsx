@@ -115,8 +115,8 @@ const DashboardScreen: React.FC = () => {
     >
       <View style={styles.orderHeader}>
         <Text style={styles.orderNumber}>#{order.id.slice(-6)}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.order_status) }]}>
-          <Text style={styles.statusText}>{order.order_status}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
+          <Text style={styles.statusText}>{order.status}</Text>
         </View>
       </View>
       <Text style={styles.orderCustomer}>{(order as any).customer_name || 'Anonymous'}</Text>
