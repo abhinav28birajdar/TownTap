@@ -3,15 +3,15 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
 
-const DemoLoginScreen: React.FC = () => {
+const OrdersScreen: React.FC = () => {
   const { colors } = useModernTheme();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.colors.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.colors.text }]}>Demo Login</Text>
+        <Text style={[styles.title, { color: colors.colors.text }]}>Orders</Text>
         <Text style={[styles.subtitle, { color: colors.colors.textSecondary }]}>
-          Quick login for testing purposes
+          Track your orders and order history
         </Text>
       </View>
     </SafeAreaView>
@@ -39,4 +39,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DemoLoginScreen;
+export default OrdersScreen;

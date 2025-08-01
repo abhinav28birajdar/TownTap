@@ -1,11 +1,11 @@
 import { supabase } from '../lib/supabase';
 import {
-    PaginatedResponse,
-    Payment,
-    PaymentInsert,
-    PaymentUpdate,
-    Refund,
-    RefundInsert
+  PaginatedResponse,
+  Payment,
+  PaymentInsert,
+  PaymentUpdate,
+  Refund,
+  RefundInsert
 } from '../types';
 
 export interface PaymentIntent {
@@ -283,10 +283,13 @@ export class PaymentService {
 
       // Update payment status
       const payment = await this.updatePayment(paymentId, {
-        status: 'completed',
-        gateway_payment_id: paymentIntentId,
-        gateway_response: gatewayResponse,
-        paid_at: new Date().toISOString()
+        status: 'succeeded',
+        payment_intent_id: paymentIntentId,
+        metadata: { 
+          ...gatewayResponse, 
+          gateway_payment_id: paymentIntentId,
+          paid_at: new Date().toISOString()
+        }
       });
 
       // Update order status

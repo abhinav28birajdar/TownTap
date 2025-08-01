@@ -195,8 +195,11 @@ export interface Business {
   id: string;
   owner_id: string;
   name: string;
+  business_name: string; // Added for compatibility
+  business_type: string; // Added for compatibility
   description: string | null;
   category_id: string | null;
+  category: string | Category; // Added for compatibility
   subcategory_id: string | null;
   phone: string | null;
   email: string | null;
@@ -210,6 +213,7 @@ export interface Business {
   latitude: number | null;
   longitude: number | null;
   location: Location | null;
+  distance?: number; // Added for distance calculations
   service_area_radius: number;
   services: string[];
   specialties: string[];
@@ -225,6 +229,7 @@ export interface Business {
   status: 'active' | 'inactive' | 'suspended' | 'pending_verification';
   rating: number;
   total_reviews: number;
+  review_count: number; // Added for compatibility
   total_orders: number;
   delivery_radius: number;
   min_order_amount: number;
@@ -283,6 +288,7 @@ export interface Product {
   category: string | null;
   sku: string | null;
   price: number;
+  discount_price: number | null; // Added for compatibility
   compare_at_price: number | null;
   cost_price: number | null;
   stock_quantity: number;
@@ -524,6 +530,9 @@ export interface Location {
   longitude: number;
 }
 
+// Alias for Location for better semantics
+export type Coordinates = Location;
+
 export interface Address {
   id?: string;
   label: string;
@@ -582,7 +591,9 @@ export type ProductUpdate = Partial<ProductInsert>;
 export type OrderInsert = Omit<Order, 'id' | 'created_at' | 'updated_at' | 'order_number'>;
 export type OrderUpdate = Partial<OrderInsert>;
 
-export type OrderItemInsert = Omit<OrderItem, 'id' | 'created_at' | 'item_description'>;
+export type OrderItemInsert = Omit<OrderItem, 'id' | 'created_at' | 'item_description'> & {
+  special_instructions?: string | null;
+};
 export type OrderItemUpdate = Partial<OrderItemInsert>;
 
 export type ReviewInsert = Omit<Review, 'id' | 'created_at' | 'updated_at' | 'helpful_count' | 'is_verified'>;
@@ -685,6 +696,7 @@ export interface CartItem {
   businessId: string;
   serviceId?: string;
   productId?: string;
+  product?: Product; // Added for easier access
   name: string;
   price: number;
   quantity: number;
@@ -940,6 +952,40 @@ export interface Refund {
 }
 
 export type RefundInsert = Omit<Refund, 'id' | 'created_at'>;
+
+// =====================================================
+// UI Component Props
+// =====================================================
+
+export interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  loading?: boolean;
+  icon?: React.ReactNode;
+}
+
+export interface CardProps {
+  children: React.ReactNode;
+  padding?: 'sm' | 'md' | 'lg';
+  shadow?: boolean;
+  borderRadius?: 'sm' | 'md' | 'lg';
+  backgroundColor?: string;
+}
+
+export interface InputProps {
+  label?: string;
+  placeholder?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  error?: string;
+  secureTextEntry?: boolean;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  multiline?: boolean;
+  numberOfLines?: number;
+}
 
 // =====================================================
 // Export all types

@@ -37,6 +37,14 @@ export interface PredictiveServiceNeed {
   reason: string;
 }
 
+export interface SearchAnalytics {
+  totalSearches: number;
+  avgClickThrough: number;
+  topQueries: Array<{ query: string; count: number }>;
+  conversionRate: number;
+  popularFilters: Record<string, number>;
+}
+
 export class AISearchService {
   // =====================================================
   // SMART SEARCH WITH NLP

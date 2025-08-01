@@ -23,6 +23,7 @@ export const useAuthStore = create<AuthStore>()(
       loading: false,
       error: null,
       hasCompletedOnboarding: false,
+      isAuthenticated: false,
 
       // Actions
       login: async (email: string, password: string) => {
@@ -51,7 +52,7 @@ export const useAuthStore = create<AuthStore>()(
               profile: profile as Profile,
             };
 
-            set({ user, loading: false });
+            set({ user, loading: false, isAuthenticated: true });
             return { success: true };
           }
           
@@ -91,7 +92,7 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           await signOut();
-          set({ user: null, loading: false, error: null });
+          set({ user: null, loading: false, error: null, isAuthenticated: false });
         } catch (error: any) {
           set({ loading: false, error: error.message });
         }

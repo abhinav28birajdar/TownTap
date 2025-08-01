@@ -5,7 +5,11 @@ import Button from '../components/ui/Button';
 import { COLORS } from '../config/constants';
 import { useAuthStore } from '../stores/authStore';
 
-const OnboardingScreen: React.FC = () => {
+interface OnboardingScreenProps {
+  onComplete?: () => void;
+}
+
+const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { completeOnboarding } = useAuthStore();
   const [selectedUserType, setSelectedUserType] = useState<'customer' | 'business_owner' | null>(null);
 
@@ -20,6 +24,7 @@ const OnboardingScreen: React.FC = () => {
     }
     // Store user type and complete onboarding
     completeOnboarding();
+    onComplete?.();
   };
 
   return (

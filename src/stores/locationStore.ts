@@ -120,15 +120,15 @@ export const useLocationStore = create<LocationStore>()(
         };
 
         // If this is the first address or marked as default, make it default
-        if (savedAddresses.length === 0 || address.isDefault) {
+        if (savedAddresses.length === 0 || address.is_default) {
           // Remove default from other addresses
           const updatedAddresses = savedAddresses.map(addr => ({
             ...addr,
-            isDefault: false,
+            is_default: false,
           }));
           
           set({ 
-            savedAddresses: [...updatedAddresses, { ...newAddress, isDefault: true }],
+            savedAddresses: [...updatedAddresses, { ...newAddress, is_default: true }],
             selectedAddress: newAddress,
           });
         } else {
@@ -145,13 +145,13 @@ export const useLocationStore = create<LocationStore>()(
         );
 
         // If setting as default, remove default from others
-        if (updates.isDefault) {
+        if (updates.is_default) {
           const finalAddresses = updatedAddresses.map(address => ({
             ...address,
-            isDefault: address.id === addressId,
+            is_default: address.id === addressId,
           }));
           
-          const defaultAddress = finalAddresses.find(addr => addr.isDefault);
+          const defaultAddress = finalAddresses.find(addr => addr.is_default);
           set({ 
             savedAddresses: finalAddresses,
             selectedAddress: defaultAddress || get().selectedAddress,
@@ -169,8 +169,8 @@ export const useLocationStore = create<LocationStore>()(
 
         // If removing default address, set first address as default
         const removedAddress = savedAddresses.find(addr => addr.id === addressId);
-        if (removedAddress?.isDefault && filteredAddresses.length > 0) {
-          filteredAddresses[0].isDefault = true;
+        if (removedAddress?.is_default && filteredAddresses.length > 0) {
+          filteredAddresses[0].is_default = true;
           set({ 
             savedAddresses: filteredAddresses,
             selectedAddress: filteredAddresses[0],
@@ -186,7 +186,7 @@ export const useLocationStore = create<LocationStore>()(
       },
 
       setDefaultAddress: (addressId: string) => {
-        get().updateSavedAddress(addressId, { isDefault: true });
+        get().updateSavedAddress(addressId, { is_default: true });
       },
 
       clearError: () => {

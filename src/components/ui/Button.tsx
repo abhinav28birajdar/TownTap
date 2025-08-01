@@ -41,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
     };
 
     // Size variations
-    const sizeStyles = {
+    const sizeStyles: Record<'sm' | 'md' | 'lg', ButtonStyles> = {
       sm: {
         container: { 
           paddingVertical: DIMENSIONS.PADDING.sm,
@@ -67,7 +67,7 @@ const Button: React.FC<ButtonProps> = ({
     };
 
     // Variant styles
-    const variantStyles = {
+    const variantStyles: Record<'primary' | 'secondary' | 'outline' | 'ghost', ButtonStyles> = {
       primary: {
         container: {
           backgroundColor: disabled ? COLORS.gray[300] : COLORS.primary,

@@ -293,7 +293,8 @@ export class MessagingService {
         conversation_id: conversationId,
         sender_id: senderId,
         content: message,
-        message_type: 'order_update'
+        message_type: 'order_update',
+        attachment_url: null
       };
 
       return await this.sendMessage(messageData);
@@ -325,7 +326,8 @@ export class MessagingService {
       return await this.createConversation({
         customer_id: customerId,
         business_id: businessId,
-        order_id: orderId
+        order_id: orderId,
+        is_active: true
       });
     } catch (error: any) {
       throw new Error(error.message || 'Failed to get or create order conversation');
@@ -346,7 +348,9 @@ export class MessagingService {
       // Create conversation
       const conversation = await this.createConversation({
         customer_id: customerId,
-        business_id: businessId
+        business_id: businessId,
+        order_id: null,
+        is_active: true
       });
 
       // Send initial message
@@ -354,7 +358,8 @@ export class MessagingService {
         conversation_id: conversation.id,
         sender_id: customerId,
         content: `Subject: ${subject}\n\n${initialMessage}`,
-        message_type: 'text'
+        message_type: 'text',
+        attachment_url: null
       });
 
       return { conversation, message };
@@ -474,8 +479,8 @@ export class MessagingService {
         // Filter conversations for this user
         const conversation = payload.new || payload.old;
         if (conversation && (
-          conversation.customer_id === userId || 
-          conversation.business_id === userId
+          (conversation as Conversation).customer_id === userId || 
+          (conversation as Conversation).business_id === userId
         )) {
           callback(payload);
         }
@@ -534,7 +539,8 @@ export class MessagingService {
         conversation_id: conversationId,
         sender_id: senderId,
         content: customContent || template.content,
-        message_type: 'text'
+        message_type: 'text',
+        attachment_url: null
       };
 
       return await this.sendMessage(messageData);

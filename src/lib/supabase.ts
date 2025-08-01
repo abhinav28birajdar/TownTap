@@ -19,10 +19,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Main Supabase client (for user operations)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-    storage: AsyncStorage,
+  },
+  global: {
+    headers: {
+      'x-application-name': 'TownTap',
+    },
   },
   realtime: {
     params: {

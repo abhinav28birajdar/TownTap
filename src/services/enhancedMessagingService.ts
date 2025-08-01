@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import {
-    Message
+  Message
 } from '../types';
 
 // Enhanced communication interfaces
@@ -495,7 +495,7 @@ export class EnhancedMessagingService {
         // Set auto-stop after 3 seconds
         const timeout = setTimeout(() => {
           this.updateTypingStatus(conversationId, userId, false);
-        }, 3000);
+        }, 3000) as any;
 
         this.typingTimeouts.set(`${conversationId}_${userId}`, timeout);
       } else {
@@ -705,11 +705,19 @@ export class EnhancedMessagingService {
         thumbnail = await this.generateVideoThumbnail(file);
       }
 
+      // Map fileType to messageType
+      const messageTypeMap: Record<string, string> = {
+        'audio': 'voice',
+        'video': 'video',
+        'image': 'image',
+        'document': 'document'
+      };
+
       // Send rich message with attachment
       return await this.sendRichMessage({
         conversationId,
         senderId,
-        messageType: fileType,
+        messageType: messageTypeMap[fileType] as any,
         attachments: [{
           type: fileType,
           url: urlData.publicUrl,

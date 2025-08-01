@@ -69,14 +69,14 @@ export class OrderService {
       const orderItems: OrderItemInsert[] = checkoutData.items.map(item => ({
         order_id: order.id,
         item_type: item.type,
-        service_id: item.serviceId,
-        product_id: item.productId,
+        service_id: item.serviceId || null,
+        product_id: item.productId || null,
         variation_ids: item.variations || [],
         item_name: item.name,
         unit_price: item.price,
         quantity: item.quantity,
         total_price: item.price * item.quantity,
-        special_instructions: item.specialInstructions
+        special_instructions: item.specialInstructions || null
       }));
 
       const { data: items, error: itemsError } = await supabase

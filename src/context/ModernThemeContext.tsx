@@ -11,6 +11,7 @@ interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
   setColorScheme: (scheme: ColorScheme) => void;
+  colors: Theme; // Alias for easier access
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -51,25 +52,43 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setColorScheme(newScheme);
   };
 
+  const value: ThemeContextType = {
+    theme,
+    colorScheme,
+    isDark,
+    toggleTheme,
+    setColorScheme,
+    colors: theme, // Alias for easier access
+  };
+
   return (
-    <ThemeContext.Provider 
-      value={{ 
-        theme, 
-        colorScheme, 
-        isDark, 
-        toggleTheme, 
-        setColorScheme 
-      }}
-    >
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = (): ThemeContextType => {
+// Enhanced alias for compatibility with the main App component
+export const ModernThemeProvider = ThemeProvider;
+
+export const useModernTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error('useModernTheme must be used within a ThemeProvider');
   }
   return context;
 };
+
+// Utility hooks for specific theme aspects
+export const useColors = () => {
+  const { colors } = useModernTheme();
+  return colors;
+};
+
+export const useIsDark = () => {
+  const { isDark } = useModernTheme();
+  return isDark;
+};
+
+// Alias for backwards compatibility
+export const useTheme = useModernTheme;
