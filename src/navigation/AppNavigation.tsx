@@ -34,6 +34,7 @@ import BusinessProductsScreen from '../screens/business/BusinessProductsScreen';
 import BusinessProfileScreen from '../screens/business/BusinessProfileScreen';
 
 import { useModernTheme } from '../context/ModernThemeContext';
+import { useAuthStore } from '../stores/authStore';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -268,10 +269,10 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
   onShowOnboarding 
 }) => {
   const { colors } = useModernTheme();
+  const { user } = useAuthStore();
 
-  // For now, default to customer type
-  // In a real app, you'd determine this from user profile
-  const userType: 'customer' | 'business' = 'customer';
+  // Determine user type from the user profile, default to customer
+  const userType: 'customer' | 'business' = user?.profile?.user_type === 'business_owner' ? 'business' : 'customer';
 
   return (
     <NavigationContainer

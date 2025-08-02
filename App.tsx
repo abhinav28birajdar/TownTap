@@ -62,27 +62,12 @@ export default function App() {
         setSession(session);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          // Automatically check/create profile when user signs in
-          try {
-            const { getOrCreateProfile } = await import('./src/lib/supabase');
-            const { data: profile, error } = await getOrCreateProfile(
-              session.user.id,
-              session.user.user_metadata || {}
-            );
-            
-            if (error) {
-              console.error('Failed to create/get profile on sign in:', error);
-            } else {
-              console.log('Profile ensured for user:', session.user.id);
-            }
-          } catch (error) {
-            console.error('Error ensuring profile:', error);
-          }
-          
+          console.log('User signed in, profile handling managed by AuthService');
           setShowOnboarding(false);
         }
         
         if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           setShowOnboarding(true);
         }
       }

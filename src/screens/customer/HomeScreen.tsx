@@ -136,18 +136,25 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const renderBusinessCard = (business: BusinessProfile, index: number) => (
-    <MotiView
-      key={business.id}
-      from={{ opacity: 0, translateX: 50 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      transition={{ 
-        type: 'timing',
-        duration: 300,
-        delay: index * 100
-      }}
-      style={styles.businessCard}
-    >
+  const renderBusinessCard = (business: BusinessProfile, index: number) => {
+    // Defensive check for business object and required properties
+    if (!business || !business.id) {
+      console.warn('Invalid business object:', business);
+      return null;
+    }
+
+    return (
+      <MotiView
+        key={business.id}
+        from={{ opacity: 0, translateX: 50 }}
+        animate={{ opacity: 1, translateX: 0 }}
+        transition={{ 
+          type: 'timing',
+          duration: 300,
+          delay: index * 100
+        }}
+        style={styles.businessCard}
+      >
       <TouchableOpacity
         onPress={() => {/* Navigate to business detail */}}
         style={styles.businessCardContent}
@@ -184,21 +191,29 @@ const HomeScreen: React.FC = () => {
         </View>
       </TouchableOpacity>
     </MotiView>
-  );
+    );
+  };
 
-  const renderProductCard = (product: ProductWithBusiness, index: number) => (
-    <MotiView
-      key={product.id}
-      from={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        type: 'spring',
-        damping: 15,
-        stiffness: 200,
-        delay: index * 50
-      }}
-      style={styles.productCard}
-    >
+  const renderProductCard = (product: ProductWithBusiness, index: number) => {
+    // Defensive check for product object and required properties
+    if (!product || !product.id) {
+      console.warn('Invalid product object:', product);
+      return null;
+    }
+
+    return (
+      <MotiView
+        key={product.id}
+        from={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ 
+          type: 'spring',
+          damping: 15,
+          stiffness: 200,
+          delay: index * 50
+        }}
+        style={styles.productCard}
+      >
       <TouchableOpacity
         onPress={() => {/* Navigate to product detail */}}
         style={styles.productCardContent}
@@ -211,19 +226,27 @@ const HomeScreen: React.FC = () => {
         <Text style={styles.productBusiness}>{product.business?.name}</Text>
       </TouchableOpacity>
     </MotiView>
-  );
+    );
+  };
 
-  const renderCategoryChip = (category: Category, index: number) => (
-    <MotiView
-      key={category.id}
-      from={{ opacity: 0, translateY: 20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ 
-        type: 'timing',
-        duration: 200,
-        delay: index * 50
-      }}
-    >
+  const renderCategoryChip = (category: Category, index: number) => {
+    // Defensive check for category object and required properties
+    if (!category || !category.id) {
+      console.warn('Invalid category object:', category);
+      return null;
+    }
+
+    return (
+      <MotiView
+        key={category.id}
+        from={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ 
+          type: 'timing',
+          duration: 200,
+          delay: index * 50
+        }}
+      >
       <TouchableOpacity
         onPress={() => setSelectedCategory(category.id)}
         style={[
@@ -239,7 +262,8 @@ const HomeScreen: React.FC = () => {
         </Text>
       </TouchableOpacity>
     </MotiView>
-  );
+    );
+  };
 
   if (isLoading && nearbyBusinesses.length === 0) {
     return (
@@ -333,7 +357,10 @@ const HomeScreen: React.FC = () => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.categoriesContainer}
               >
-                {categories.map((category, index) => renderCategoryChip(category, index))}
+                {categories
+                  .filter(category => category && category.id) // Filter out invalid categories
+                  .map((category, index) => renderCategoryChip(category, index))
+                }
               </ScrollView>
             </View>
           </MotiView>
@@ -349,9 +376,13 @@ const HomeScreen: React.FC = () => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t('customer.home.nearbyBusinesses')}</Text>
               <View style={styles.businessesList}>
-                {nearbyBusinesses.slice(0, 3).map((business, index) => 
-                  renderBusinessCard(business, index)
-                )}
+                {nearbyBusinesses
+                  .filter(business => business && business.id) // Filter out invalid businesses
+                  .slice(0, 3)
+                  .map((business, index) => 
+                    renderBusinessCard(business, index)
+                  )
+                }
               </View>
               <Button
                 title={t('customer.home.viewAllBusinesses')}
