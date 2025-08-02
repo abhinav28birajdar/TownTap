@@ -590,6 +590,7 @@ ALTER TABLE public.ai_content_cache ENABLE ROW LEVEL SECURITY;
 -- Profile policies
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Business policies
 CREATE POLICY "Anyone can view active businesses" ON public.businesses FOR SELECT USING (is_active = true);

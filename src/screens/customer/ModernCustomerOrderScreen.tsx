@@ -17,7 +17,7 @@ import { ModernInput } from '../../components/modern/ModernInput';
 import { useTheme } from '../../context/ModernThemeContext';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
-import { Product } from '../../types';
+import { Service } from '../../types';
 
 const { width } = Dimensions.get('window');
 
@@ -158,27 +158,34 @@ const ModernCustomerOrderScreen: React.FC = () => {
   };
 
   const getItemQuantity = (itemId: string) => {
-    const cartItem = cartItems.find(item => item.id === itemId);
+    const cartItem = cartItems.find(item => item.service.id === itemId);
     return cartItem ? cartItem.quantity : 0;
   };
 
   const handleAddToCart = (item: MenuItem) => {
-    // Convert MenuItem to Product format expected by cart
-    const productItem: Product = {
+    // Convert MenuItem to Service format expected by cart
+    const serviceItem: Service = {
       id: item.id,
       business_id: 'demo-business-id', // In a real app, this would come from the selected business
       name: item.name,
       description: item.description,
-      image_urls: item.image_url ? [item.image_url] : [],
+      category: item.category,
+      subcategory: null,
       price: item.price,
-      discount_price: null,
-      stock_quantity: 100, // Default stock
-      unit: 'piece',
-      is_available: item.is_available,
+      price_type: 'fixed',
+      duration: item.preparation_time || null,
+      images: item.image_url ? [item.image_url] : [],
+      is_active: item.is_available,
+      is_emergency: false,
+      requires_site_visit: false,
+      advance_booking_required: false,
+      min_advance_hours: 0,
+      max_advance_days: 30,
+      availability_slots: {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    addItem(productItem, 1);
+    addItem(serviceItem, 1);
   };
 
   const handleRemoveFromCart = (itemId: string) => {

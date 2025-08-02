@@ -217,7 +217,7 @@ export const createOrUpdateProfile = async (userId: string, userData: any) => {
         .from('profiles')
         .update({
           full_name: userData.full_name || existingProfile.full_name,
-          phone: userData.phone_number || existingProfile.phone,
+          phone: userData.phone_number || userData.phone || existingProfile.phone,
           user_type: userData.user_type || existingProfile.user_type,
           updated_at: new Date().toISOString(),
         })
@@ -232,9 +232,14 @@ export const createOrUpdateProfile = async (userId: string, userData: any) => {
         .insert([
           {
             id: userId,
-            full_name: userData.full_name || '',
-            phone: userData.phone_number || null,
+            full_name: userData.full_name || userData.name || '',
+            phone: userData.phone_number || userData.phone || null,
             user_type: userData.user_type || 'customer',
+            email_verified: userData.email_verified || false,
+            referral_code: userData.referral_code || null,
+            referred_by: userData.referred_by || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ])
         .select()
@@ -242,6 +247,33 @@ export const createOrUpdateProfile = async (userId: string, userData: any) => {
       return { data, error };
     }
   } catch (error) {
+    console.error('Profile creation/update error:', error);
+    return { data: null, error };
+  }
+};
+
+// Enhanced function to get or create profile
+export const getOrCreateProfile = async (userId: string, userData?: any) => {
+  try {
+    // First try to get existing profile
+    const { data: profile, error: getError } = await getProfile(userId);
+    
+    if (!getError && profile) {
+      return { data: profile, error: null };
+    }
+    
+    // If profile doesn't exist, create it
+    if (userData) {
+      return await createOrUpdateProfile(userId, userData);
+    } else {
+      // Create basic profile with minimal data
+      return await createOrUpdateProfile(userId, {
+        full_name: '',
+        user_type: 'customer'
+      });
+    }
+  } catch (error) {
+    console.error('Get or create profile error:', error);
     return { data: null, error };
   }
 };

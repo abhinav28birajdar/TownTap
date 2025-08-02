@@ -14,6 +14,8 @@ const Input: React.FC<InputProps> = ({
   keyboardType = 'default',
   multiline = false,
   numberOfLines = 1,
+  onSubmitEditing,
+  returnKeyType = 'done',
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
@@ -91,6 +93,8 @@ const Input: React.FC<InputProps> = ({
           numberOfLines={multiline ? numberOfLines : 1}
           autoCapitalize="none"
           autoCorrect={false}
+          onSubmitEditing={onSubmitEditing}
+          returnKeyType={returnKeyType}
         />
         
         {secureTextEntry && (

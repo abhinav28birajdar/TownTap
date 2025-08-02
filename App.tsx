@@ -58,10 +58,32 @@ export default function App() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Automatically check/create profile when user signs in
+          try {
+            const { getOrCreateProfile } = await import('./src/lib/supabase');
+            const { data: profile, error } = await getOrCreateProfile(
+              session.user.id,
+              session.user.user_metadata || {}
+            );
+            
+            if (error) {
+              console.error('Failed to create/get profile on sign in:', error);
+            } else {
+              console.log('Profile ensured for user:', session.user.id);
+            }
+          } catch (error) {
+            console.error('Error ensuring profile:', error);
+          }
+          
           setShowOnboarding(false);
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          setShowOnboarding(true);
         }
       }
     );
