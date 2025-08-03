@@ -1,5 +1,5 @@
 // ================================================================
-// 🚀 COMPLETE REAL-TIME BUSINESS DISCOVERY SYSTEM
+// � REAL-TIME BUSINESS DISCOVERY SERVICE - COMPLETE
 // ================================================================
 
 import * as Location from 'expo-location';
@@ -14,40 +14,51 @@ export interface Coordinates {
 export interface BusinessDetails {
   id: string;
   name: string;
-  description: string;
-  category_name: string;
-  category_icon: string;
-  phone: string;
-  email: string;
-  address: string;
+  category: string;
+  rating: number;
+  distance: number;
+  estimatedWaitTime: number;
+  currentCapacity: number;
+  maxCapacity: number;
   latitude: number;
   longitude: number;
-  distance_km: number;
-  rating: number;
-  total_reviews: number;
-  is_currently_open: boolean;
-  current_customers: number;
-  estimated_wait_time: number;
-  price_range: string;
-  service_radius: number;
-  created_at: string;
+  phone?: string;
+  address?: string;
+  isOpen: boolean;
+  workingHours?: any;
+  imageUrl?: string;
+  description?: string;
+  realTimeStatus?: {
+    lastUpdate: string;
+    averageWaitTime: number;
+    currentCustomers: number;
+    isAcceptingOrders: boolean;
+  };
 }
 
-export interface ServiceRequest {
+export interface BusinessCategory {
   id: string;
-  service_type: string;
+  name: string;
+  icon: string;
   description: string;
-  urgency: 'low' | 'normal' | 'high' | 'emergency';
-  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  estimated_cost?: number;
-  business_id: string;
-  customer_id: string;
 }
 
-class RealTimeBusinessDiscovery {
-  private static subscriptions: Map<string, any> = new Map();
-  private static locationWatcher: Location.LocationSubscription | null = null;
-  private static currentLocation: Coordinates | null = null;
+interface RealTimeConfig {
+  radius: number;
+  onBusinessesUpdate: (businesses: BusinessDetails[]) => void;
+  onLocationUpdate: (location: Coordinates) => void;
+  onError: (error: string) => void;
+}
+
+// Real-time state
+class RealTimeBusinessDiscoveryService {
+  private watchId: number | null = null;
+  private intervalId: NodeJS.Timeout | null = null;
+  private businessSubscription: any = null;
+  private isActive = false;
+  private currentConfig: RealTimeConfig | null = null;
+  private currentUserId: string | null = null;
+  private currentLocation: Coordinates | null = null;
 
   // =====================================================
   // LOCATION SERVICES

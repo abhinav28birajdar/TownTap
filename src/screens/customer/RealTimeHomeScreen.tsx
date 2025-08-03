@@ -11,6 +11,7 @@ import {
   FlatList,
   Modal,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -52,6 +53,7 @@ const RealTimeHomeScreen: React.FC = () => {
   const [serviceRequestModal, setServiceRequestModal] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessDetails | null>(null);
   const [serviceDescription, setServiceDescription] = useState('');
+  const [popularBusinesses, setPopularBusinesses] = useState<BusinessDetails[]>([]);
 
   // Initialize app
   useEffect(() => {
@@ -95,7 +97,7 @@ const RealTimeHomeScreen: React.FC = () => {
   };
 
   const startRealTimeDiscovery = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !user.user_metadata) return;
 
     try {
       await RealTimeBusinessDiscovery.startRealTimeDiscovery(
@@ -537,15 +539,18 @@ const RealTimeHomeScreen: React.FC = () => {
       await getBusinessCategories();
 
       // Start real-time discovery
-      await RealTimeBusinessDiscovery.startRealTimeDiscovery(user.id, {
-        radius: 20, // 20km radius as requested
-        updateInterval: 30000, // Update every 30 seconds
-        onBusinessesUpdate: (updatedBusinesses) => {
-          setBusinesses(updatedBusinesses);
-          setRealTimeActive(true);
-        },
-        onLocationUpdate: (location) => {
-          setLocationUpdateCount(prev => prev + 1);
+      await RealTimeBusinessDiscovery.startRealTimeDiscovery(
+        user.id,
+        user.user_metadata?.full_name || 'Customer',
+        user.user_metadata?.phone || '',
+        {
+          radius: 20, // 20km radius as requested
+          onBusinessesUpdate: (updatedBusinesses) => {
+            setBusinesses(updatedBusinesses);
+            setRealTimeActive(true);
+          },
+          onLocationUpdate: (location) => {
+            setLocationUpdateCount(prev => prev + 1);
           console.log('Location updated:', location);
         },
         onError: (error) => {

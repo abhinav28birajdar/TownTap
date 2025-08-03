@@ -1,15 +1,14 @@
 // ================================================================
-// 🚀 COMPLETE REAL-TIME TOWNTAP APPLICATION
+// 🚀 COMPLETE WORKING TOWNTAP APP - FINAL VERSION
 // ================================================================
 
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
-
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { ModernThemeProvider, useTheme } from '../context/ModernThemeContext';
-import SimpleRealTimeHomeScreen from '../screens/customer/SimpleRealTimeHomeScreen';
 
 const Tab = createBottomTabNavigator();
 
