@@ -1,4 +1,15 @@
 # 🚀 TownTap - Real-Time Business Discovery App
+<div align="center">
+  <img src="./assets/images/icon.png" alt="SkillBox Logo" width="120" height="120">
+  
+  **Empowering Learning Through Technology**
+  
+  [![React Native](https://img.shields.io/badge/React%20Native-0.73-blue.svg)](https://reactnative.dev/)
+  [![Expo](https://img.shields.io/badge/Expo-50.0-black.svg)](https://expo.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+  [![Supabase](https://img.shields.io/badge/Supabase-2.0-green.svg)](https://supabase.com/)
+</div>
+
 
 TownTap is a complete real-time business discovery application that connects customers with local service providers within a 20km radius. Built with React Native, Expo, and Supabase for live location tracking and instant business discovery.
 
