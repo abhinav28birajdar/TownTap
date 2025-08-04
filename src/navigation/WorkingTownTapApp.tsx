@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ModernThemeProvider, useTheme } from '../context/ModernThemeContext';
-import SimpleRealTimeHomeScreen from '../screens/customer/SimpleRealTimeHomeScreen';
+import SimpleRealTimeHomeScreen from '../screens/SimpleRealTimeHomeScreen';
 import { useAuthStore } from '../stores/mockAuthStore';
 
 const Tab = createBottomTabNavigator();
