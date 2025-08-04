@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ModernThemeContext';
+import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 
 interface AuthScreenProps {
@@ -22,7 +23,7 @@ interface AuthScreenProps {
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
   const { theme } = useTheme();
-  const { login, register } = useAuthStore();
+  const { login } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -38,43 +39,118 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ userType, onClose }) => {
       return;
     }
 
-    if (!isLogin && !formData.fullName) {
-      Alert.alert('Error', 'Please enter your full name');
-      return;
-    }
-
     setLoading(true);
 
     try {
       if (isLogin) {
-        // Login using auth store
-        const result = await login(formData.email, formData.password);
-        
-        if (result.success) {
-          Alert.alert(
-            'Success',
-            'Logged in successfully!',
-            [{ text: 'OK', onPress: onClose }]
-          );
-        } else {
-          Alert.alert('Error', result.error || 'Login failed');
-        }
-      } else {
-        // Register using auth store
-        const result = await register(formData.email, formData.password, {
-          full_name: formData.fullName,
-          phone_number: formData.phoneNumber,
-          user_type: userType,
+        // Login
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
         });
 
-        if (result.success) {
-          Alert.alert(
-            'Success',
-            'Account created successfully! Please check your email for verification.',
-            [{ text: 'OK', onPress: () => setIsLogin(true) }]
-          );
-        } else {
-          Alert.alert('Error', result.error || 'Registration failed');
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            Alert.alert(
+              'Email Not Confirmed',
+              'Please check your email and click the confirmation link before logging in. If you haven\'t received the email, please sign up again.',
+              [
+                { text: 'Sign Up Again', onPress: () => setIsLogin(false) },
+                { text: 'OK', style: 'cancel' }
+              ]
+            );
+            setLoading(false);
+            return;
+          }
+          throw error;
+        }
+
+        if (data.user) {
+          // Get user profile with retry logic
+          let profile = null;
+          let retryCount = 0;
+          const maxRetries = 3;
+
+          while (!profile && retryCount < maxRetries) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .single();
+            
+            profile = profileData;
+            if (!profile) {
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            }
+          }
+
+          if (profile) {
+            // Check if user type matches or allow any type if profile exists
+            if (profile.user_type === userType || !userType) {
+              const loginResult = await login(formData.email, formData.password);
+              if (loginResult.success) {
+                onClose();
+              } else {
+                Alert.alert('Error', loginResult.error || 'Login failed');
+              }
+            } else {
+              Alert.alert(
+                'User Type Mismatch', 
+                `This account is registered as a ${profile.user_type.replace('_', ' ')}, but you're trying to login as a ${userType.replace('_', ' ')}. Please select the correct user type.`
+              );
+            }
+          } else {
+            Alert.alert('Error', 'Profile not found. Please contact support.');
+          }
+        }
+      } else {
+        // Sign up
+        if (!formData.fullName) {
+          Alert.alert('Error', 'Please enter your full name');
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              phone_number: formData.phoneNumber,
+              user_type: userType,
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          if (!data.user.email_confirmed_at && process.env.EXPO_PUBLIC_ENVIRONMENT === 'production') {
+            Alert.alert(
+              'Success',
+              'Account created successfully! Please check your email for verification before logging in.',
+              [{ text: 'OK', onPress: () => setIsLogin(true) }]
+            );
+          } else {
+            // In development or if email is confirmed, try to log in directly
+            Alert.alert(
+              'Success',
+              'Account created successfully!',
+              [{ 
+                text: 'OK', 
+                onPress: async () => {
+                  setIsLogin(true);
+                  // Auto login in development
+                  if (process.env.EXPO_PUBLIC_ENVIRONMENT === 'development') {
+                    setTimeout(() => {
+                      handleAuth();
+                    }, 1000);
+                  }
+                }
+              }]
+            );
+          }
         }
       }
     } catch (error: any) {

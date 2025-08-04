@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { AuthService } from '../services/authService';
-import { AuthState, User } from '../types';
+import { createOrUpdateProfile, getCurrentUser, getProfile, signIn, signOut, signUp } from '../lib/supabase';
+import { AuthState, Profile, User } from '../types';
 
 interface AuthStore extends AuthState {
   // Actions
@@ -30,22 +30,39 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true, error: null });
         
         try {
-          const result = await AuthService.signIn({ email, password });
+          const { data, error } = await signIn(email, password);
           
-          const user: User = {
-            id: result.user.id,
-            email: result.user.email,
-            phone: result.user.phone,
-            profile: result.user.profile,
-          };
+          if (error) {
+            set({ loading: false, error: error.message });
+            return { success: false, error: error.message };
+          }
 
-          set({ user, loading: false, isAuthenticated: true });
-          return { success: true };
+          if (data.user) {
+            // Fetch user profile
+            const { data: profile, error: profileError } = await getProfile(data.user.id);
+            if (profileError) {
+              set({ loading: false, error: profileError.message });
+              return { success: false, error: profileError.message };
+            }
+
+            const user: User = {
+              id: data.user.id,
+              email: data.user.email || '',
+              phone: data.user.phone,
+              profile: profile as Profile,
+            };
+
+            set({ user, loading: false, isAuthenticated: true });
+            return { success: true };
+          }
+          
+          set({ loading: false });
+          return { success: false, error: 'Login failed' };
           
         } catch (error: any) {
           console.error('Login error:', error);
-          set({ loading: false, error: error.message || 'Login failed' });
-          return { success: false, error: error.message || 'Login failed' };
+          set({ loading: false, error: error.message || 'Network error occurred' });
+          return { success: false, error: error.message || 'Network error occurred' };
         }
       },
 
@@ -53,26 +70,20 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true, error: null });
         
         try {
-          const signUpData = {
-            fullName: userData.full_name || userData.fullName || '',
-            email,
-            phone: userData.phone_number || userData.phone || '',
-            password,
-            confirmPassword: password, // For compatibility
-            userType: userData.user_type || 'customer',
-            acceptTerms: true,
-          };
-
-          const result = await AuthService.signUp(signUpData);
+          const { data, error } = await signUp(email, password, userData);
           
+          if (error) {
+            set({ loading: false, error: error.message });
+            return { success: false, error: error.message };
+          }
+
           // User will need to confirm email before being logged in
           set({ loading: false });
           return { success: true };
           
         } catch (error: any) {
-          console.error('Registration error:', error);
-          set({ loading: false, error: error.message || 'Registration failed' });
-          return { success: false, error: error.message || 'Registration failed' };
+          set({ loading: false, error: error.message });
+          return { success: false, error: error.message };
         }
       },
 
@@ -80,10 +91,9 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true });
         
         try {
-          await AuthService.signOut();
+          await signOut();
           set({ user: null, loading: false, error: null, isAuthenticated: false });
         } catch (error: any) {
-          console.error('Logout error:', error);
           set({ loading: false, error: error.message });
         }
       },
@@ -92,16 +102,48 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true });
         
         try {
-          const user = await AuthService.getCurrentUser();
+          const { user, error } = await getCurrentUser();
+          
+          if (error) {
+            set({ user: null, loading: false, error: error.message });
+            return;
+          }
           
           if (user) {
-            set({ user, loading: false, error: null, isAuthenticated: true });
+            // Fetch user profile
+            let { data: profile, error: profileError } = await getProfile(user.id);
+            
+            // If profile doesn't exist, try to create it from user metadata
+            if (profileError || !profile) {
+              const userData = user.user_metadata || {};
+              const { data: newProfile, error: createError } = await createOrUpdateProfile(user.id, {
+                full_name: userData.full_name || user.email?.split('@')[0] || '',
+                phone_number: userData.phone_number || user.phone || '',
+                user_type: userData.user_type || 'customer',
+              });
+              
+              if (createError) {
+                console.warn('Failed to create profile:', createError);
+                set({ user: null, loading: false, error: 'Failed to create user profile' });
+                return;
+              }
+              
+              profile = newProfile;
+            }
+
+            const userData: User = {
+              id: user.id,
+              email: user.email || '',
+              phone: user.phone,
+              profile: profile as Profile,
+            };
+
+            set({ user: userData, loading: false, error: null });
           } else {
-            set({ user: null, loading: false, error: null, isAuthenticated: false });
+            set({ user: null, loading: false, error: null });
           }
         } catch (error: any) {
-          console.error('Auth check error:', error);
-          set({ user: null, loading: false, error: error.message, isAuthenticated: false });
+          set({ user: null, loading: false, error: error.message });
         }
       },
 

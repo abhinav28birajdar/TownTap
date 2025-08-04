@@ -57,9 +57,9 @@ export default function TabLayout() {
       icon: 'analytics',
     },
     {
-      name: 'register',
-      title: 'Register Business',
-      icon: 'add-circle',
+      name: 'explore',
+      title: 'Customers',
+      icon: 'people',
     },
     {
       name: 'orders',

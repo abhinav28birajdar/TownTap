@@ -1,15 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Service } from '../types';
-
-interface CartItem {
-  id: string;
-  service: Service; // Changed from 'product' to 'service' to match database
-  quantity: number;
-  customizations?: Record<string, any>;
-  special_instructions?: string;
-}
+import { CartItem, Product } from '../types';
 
 interface CartStore {
   // State
@@ -17,22 +9,17 @@ interface CartStore {
   businessId: string | null;
   totalAmount: number;
   deliveryCharge: number;
-  taxAmount: number;
-  discountAmount: number;
 
   // Actions
-  addItem: (service: Service, quantity?: number, customizations?: Record<string, any>, specialInstructions?: string) => void;
-  removeItem: (serviceId: string) => void;
-  updateItemQuantity: (serviceId: string, quantity: number) => void;
-  updateItemCustomizations: (serviceId: string, customizations: Record<string, any>) => void;
+  addItem: (product: Product, quantity?: number) => void;
+  removeItem: (productId: string) => void;
+  updateItemQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   calculateTotal: () => void;
   
   // Computed getters
   getTotalPrice: () => number;
   getTotalItems: () => number;
-  getSubtotal: () => number;
-  canApplyPromotion: (minimumAmount: number) => boolean;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -43,19 +30,14 @@ export const useCartStore = create<CartStore>()(
       businessId: null,
       totalAmount: 0,
       deliveryCharge: 0,
-      taxAmount: 0,
-      discountAmount: 0,
 
       // Actions
-      addItem: (service: Service, quantity = 1, customizations = {}, specialInstructions = '') => {
+      addItem: (product: Product, quantity = 1) => {
         const { items, businessId } = get();
         
         // If cart is empty or same business, allow adding
-        if (!businessId || businessId === service.business_id) {
-          const existingItemIndex = items.findIndex(item => 
-            item.service.id === service.id && 
-            JSON.stringify(item.customizations) === JSON.stringify(customizations)
-          );
+        if (!businessId || businessId === product.business_id) {
+          const existingItemIndex = items.findIndex(item => item.product.id === product.id);
           
           if (existingItemIndex >= 0) {
             // Update existing item quantity
@@ -65,15 +47,13 @@ export const useCartStore = create<CartStore>()(
           } else {
             // Add new item
             const newItem: CartItem = {
-              id: `${service.id}_${Date.now()}`,
-              service,
+              id: `${product.id}_${Date.now()}`,
+              product,
               quantity,
-              customizations,
-              special_instructions: specialInstructions,
             };
             set({ 
               items: [...items, newItem],
-              businessId: service.business_id,
+              businessId: product.business_id,
             });
           }
           get().calculateTotal();
@@ -81,21 +61,19 @@ export const useCartStore = create<CartStore>()(
           // Different business - clear cart first
           set({
             items: [{
-              id: `${service.id}_${Date.now()}`,
-              service,
+              id: `${product.id}_${Date.now()}`,
+              product,
               quantity,
-              customizations,
-              special_instructions: specialInstructions,
             }],
-            businessId: service.business_id,
+            businessId: product.business_id,
           });
           get().calculateTotal();
         }
       },
 
-      removeItem: (serviceId: string) => {
+      removeItem: (productId: string) => {
         const { items } = get();
-        const updatedItems = items.filter(item => item.service.id !== serviceId);
+        const updatedItems = items.filter(item => item.product.id !== productId);
         
         set({ 
           items: updatedItems,
@@ -104,30 +82,17 @@ export const useCartStore = create<CartStore>()(
         get().calculateTotal();
       },
 
-      updateItemQuantity: (serviceId: string, quantity: number) => {
+      updateItemQuantity: (productId: string, quantity: number) => {
         const { items } = get();
         
         if (quantity <= 0) {
-          get().removeItem(serviceId);
+          get().removeItem(productId);
           return;
         }
 
         const updatedItems = items.map(item =>
-          item.service.id === serviceId 
+          item.product.id === productId 
             ? { ...item, quantity }
-            : item
-        );
-        
-        set({ items: updatedItems });
-        get().calculateTotal();
-      },
-
-      updateItemCustomizations: (serviceId: string, customizations: Record<string, any>) => {
-        const { items } = get();
-        
-        const updatedItems = items.map(item =>
-          item.service.id === serviceId 
-            ? { ...item, customizations }
             : item
         );
         
@@ -141,34 +106,22 @@ export const useCartStore = create<CartStore>()(
           businessId: null,
           totalAmount: 0,
           deliveryCharge: 0,
-          taxAmount: 0,
-          discountAmount: 0,
         });
       },
 
       calculateTotal: () => {
         const { items } = get();
         const subtotal = items.reduce((total, item) => {
-          const price = item.service.price || 0;
+          const price = item.product.discount_price || item.product.price;
           return total + (price * item.quantity);
         }, 0);
 
-        // Calculate tax (18% GST in India)
-        const taxAmount = subtotal * 0.18;
-        
-        // Calculate delivery charge (free for orders above ₹500)
+        // Calculate delivery charge (example logic)
         const deliveryCharge = subtotal > 500 ? 0 : 50;
         
-        // Discount amount (if any promotion applied)
-        const discountAmount = 0; // Will be updated when promotions are applied
-        
-        const totalAmount = subtotal + taxAmount + deliveryCharge - discountAmount;
-        
         set({
-          totalAmount,
+          totalAmount: subtotal + deliveryCharge,
           deliveryCharge,
-          taxAmount,
-          discountAmount,
         });
       },
 
@@ -178,22 +131,9 @@ export const useCartStore = create<CartStore>()(
         return totalAmount;
       },
 
-      getSubtotal: () => {
-        const { items } = get();
-        return items.reduce((total, item) => {
-          const price = item.service.price || 0;
-          return total + (price * item.quantity);
-        }, 0);
-      },
-
       getTotalItems: () => {
         const { items } = get();
         return items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      canApplyPromotion: (minimumAmount: number) => {
-        const subtotal = get().getSubtotal();
-        return subtotal >= minimumAmount;
       },
     }),
     {

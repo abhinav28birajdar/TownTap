@@ -132,34 +132,43 @@ export const customerService = {
       } = options;
 
       // Use PostGIS function for geo-location based search
-      const { data, error } = await supabase.rpc('get_nearby_businesses', {
+      let query = supabase.rpc('get_nearby_businesses', {
         user_lat: coords.latitude,
-        user_lng: coords.longitude,
-        radius_km: radiusKm,
-        category_filter: categories.length > 0 ? categories[0] : null,
-        limit_count: limit
+        user_lon: coords.longitude,
+        radius_km: radiusKm
       });
 
-      if (error) {
-        console.error('Error fetching nearby businesses:', error);
-        throw error;
+      // Apply filters
+      if (categories.length > 0) {
+        query = query.in('category_id', categories);
       }
 
-      // Apply additional client-side filters if needed
-      let filteredData = data || [];
-
       if (searchKeyword) {
-        filteredData = filteredData.filter((business: any) => 
-          business.name?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          business.description?.toLowerCase().includes(searchKeyword.toLowerCase())
-        );
+        query = query.or(`name.ilike.%${searchKeyword}%,description.ilike.%${searchKeyword}%`);
+      }
+
+      if (businessType) {
+        query = query.eq('business_type', businessType);
       }
 
       if (isOpen !== undefined) {
-        filteredData = filteredData.filter((business: any) => business.is_open === isOpen);
+        query = query.eq('is_open', isOpen);
       }
 
-      return filteredData;
+      if (featured) {
+        query = query.eq('is_featured', true);
+      }
+
+      // Only active and verified businesses
+      query = query
+        .eq('status', 'active')
+        .eq('is_verified', true)
+        .limit(limit)
+        .order('distance');
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
     } catch (error: any) {
       console.error('Error discovering businesses:', error);
       throw new Error(error.message || 'Failed to discover businesses');
