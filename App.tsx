@@ -10,6 +10,7 @@ import 'react-native-url-polyfill/auto';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ModernThemeProvider } from './src/context/ModernThemeContext';
 import { OnboardingProvider, useOnboarding } from './src/context/OnboardingProvider';
+import { RealtimeProvider } from './src/context/RealtimeProvider';
 import { AppNavigation } from './src/navigation/AppNavigation';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -60,7 +61,9 @@ export default function App() {
       <ModernThemeProvider>
         <OnboardingProvider>
           <AuthProvider>
-            <AppContent />
+            <RealtimeProvider>
+              <AppContent />
+            </RealtimeProvider>
           </AuthProvider>
         </OnboardingProvider>
       </ModernThemeProvider>

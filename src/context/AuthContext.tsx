@@ -8,11 +8,11 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: AuthError }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error?: AuthError }>;
+  signIn: (email: string, password: string) => Promise<{ error?: AuthError | null }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error?: AuthError | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: any) => Promise<{ error?: any }>;
-  resetPassword: (email: string) => Promise<{ error?: AuthError }>;
+  resetPassword: (email: string) => Promise<{ error?: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

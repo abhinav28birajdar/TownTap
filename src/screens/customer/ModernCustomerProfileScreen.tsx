@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModernButton } from '../../components/modern/ModernButton';
 import { ModernCard } from '../../components/modern/ModernCard';
 import { useTheme } from '../../context/ModernThemeContext';
+import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -23,15 +24,38 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
+interface ActivityStats {
+  totalOrders: number;
+  activeOrders: number;
+  favoritePlaces: number;
+  recentActivity: Array<{
+    type: 'order' | 'favorite' | 'review';
+    description: string;
+    timestamp: string;
+  }>;
+}
+
 const ModernCustomerProfileScreen: React.FC = () => {
   const { theme, toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuthStore();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activityStats, setActivityStats] = useState<ActivityStats>({
+    totalOrders: 0,
+    activeOrders: 0,
+    favoritePlaces: 0,
+    recentActivity: []
+  });
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  
+  // Get real-time location data for nearby businesses count
+  const { businesses, userLocation } = useLocationBasedRealtime(20);
 
   useEffect(() => {
     loadProfile();
+    loadActivityStats();
+    setupRealtimeConnection();
   }, []);
 
   const loadProfile = async () => {
@@ -54,9 +78,59 @@ const ModernCustomerProfileScreen: React.FC = () => {
     }
   };
 
+  const loadActivityStats = async () => {
+    // Simulate loading user activity stats
+    try {
+      // In a real app, these would be API calls to get user stats
+      const stats: ActivityStats = {
+        totalOrders: 24,
+        activeOrders: 2,
+        favoritePlaces: 8,
+        recentActivity: [
+          {
+            type: 'order',
+            description: 'Ordered from Pizza Palace',
+            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+          },
+          {
+            type: 'favorite',
+            description: 'Added Coffee Corner to favorites',
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            type: 'review',
+            description: 'Reviewed Burger Station',
+            timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+          }
+        ]
+      };
+      setActivityStats(stats);
+    } catch (error) {
+      console.error('Error loading activity stats:', error);
+    }
+  };
+
+  const setupRealtimeConnection = () => {
+    // Simulate real-time connection for user activity
+    setTimeout(() => {
+      setRealtimeConnected(true);
+    }, 1500);
+
+    // Simulate real-time activity updates
+    const interval = setInterval(() => {
+      setActivityStats(prev => ({
+        ...prev,
+        // Randomly update stats to simulate real-time changes
+        activeOrders: Math.max(0, prev.activeOrders + (Math.random() > 0.7 ? 1 : 0))
+      }));
+    }, 30000);
+
+    return () => clearInterval(interval);
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadProfile();
+    await Promise.all([loadProfile(), loadActivityStats()]);
     setRefreshing(false);
   };
 
@@ -75,6 +149,30 @@ const ModernCustomerProfileScreen: React.FC = () => {
     );
   };
 
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    
+    return past.toLocaleDateString();
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'order': return 'receipt-outline';
+      case 'favorite': return 'heart-outline';
+      case 'review': return 'star-outline';
+      default: return 'information-circle-outline';
+    }
+  };
+
   const menuItems = [
     {
       id: 'personal',
@@ -86,7 +184,7 @@ const ModernCustomerProfileScreen: React.FC = () => {
     {
       id: 'orders',
       title: 'Order History',
-      subtitle: 'View your past orders',
+      subtitle: `${activityStats.totalOrders} total orders`,
       icon: 'receipt-outline' as keyof typeof Ionicons.glyphMap,
       onPress: () => {/* Navigate to order history */},
     },
@@ -138,6 +236,31 @@ const ModernCustomerProfileScreen: React.FC = () => {
     headerTitle: {
       ...theme.typography.h2,
       color: theme.colors.text,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    realtimeIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#E8F5E8',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      marginRight: theme.spacing.sm,
+    },
+    realtimeDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      marginRight: 4,
+    },
+    realtimeText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: '#2E7D32',
     },
     themeButton: {
       width: 44,
@@ -192,6 +315,26 @@ const ModernCustomerProfileScreen: React.FC = () => {
       textTransform: 'uppercase',
       fontWeight: '600',
     },
+    statsContainer: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    statCard: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: theme.spacing.md,
+    },
+    statNumber: {
+      ...theme.typography.h2,
+      color: theme.colors.primary,
+      fontWeight: 'bold',
+      marginBottom: theme.spacing.xs,
+    },
+    statLabel: {
+      ...theme.typography.caption,
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+    },
     content: {
       flex: 1,
       paddingHorizontal: theme.spacing.lg,
@@ -203,6 +346,40 @@ const ModernCustomerProfileScreen: React.FC = () => {
       ...theme.typography.h4,
       color: theme.colors.text,
       marginBottom: theme.spacing.md,
+    },
+    activityCard: {
+      paddingVertical: theme.spacing.sm,
+    },
+    activityItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+    },
+    activityItemBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    activityIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.colors.primary + '20',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: theme.spacing.sm,
+    },
+    activityContent: {
+      flex: 1,
+    },
+    activityDescription: {
+      ...theme.typography.body2,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.xs,
+    },
+    activityTime: {
+      ...theme.typography.caption,
+      color: theme.colors.textSecondary,
     },
     menuItem: {
       marginBottom: theme.spacing.sm,
@@ -266,13 +443,24 @@ const ModernCustomerProfileScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.headerTitle}>My Profile</Text>
-            <TouchableOpacity style={styles.themeButton} onPress={toggleTheme}>
-              <Ionicons
-                name={isDark ? 'sunny' : 'moon'}
-                size={24}
-                color={theme.colors.icon}
-              />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <View style={styles.realtimeIndicator}>
+                <View style={[
+                  styles.realtimeDot, 
+                  { backgroundColor: realtimeConnected ? '#4CAF50' : '#FF9800' }
+                ]} />
+                <Text style={styles.realtimeText}>
+                  {realtimeConnected ? 'Live' : 'Connecting...'}
+                </Text>
+              </View>
+              <TouchableOpacity style={styles.themeButton} onPress={toggleTheme}>
+                <Ionicons
+                  name={isDark ? 'sunny' : 'moon'}
+                  size={24}
+                  color={theme.colors.icon}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Profile Card */}
@@ -296,10 +484,51 @@ const ModernCustomerProfileScreen: React.FC = () => {
               </View>
             </View>
           </ModernCard>
+
+          {/* Activity Stats */}
+          <View style={styles.statsContainer}>
+            <ModernCard style={styles.statCard} variant="default">
+              <Text style={styles.statNumber}>{activityStats.activeOrders}</Text>
+              <Text style={styles.statLabel}>Active Orders</Text>
+            </ModernCard>
+            <ModernCard style={styles.statCard} variant="default">
+              <Text style={styles.statNumber}>{businesses.length}</Text>
+              <Text style={styles.statLabel}>Nearby Places</Text>
+            </ModernCard>
+            <ModernCard style={styles.statCard} variant="default">
+              <Text style={styles.statNumber}>{activityStats.favoritePlaces}</Text>
+              <Text style={styles.statLabel}>Favorites</Text>
+            </ModernCard>
+          </View>
         </View>
 
-        {/* Menu Items */}
+        {/* Recent Activity */}
         <View style={styles.content}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
+            <ModernCard style={styles.activityCard} variant="default">
+              {activityStats.recentActivity.map((activity, index) => (
+                <View key={index} style={[
+                  styles.activityItem,
+                  index < activityStats.recentActivity.length - 1 && styles.activityItemBorder
+                ]}>
+                  <View style={styles.activityIcon}>
+                    <Ionicons
+                      name={getActivityIcon(activity.type)}
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityDescription}>{activity.description}</Text>
+                    <Text style={styles.activityTime}>{formatTimeAgo(activity.timestamp)}</Text>
+                  </View>
+                </View>
+              ))}
+            </ModernCard>
+          </View>
+
+          {/* Menu Items */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
             {menuItems.map((item) => (

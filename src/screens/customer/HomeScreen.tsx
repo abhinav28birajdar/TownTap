@@ -11,6 +11,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextStyle,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -20,11 +21,12 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import { COLORS, DIMENSIONS } from '../../config/constants';
-import { getBusinessCategories, getNearbyBusinesses, getPopularProducts } from '../../lib/supabase';
+import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
+import { getBusinessCategories, getPopularProducts } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
 import { useLocationStore } from '../../stores/locationStore';
-import type { BusinessProfile, Category, ProductWithBusiness } from '../../types';
+import type { Category, ProductWithBusiness } from '../../types';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -34,16 +36,25 @@ const HomeScreen: React.FC = () => {
   const { location, setLocation } = useLocationStore();
   const { items: cartItems } = useCartStore();
   
+  // Use real-time location-based businesses (20km radius)
+  const { businesses: nearbyBusinesses, userLocation, loading: businessesLoading, error: businessesError, refetch } = useLocationBasedRealtime(20);
+  
   // State
   const [searchQuery, setSearchQuery] = useState('');
-  const [nearbyBusinesses, setNearbyBusinesses] = useState<BusinessProfile[]>([]);
   const [popularProducts, setPopularProducts] = useState<ProductWithBusiness[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Load home screen data
+  // Display real-time status
+  useEffect(() => {
+    if (nearbyBusinesses.length > 0) {
+      console.log(`🏪 Real-time: ${nearbyBusinesses.length} businesses within 20km`);
+    }
+  }, [nearbyBusinesses.length]);
+
+  // Load home screen data (except businesses which are loaded real-time)
   const loadHomeData = async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -57,16 +68,11 @@ const HomeScreen: React.FC = () => {
         await requestLocationPermission();
       }
 
-      // Fetch data in parallel
-      const [businessesResponse, productsResponse, categoriesResponse] = await Promise.all([
-        getNearbyBusinesses(location?.latitude || 0, location?.longitude || 0, 5000),
+      // Fetch data in parallel (no need to fetch businesses as they're real-time)
+      const [productsResponse, categoriesResponse] = await Promise.all([
         getPopularProducts(10),
         getBusinessCategories()
       ]);
-
-      if (businessesResponse.data) {
-        setNearbyBusinesses(businessesResponse.data);
-      }
 
       if (productsResponse.data) {
         setPopularProducts(productsResponse.data);
@@ -74,6 +80,11 @@ const HomeScreen: React.FC = () => {
 
       if (categoriesResponse.data) {
         setCategories(categoriesResponse.data);
+      }
+
+      // Trigger real-time businesses refetch if needed
+      if (isRefresh) {
+        refetch();
       }
 
     } catch (error: any) {
@@ -136,7 +147,7 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const renderBusinessCard = (business: BusinessProfile, index: number) => (
+  const renderBusinessCard = (business: any, index: number) => (
     <MotiView
       key={business.id}
       from={{ opacity: 0, translateX: 50 }}
@@ -154,31 +165,31 @@ const HomeScreen: React.FC = () => {
       >
         <View style={styles.businessHeader}>
           <View style={[styles.businessTypeIcon, { backgroundColor: getBusinessTypeColor(business.business_type) }]}>
-            <Text style={styles.businessIcon}>{getBusinessTypeIcon(business.business_type)}</Text>
+            <Text style={styles.businessIcon as TextStyle}>{getBusinessTypeIcon(business.business_type)}</Text>
           </View>
           <View style={styles.businessInfo}>
-            <Text style={styles.businessName}>{business.business_name}</Text>
-            <Text style={styles.businessCategory}>
+            <Text style={styles.businessName as TextStyle}>{business.business_name}</Text>
+            <Text style={styles.businessCategory as TextStyle}>
               {typeof business.category === 'string' ? business.category : ((business.category as any)?.name || 'Category')}
             </Text>
-            <Text style={styles.businessDistance}>
+            <Text style={styles.businessDistance as TextStyle}>
               {business.distance ? `${business.distance.toFixed(1)} km` : ''}
             </Text>
           </View>
         </View>
         
-        <Text style={styles.businessDescription} numberOfLines={2}>
+        <Text style={styles.businessDescription as TextStyle} numberOfLines={2}>
           {business.description}
         </Text>
         
         <View style={styles.businessFooter}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>⭐ {business.rating || '4.5'}</Text>
-            <Text style={styles.reviewCount}>({business.review_count || 0})</Text>
+            <Text style={styles.rating as TextStyle}>⭐ {business.rating || '4.5'}</Text>
+            <Text style={styles.reviewCount as TextStyle}>({business.review_count || 0})</Text>
           </View>
           {business.is_open && (
             <View style={styles.openBadge}>
-              <Text style={styles.openText}>{t('business.open')}</Text>
+              <Text style={styles.openText as TextStyle}>{t('business.open')}</Text>
             </View>
           )}
         </View>
@@ -204,11 +215,11 @@ const HomeScreen: React.FC = () => {
         style={styles.productCardContent}
       >
         <View style={styles.productImagePlaceholder}>
-          <Text style={styles.productImageIcon}>📦</Text>
+          <Text style={styles.productImageIcon as TextStyle}>📦</Text>
         </View>
-        <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
-        <Text style={styles.productPrice}>₹{product.price}</Text>
-        <Text style={styles.productBusiness}>{product.business?.name}</Text>
+        <Text style={styles.productName as TextStyle} numberOfLines={2}>{product.name}</Text>
+        <Text style={styles.productPrice as TextStyle}>₹{product.price}</Text>
+        <Text style={styles.productBusiness as TextStyle}>{product.business?.name}</Text>
       </TouchableOpacity>
     </MotiView>
   );
@@ -232,8 +243,8 @@ const HomeScreen: React.FC = () => {
         ]}
       >
         <Text style={[
-          styles.categoryText,
-          selectedCategory === category.id && styles.selectedCategoryText
+          styles.categoryText as TextStyle,
+          selectedCategory === category.id && (styles.selectedCategoryText as TextStyle)
         ]}>
           {category.name}
         </Text>
@@ -250,7 +261,7 @@ const HomeScreen: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ type: 'timing', duration: 500, loop: true }}
           >
-            <Text style={styles.loadingText}>{t('common.loading')}</Text>
+            <Text style={styles.loadingText as TextStyle}>{t('common.loading')}</Text>
           </MotiView>
         </View>
       </SafeAreaView>
@@ -279,15 +290,15 @@ const HomeScreen: React.FC = () => {
           transition={{ type: 'timing', duration: 500 }}
         >
           <View style={styles.header}>
-            <Text style={styles.greeting}>
+            <Text style={styles.greeting as TextStyle}>
               {t('customer.home.greeting', { name: user?.profile?.full_name?.split(' ')[0] || 'User' })}
             </Text>
-            <Text style={styles.subtitle}>{t('customer.home.subtitle')}</Text>
+            <Text style={styles.subtitle as TextStyle}>{t('customer.home.subtitle')}</Text>
             
             {cartItems.length > 0 && (
               <TouchableOpacity style={styles.cartBadge}>
-                <Text style={styles.cartCount}>{cartItems.length}</Text>
-                <Text style={styles.cartIcon}>🛒</Text>
+                <Text style={styles.cartCount as TextStyle}>{cartItems.length}</Text>
+                <Text style={styles.cartIcon as TextStyle}>🛒</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -305,8 +316,6 @@ const HomeScreen: React.FC = () => {
                 placeholder={t('customer.home.searchPlaceholder')}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                onSubmitEditing={handleSearch}
-                returnKeyType="search"
               />
               <Button
                 title={t('common.search')}
@@ -327,7 +336,7 @@ const HomeScreen: React.FC = () => {
             transition={{ type: 'timing', duration: 500, delay: 400 }}
           >
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('customer.home.categories')}</Text>
+              <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.categories')}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -347,7 +356,13 @@ const HomeScreen: React.FC = () => {
             transition={{ type: 'timing', duration: 500, delay: 600 }}
           >
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('customer.home.nearbyBusinesses')}</Text>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.nearbyBusinesses')}</Text>
+                <View style={styles.realtimeIndicator}>
+                  <View style={styles.realtimeDot} />
+                  <Text style={styles.realtimeText as TextStyle}>📡 Live ({nearbyBusinesses.length})</Text>
+                </View>
+              </View>
               <View style={styles.businessesList}>
                 {nearbyBusinesses.slice(0, 3).map((business, index) => 
                   renderBusinessCard(business, index)
@@ -371,7 +386,7 @@ const HomeScreen: React.FC = () => {
             transition={{ type: 'timing', duration: 500, delay: 800 }}
           >
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('customer.home.popularProducts')}</Text>
+              <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.popularProducts')}</Text>
               <FlatList
                 data={popularProducts}
                 renderItem={({ item, index }) => renderProductCard(item, index)}
@@ -393,9 +408,9 @@ const HomeScreen: React.FC = () => {
           >
             <Card>
               <View style={styles.emptyState}>
-                <Text style={styles.emptyStateIcon}>🏪</Text>
-                <Text style={styles.emptyStateTitle}>{t('customer.home.noBusinesses')}</Text>
-                <Text style={styles.emptyStateMessage}>{t('customer.home.noBusinessesMessage')}</Text>
+                <Text style={styles.emptyStateIcon as TextStyle}>🏪</Text>
+                <Text style={styles.emptyStateTitle as TextStyle}>{t('customer.home.noBusinesses')}</Text>
+                <Text style={styles.emptyStateMessage as TextStyle}>{t('customer.home.noBusinessesMessage')}</Text>
                 <Button
                   title={t('customer.home.exploreMore')}
                   onPress={() => {/* Navigate to explore */}}
@@ -655,6 +670,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: DIMENSIONS.PADDING.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: DIMENSIONS.PADDING.md,
+  },
+  realtimeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  realtimeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.success,
+    marginRight: 4,
+  },
+  realtimeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#2E7D32',
   },
 });
 
