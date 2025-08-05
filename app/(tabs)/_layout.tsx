@@ -5,7 +5,7 @@ import { Platform, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useTheme } from '../../src/context/ModernThemeContext';
+import { useModernTheme } from '../../src/context/ModernThemeContext';
 import { useAuthStore } from '../../src/stores/authStore';
 
 // Centered icon component with proper alignment and theme support
@@ -22,7 +22,7 @@ const TabIcon = ({ name, color, size = 24 }: { name: any; color: string; size?: 
 
 export default function TabLayout() {
   const { user } = useAuthStore();
-  const { theme } = useTheme();
+  const { theme } = useModernTheme();
   const isBusinessUser = user?.profile?.user_type === 'business_owner';
 
   // Customer Tabs

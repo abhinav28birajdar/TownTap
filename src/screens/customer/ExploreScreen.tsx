@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
-    Image,
     StyleSheet,
     Text,
     TextInput,
@@ -14,215 +13,259 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
 
+interface Business {
+  id: string;
+  business_name: string;
+  description: string;
+  category: string;
+  address: string;
+  city: string;
+  phone: string;
+  rating: number;
+  is_open: boolean;
+  delivery_available: boolean;
+  distance_km: number;
+  logo_url?: string;
+}
+
+const CATEGORIES = [
+  { id: 'all', name: 'All', icon: 'grid-outline' },
+  { id: 'restaurant', name: 'Food', icon: 'restaurant-outline' },
+  { id: 'retail', name: 'Shopping', icon: 'bag-outline' },
+  { id: 'service', name: 'Services', icon: 'construct-outline' },
+  { id: 'healthcare', name: 'Health', icon: 'medical-outline' },
+  { id: 'entertainment', name: 'Fun', icon: 'game-controller-outline' },
+];
+
 const ExploreScreen: React.FC = () => {
   const { colors } = useModernTheme();
+  const { businesses, loading, error } = useLocationBasedRealtime(50); // Wider search for explore
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
-  // Get real-time businesses within 20km
-  const { businesses, userLocation, loading, error } = useLocationBasedRealtime(20);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
 
-  // Filter businesses based on search and category
-  const filteredBusinesses = useMemo(() => {
+  useEffect(() => {
     let filtered = businesses;
 
-    if (searchQuery.trim()) {
+    // Filter by category
+    if (selectedCategory !== 'all') {
       filtered = filtered.filter(business => 
-        business.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.category?.toLowerCase().includes(selectedCategory.toLowerCase())
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(business =>
+        business.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    if (selectedCategory) {
-      filtered = filtered.filter(business => 
-        business.category === selectedCategory
-      );
-    }
-
-    return filtered;
+    setFilteredBusinesses(filtered);
   }, [businesses, searchQuery, selectedCategory]);
 
-  // Get unique categories
-  const categories = useMemo(() => {
-    const categorySet = new Set(businesses.map(b => b.category).filter(Boolean));
-    return Array.from(categorySet);
-  }, [businesses]);
+  const renderCategoryItem = ({ item }: { item: typeof CATEGORIES[0] }) => {
+    const isSelected = selectedCategory === item.id;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.categoryItem,
+          { 
+            backgroundColor: isSelected 
+              ? colors.colors?.primary || '#3B82F6' 
+              : colors.colors?.surface || '#FFFFFF',
+            borderColor: isSelected 
+              ? colors.colors?.primary || '#3B82F6' 
+              : colors.colors?.border || '#E5E7EB'
+          }
+        ]}
+        onPress={() => setSelectedCategory(item.id)}
+      >
+        <Ionicons 
+          name={item.icon as any} 
+          size={20} 
+          color={isSelected ? '#FFFFFF' : colors.colors?.text || '#1E293B'} 
+        />
+        <Text style={[
+          styles.categoryText,
+          { color: isSelected ? '#FFFFFF' : colors.colors?.text || '#1E293B' }
+        ]}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
-  const renderBusinessItem = ({ item }: { item: any }) => (
+  const renderBusinessItem = ({ item }: { item: Business }) => (
     <TouchableOpacity 
-      style={[styles.businessCard, { backgroundColor: colors.colors.surface }]}
-      activeOpacity={0.7}
+      style={[styles.businessCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}
+      onPress={() => {
+        console.log('Navigate to business:', item.id);
+      }}
     >
       <View style={styles.businessHeader}>
-        {item.image_url ? (
-          <Image source={{ uri: item.image_url }} style={styles.businessImage} />
-        ) : (
-          <View style={[styles.businessImage, styles.placeholderImage, { backgroundColor: colors.colors.backgroundSecondary }]}>
-            <Ionicons name="storefront-outline" size={30} color={colors.colors.textSecondary} />
-          </View>
-        )}
-        
         <View style={styles.businessInfo}>
-          <Text style={[styles.businessName, { color: colors.colors.text }]}>
+          <Text style={[styles.businessName, { color: colors.colors?.text || '#1E293B' }]}>
             {item.business_name}
           </Text>
-          <Text style={[styles.businessCategory, { color: colors.colors.textSecondary }]}>
-            {item.category}
+          <Text style={[styles.businessCategory, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.category || 'Business'}
           </Text>
-          <Text style={[styles.businessDistance, { color: colors.colors.primary }]}>
-            📍 {item.distance_km?.toFixed(1)}km away
+          <Text style={[styles.businessDescription, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.description || 'No description available'}
+          </Text>
+          <Text style={[styles.businessAddress, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            📍 {item.address}, {item.city}
           </Text>
         </View>
-        
-        <View style={styles.businessStatus}>
-          <View style={[
-            styles.statusDot, 
-            { backgroundColor: item.is_open ? '#4CAF50' : '#F44336' }
-          ]} />
-          <Text style={[
-            styles.statusText, 
-            { color: item.is_open ? '#4CAF50' : '#F44336' }
-          ]}>
-            {item.is_open ? 'Open' : 'Closed'}
+        <View style={styles.businessMeta}>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={14} color="#F59E0B" />
+            <Text style={[styles.rating, { color: colors.colors?.text || '#1E293B' }]}>
+              {item.rating?.toFixed(1) || '0.0'}
+            </Text>
+          </View>
+          <Text style={[styles.distance, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.distance_km?.toFixed(1) || '0.0'} km
           </Text>
+          <View style={[
+            styles.statusBadge,
+            { backgroundColor: item.is_open ? '#10B981' : '#EF4444' }
+          ]}>
+            <Text style={styles.statusText}>
+              {item.is_open ? 'Open' : 'Closed'}
+            </Text>
+          </View>
         </View>
       </View>
-      
-      {item.description && (
-        <Text style={[styles.businessDescription, { color: colors.colors.textSecondary }]}>
-          {item.description}
-        </Text>
-      )}
       
       <View style={styles.businessFooter}>
-        <Text style={[styles.businessAddress, { color: colors.colors.textSecondary }]}>
-          {item.address}
-        </Text>
-        <View style={styles.rating}>
-          <Ionicons name="star" size={16} color="#FFD700" />
-          <Text style={[styles.ratingText, { color: colors.colors.text }]}>
-            {item.rating?.toFixed(1) || 'New'}
-          </Text>
+        <View style={styles.businessTags}>
+          {item.delivery_available && (
+            <View style={[styles.tag, { backgroundColor: colors.colors?.primaryLight || '#DBEAFE' }]}>
+              <Ionicons name="bicycle-outline" size={12} color={colors.colors?.primary || '#3B82F6'} />
+              <Text style={[styles.tagText, { color: colors.colors?.primary || '#3B82F6' }]}>
+                Delivery
+              </Text>
+            </View>
+          )}
+          {item.phone && (
+            <View style={[styles.tag, { backgroundColor: colors.colors?.primaryLight || '#DBEAFE' }]}>
+              <Ionicons name="call-outline" size={12} color={colors.colors?.primary || '#3B82F6'} />
+              <Text style={[styles.tagText, { color: colors.colors?.primary || '#3B82F6' }]}>
+                Call
+              </Text>
+            </View>
+          )}
         </View>
+        
+        <TouchableOpacity style={[styles.viewButton, { backgroundColor: colors.colors?.primary || '#3B82F6' }]}>
+          <Text style={styles.viewButtonText}>View</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
-  const renderCategoryChip = (category: string) => (
-    <TouchableOpacity
-      key={category}
-      style={[
-        styles.categoryChip,
-        { 
-          backgroundColor: selectedCategory === category 
-            ? colors.colors.primary 
-            : colors.colors.backgroundSecondary 
-        }
-      ]}
-      onPress={() => setSelectedCategory(selectedCategory === category ? null : category)}
-    >
-      <Text style={[
-        styles.categoryChipText,
-        { 
-          color: selectedCategory === category 
-            ? 'white' 
-            : colors.colors.text 
-        }
-      ]}>
-        {category}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  if (loading && businesses.length === 0) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.colors.background }]}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={colors.colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.colors.textSecondary }]}>
-            Finding nearby businesses...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.colors?.background || '#FFFFFF' }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.colors.text }]}>Explore Businesses</Text>
-        <View style={styles.realtimeIndicator}>
-          <View style={styles.realtimeDot} />
-          <Text style={styles.realtimeText}>📡 Live Updates</Text>
-        </View>
+        <Text style={[styles.title, { color: colors.colors?.text || '#1E293B' }]}>
+          Explore
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.colors?.textSecondary || '#64748B' }]}>
+          Discover amazing local businesses
+        </Text>
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.colors.surface }]}>
-        <Ionicons name="search" size={20} color={colors.colors.textSecondary} />
-        <TextInput
-          style={[styles.searchInput, { color: colors.colors.text }]}
-          placeholder="Search businesses..."
-          placeholderTextColor={colors.colors.textSecondary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={20} color={colors.colors.textSecondary} />
-          </TouchableOpacity>
-        )}
+      <View style={styles.searchContainer}>
+        <View style={[styles.searchBar, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}>
+          <Ionicons 
+            name="search" 
+            size={20} 
+            color={colors.colors?.textSecondary || '#64748B'} 
+          />
+          <TextInput
+            style={[styles.searchInput, { color: colors.colors?.text || '#1E293B' }]}
+            placeholder="Search businesses..."
+            placeholderTextColor={colors.colors?.textSecondary || '#64748B'}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons 
+                name="close-circle" 
+                size={20} 
+                color={colors.colors?.textSecondary || '#64748B'} 
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Categories */}
-      {categories.length > 0 && (
+      <View style={styles.categoriesContainer}>
         <FlatList
-          data={categories}
-          renderItem={({ item }) => renderCategoryChip(item)}
-          keyExtractor={(item) => item}
+          data={CATEGORIES}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContainer}
-          style={styles.categoriesList}
+          contentContainerStyle={styles.categoriesList}
         />
-      )}
+      </View>
 
-      {/* Results Info */}
-      <View style={styles.resultsInfo}>
-        <Text style={[styles.resultsText, { color: colors.colors.text }]}>
-          {filteredBusinesses.length} businesses found within 20km
+      {/* Results Header */}
+      <View style={styles.resultsHeader}>
+        <Text style={[styles.resultsTitle, { color: colors.colors?.text || '#1E293B' }]}>
+          {searchQuery ? `Results for "${searchQuery}"` : selectedCategory === 'all' ? 'All Businesses' : CATEGORIES.find(c => c.id === selectedCategory)?.name}
         </Text>
-        {userLocation && (
-          <Text style={[styles.locationText, { color: colors.colors.textSecondary }]}>
-            📍 Near {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
-          </Text>
-        )}
+        <Text style={[styles.resultsCount, { color: colors.colors?.textSecondary || '#64748B' }]}>
+          {filteredBusinesses.length} found
+        </Text>
       </View>
 
       {/* Business List */}
-      <FlatList
-        data={filteredBusinesses}
-        renderItem={renderBusinessItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.businessList}
-        refreshing={loading}
-        onRefresh={() => window.location.reload()} // Simple refresh
-      />
-
-      {/* Empty State */}
-      {filteredBusinesses.length === 0 && !loading && (
-        <View style={styles.emptyState}>
-          <Ionicons name="storefront-outline" size={64} color={colors.colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.colors.text }]}>
-            No businesses found
+      {loading && filteredBusinesses.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.colors?.primary || '#3B82F6'} />
+          <Text style={[styles.loadingText, { color: colors.colors?.text || '#1E293B' }]}>
+            Loading businesses...
           </Text>
-          <Text style={[styles.emptyMessage, { color: colors.colors.textSecondary }]}>
-            {searchQuery || selectedCategory 
-              ? 'Try adjusting your search or filters'
-              : 'No businesses available in your area'}
+        </View>
+      ) : (
+        <FlatList
+          data={filteredBusinesses}
+          renderItem={renderBusinessItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.businessList}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons 
+                name="search-outline" 
+                size={48} 
+                color={colors.colors?.textSecondary || '#64748B'} 
+              />
+              <Text style={[styles.emptyText, { color: colors.colors?.textSecondary || '#64748B' }]}>
+                No businesses found
+              </Text>
+              <Text style={[styles.emptySubtext, { color: colors.colors?.textSecondary || '#64748B' }]}>
+                Try adjusting your search or category
+              </Text>
+            </View>
+          }
+        />
+      )}
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: '#EF4444' }]}>
+            {error}
           </Text>
         </View>
       )}
@@ -234,183 +277,208 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
   },
-  realtimeIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F5E8',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  realtimeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#4CAF50',
-    marginRight: 4,
-  },
-  realtimeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#2E7D32',
+  subtitle: {
+    fontSize: 16,
   },
   searchContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 12,
-    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 12,
     fontSize: 16,
-  },
-  categoriesList: {
-    marginBottom: 16,
   },
   categoriesContainer: {
+    marginBottom: 20,
+  },
+  categoriesList: {
     paddingHorizontal: 16,
   },
-  categoryChip: {
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: 12,
+    borderWidth: 1,
   },
-  categoryChipText: {
+  categoryText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginLeft: 6,
   },
-  resultsInfo: {
-    paddingHorizontal: 16,
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     marginBottom: 16,
   },
-  resultsText: {
-    fontSize: 16,
+  resultsTitle: {
+    fontSize: 18,
     fontWeight: '600',
   },
-  locationText: {
-    fontSize: 12,
-    marginTop: 2,
+  resultsCount: {
+    fontSize: 14,
   },
   businessList: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   businessCard: {
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   businessHeader: {
     flexDirection: 'row',
-    marginBottom: 8,
-  },
-  businessImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  placeholderImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 12,
   },
   businessInfo: {
     flex: 1,
+    marginRight: 12,
   },
   businessName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 4,
   },
   businessCategory: {
     fontSize: 14,
     marginBottom: 4,
   },
-  businessDistance: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  businessStatus: {
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginBottom: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
   businessDescription: {
     fontSize: 14,
+    marginBottom: 6,
     lineHeight: 20,
-    marginBottom: 8,
+  },
+  businessAddress: {
+    fontSize: 12,
+  },
+  businessMeta: {
+    alignItems: 'flex-end',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  rating: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  distance: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
   },
   businessFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  businessAddress: {
-    fontSize: 12,
+  businessTags: {
+    flexDirection: 'row',
     flex: 1,
   },
-  rating: {
+  tag: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
   },
-  ratingText: {
-    fontSize: 12,
+  tagText: {
+    fontSize: 10,
+    fontWeight: '600',
     marginLeft: 4,
-    fontWeight: '500',
   },
-  emptyState: {
+  viewButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  viewButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
   },
-  emptyMessage: {
+  emptySubtext: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+  },
+  errorContainer: {
+    padding: 16,
+    margin: 20,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+  },
+  errorText: {
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
 

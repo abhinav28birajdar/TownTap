@@ -1,6 +1,7 @@
+-- Run this SQL file in your Supabase SQL Editor
 -- =====================================================
--- TOWNTAP COMPLETE DATABASE SCHEMA
--- Production-Ready Database for React Native App
+-- TOWNTAP COMPLETE DATABASE SCHEMA - UPDATED
+-- Production-Ready Database for React Native App  
 -- =====================================================
 
 -- Enable required extensions
@@ -8,7 +9,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- =====================================================
--- CORE TABLES
+-- DROP EXISTING FUNCTION IF EXISTS (for clean reinstall)
+-- =====================================================
+DROP FUNCTION IF EXISTS public.get_nearby_businesses(DECIMAL, DECIMAL, INTEGER, TEXT, TEXT, DECIMAL, BOOLEAN, INTEGER);
+DROP FUNCTION IF EXISTS public.get_nearby_businesses(DECIMAL, DECIMAL, INTEGER, TEXT, INTEGER);
+
+-- =====================================================
+-- CORE TABLES (IF NOT EXISTS for safety)
 -- =====================================================
 
 -- User profiles (extends Supabase auth.users)
@@ -322,7 +329,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Get nearby businesses
+-- ✅ FIXED: Get nearby businesses function with correct parameters
 CREATE OR REPLACE FUNCTION public.get_nearby_businesses(
     user_lat DECIMAL,
     user_lng DECIMAL,
@@ -451,42 +458,51 @@ $$ LANGUAGE plpgsql;
 -- =====================================================
 
 -- Update timestamps
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at
     BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS update_businesses_updated_at ON public.businesses;
 CREATE TRIGGER update_businesses_updated_at
     BEFORE UPDATE ON public.businesses
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS update_products_updated_at ON public.products;
 CREATE TRIGGER update_products_updated_at
     BEFORE UPDATE ON public.products
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS update_orders_updated_at ON public.orders;
 CREATE TRIGGER update_orders_updated_at
     BEFORE UPDATE ON public.orders
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS update_reviews_updated_at ON public.reviews;
 CREATE TRIGGER update_reviews_updated_at
     BEFORE UPDATE ON public.reviews
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS update_coupons_updated_at ON public.coupons;
 CREATE TRIGGER update_coupons_updated_at
     BEFORE UPDATE ON public.coupons
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Auto-generate order numbers
+DROP TRIGGER IF EXISTS generate_order_number_trigger ON public.orders;
 CREATE TRIGGER generate_order_number_trigger
     BEFORE INSERT ON public.orders
     FOR EACH ROW
     EXECUTE FUNCTION public.set_order_number();
 
 -- Update business location
+DROP TRIGGER IF EXISTS update_business_location_trigger ON public.businesses;
 CREATE TRIGGER update_business_location_trigger
     BEFORE INSERT OR UPDATE ON public.businesses
     FOR EACH ROW EXECUTE FUNCTION public.update_business_location();
 
 -- Update business rating
+DROP TRIGGER IF EXISTS update_business_rating_trigger ON public.reviews;
 CREATE TRIGGER update_business_rating_trigger
     AFTER INSERT OR UPDATE OR DELETE ON public.reviews
     FOR EACH ROW EXECUTE FUNCTION public.update_business_rating();
@@ -496,29 +512,54 @@ CREATE TRIGGER update_business_rating_trigger
 -- =====================================================
 
 -- Geographic indexes
-CREATE INDEX IF NOT EXISTS idx_businesses_location ON public.businesses USING GIST (location);
-CREATE INDEX IF NOT EXISTS idx_businesses_lat_lng ON public.businesses (latitude, longitude);
+DROP INDEX IF EXISTS idx_businesses_location;
+CREATE INDEX idx_businesses_location ON public.businesses USING GIST (location);
+
+DROP INDEX IF EXISTS idx_businesses_lat_lng;
+CREATE INDEX idx_businesses_lat_lng ON public.businesses (latitude, longitude);
 
 -- Business indexes
-CREATE INDEX IF NOT EXISTS idx_businesses_active ON public.businesses (is_active) WHERE is_active = true;
-CREATE INDEX IF NOT EXISTS idx_businesses_category ON public.businesses (category_id);
-CREATE INDEX IF NOT EXISTS idx_businesses_owner ON public.businesses (owner_id);
-CREATE INDEX IF NOT EXISTS idx_businesses_city ON public.businesses (city);
-CREATE INDEX IF NOT EXISTS idx_businesses_rating ON public.businesses (rating DESC);
+DROP INDEX IF EXISTS idx_businesses_active;
+CREATE INDEX idx_businesses_active ON public.businesses (is_active) WHERE is_active = true;
+
+DROP INDEX IF EXISTS idx_businesses_category;
+CREATE INDEX idx_businesses_category ON public.businesses (category_id);
+
+DROP INDEX IF EXISTS idx_businesses_owner;
+CREATE INDEX idx_businesses_owner ON public.businesses (owner_id);
+
+DROP INDEX IF EXISTS idx_businesses_city;
+CREATE INDEX idx_businesses_city ON public.businesses (city);
+
+DROP INDEX IF EXISTS idx_businesses_rating;
+CREATE INDEX idx_businesses_rating ON public.businesses (rating DESC);
 
 -- Product indexes
-CREATE INDEX IF NOT EXISTS idx_products_business ON public.products (business_id);
-CREATE INDEX IF NOT EXISTS idx_products_available ON public.products (is_available) WHERE is_available = true;
+DROP INDEX IF EXISTS idx_products_business;
+CREATE INDEX idx_products_business ON public.products (business_id);
+
+DROP INDEX IF EXISTS idx_products_available;
+CREATE INDEX idx_products_available ON public.products (is_available) WHERE is_available = true;
 
 -- Order indexes
-CREATE INDEX IF NOT EXISTS idx_orders_customer ON public.orders (customer_id);
-CREATE INDEX IF NOT EXISTS idx_orders_business ON public.orders (business_id);
-CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders (status);
-CREATE INDEX IF NOT EXISTS idx_orders_date ON public.orders (order_date DESC);
+DROP INDEX IF EXISTS idx_orders_customer;
+CREATE INDEX idx_orders_customer ON public.orders (customer_id);
+
+DROP INDEX IF EXISTS idx_orders_business;
+CREATE INDEX idx_orders_business ON public.orders (business_id);
+
+DROP INDEX IF EXISTS idx_orders_status;
+CREATE INDEX idx_orders_status ON public.orders (status);
+
+DROP INDEX IF EXISTS idx_orders_date;
+CREATE INDEX idx_orders_date ON public.orders (order_date DESC);
 
 -- Review indexes
-CREATE INDEX IF NOT EXISTS idx_reviews_business ON public.reviews (business_id);
-CREATE INDEX IF NOT EXISTS idx_reviews_customer ON public.reviews (customer_id);
+DROP INDEX IF EXISTS idx_reviews_business;
+CREATE INDEX idx_reviews_business ON public.reviews (business_id);
+
+DROP INDEX IF EXISTS idx_reviews_customer;
+CREATE INDEX idx_reviews_customer ON public.reviews (customer_id);
 
 -- =====================================================
 -- ROW LEVEL SECURITY
@@ -533,6 +574,19 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Anyone can create profile" ON public.profiles;
+DROP POLICY IF EXISTS "Anyone can view active businesses" ON public.businesses;
+DROP POLICY IF EXISTS "Business owners can manage own business" ON public.businesses;
+DROP POLICY IF EXISTS "Anyone can view available products" ON public.products;
+DROP POLICY IF EXISTS "Business owners can manage products" ON public.products;
+DROP POLICY IF EXISTS "Users can view own orders" ON public.orders;
+DROP POLICY IF EXISTS "Customers can create orders" ON public.orders;
+DROP POLICY IF EXISTS "Anyone can view reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Customers can create reviews" ON public.reviews;
 
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -610,7 +664,7 @@ INSERT INTO public.business_categories (name, description, icon) VALUES
 ('Professional Services', 'Business and professional services', '💼')
 ON CONFLICT (name) DO NOTHING;
 
--- Insert sample businesses
+-- Insert sample businesses (fixed to prevent duplicates)
 INSERT INTO public.businesses (
     business_name, description, category_id, business_type, email, phone, address, city, pincode,
     latitude, longitude, is_verified, rating, delivery_available, minimum_order_amount, delivery_fee, estimated_delivery_time
@@ -661,4 +715,5 @@ BEGIN
     RAISE NOTICE '🔍 Geographic search ready (20km radius)';
     RAISE NOTICE '⚡ Realtime subscriptions enabled';
     RAISE NOTICE '🔒 Row Level Security configured';
+    RAISE NOTICE '🔧 Function get_nearby_businesses fixed with all parameters';
 END $$;

@@ -1,426 +1,214 @@
-import * as Haptics from 'expo-haptics';
-import * as Location from 'expo-location';
-import { MotiView } from 'moti';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
 import {
-    Alert,
-    Dimensions,
+    ActivityIndicator,
     FlatList,
     RefreshControl,
-    ScrollView,
     StyleSheet,
     Text,
-    TextStyle,
     TouchableOpacity,
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import { COLORS, DIMENSIONS } from '../../config/constants';
+import { useModernTheme } from '../../context/ModernThemeContext';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
-import { getBusinessCategories, getPopularProducts } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
-import { useCartStore } from '../../stores/cartStore';
-import { useLocationStore } from '../../stores/locationStore';
-import type { Category, ProductWithBusiness } from '../../types';
 
-const { width: screenWidth } = Dimensions.get('window');
+interface Business {
+  id: string;
+  business_name: string;
+  description: string;
+  category: string;
+  address: string;
+  city: string;
+  phone: string;
+  rating: number;
+  is_open: boolean;
+  delivery_available: boolean;
+  distance_km: number;
+  logo_url?: string;
+}
 
 const HomeScreen: React.FC = () => {
-  const { t } = useTranslation();
+  const { colors } = useModernTheme();
   const { user } = useAuthStore();
-  const { location, setLocation } = useLocationStore();
-  const { items: cartItems } = useCartStore();
-  
-  // Use real-time location-based businesses (20km radius)
-  const { businesses: nearbyBusinesses, userLocation, loading: businessesLoading, error: businessesError, refetch } = useLocationBasedRealtime(20);
-  
-  // State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [popularProducts, setPopularProducts] = useState<ProductWithBusiness[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { businesses, userLocation, loading, error, refetch } = useLocationBasedRealtime(20);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Display real-time status
-  useEffect(() => {
-    if (nearbyBusinesses.length > 0) {
-      console.log(`🏪 Real-time: ${nearbyBusinesses.length} businesses within 20km`);
-    }
-  }, [nearbyBusinesses.length]);
-
-  // Load home screen data (except businesses which are loaded real-time)
-  const loadHomeData = async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      // Get user location if not available
-      if (!location) {
-        await requestLocationPermission();
-      }
-
-      // Fetch data in parallel (no need to fetch businesses as they're real-time)
-      const [productsResponse, categoriesResponse] = await Promise.all([
-        getPopularProducts(10),
-        getBusinessCategories()
-      ]);
-
-      if (productsResponse.data) {
-        setPopularProducts(productsResponse.data);
-      }
-
-      if (categoriesResponse.data) {
-        setCategories(categoriesResponse.data);
-      }
-
-      // Trigger real-time businesses refetch if needed
-      if (isRefresh) {
-        refetch();
-      }
-
-    } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Failed to load data');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
   };
 
-  const requestLocationPermission = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(t('location.permissionDenied'), t('location.permissionMessage'));
-        return;
-      }
-
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude
-      });
-    } catch (error: any) {
-      console.error('Location error:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadHomeData();
-  }, []);
-
-  const handleRefresh = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    loadHomeData(true);
-  };
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      // Navigate to search results
-      console.log('Search for:', searchQuery);
-    }
-  };
-
-  const getBusinessTypeIcon = (type: string): string => {
-    switch (type) {
-      case 'type_a': return '🛒'; // ORDER_BUY
-      case 'type_b': return '📅'; // BOOK_SERVICE  
-      case 'type_c': return '💬'; // INQUIRE_CONSULT
-      default: return '🏪';
-    }
-  };
-
-  const getBusinessTypeColor = (type: string): string => {
-    switch (type) {
-      case 'type_a': return COLORS.success[500]; // ORDER_BUY
-      case 'type_b': return COLORS.info[500]; // BOOK_SERVICE
-      case 'type_c': return COLORS.warning[500]; // INQUIRE_CONSULT
-      default: return COLORS.gray[500];
-    }
-  };
-
-  const renderBusinessCard = (business: any, index: number) => (
-    <MotiView
-      key={business.id}
-      from={{ opacity: 0, translateX: 50 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      transition={{ 
-        type: 'timing',
-        duration: 300,
-        delay: index * 100
+  const renderBusinessItem = ({ item }: { item: Business }) => (
+    <TouchableOpacity 
+      style={[styles.businessCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}
+      onPress={() => {
+        // Navigate to business detail
+        console.log('Navigate to business:', item.id);
       }}
-      style={styles.businessCard}
     >
-      <TouchableOpacity
-        onPress={() => {/* Navigate to business detail */}}
-        style={styles.businessCardContent}
-      >
-        <View style={styles.businessHeader}>
-          <View style={[styles.businessTypeIcon, { backgroundColor: getBusinessTypeColor(business.business_type) }]}>
-            <Text style={styles.businessIcon as TextStyle}>{getBusinessTypeIcon(business.business_type)}</Text>
-          </View>
-          <View style={styles.businessInfo}>
-            <Text style={styles.businessName as TextStyle}>{business.business_name}</Text>
-            <Text style={styles.businessCategory as TextStyle}>
-              {typeof business.category === 'string' ? business.category : ((business.category as any)?.name || 'Category')}
-            </Text>
-            <Text style={styles.businessDistance as TextStyle}>
-              {business.distance ? `${business.distance.toFixed(1)} km` : ''}
-            </Text>
-          </View>
+      <View style={styles.businessHeader}>
+        <View style={styles.businessInfo}>
+          <Text style={[styles.businessName, { color: colors.colors?.text || '#1E293B' }]}>
+            {item.business_name}
+          </Text>
+          <Text style={[styles.businessCategory, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.category || 'Business'}
+          </Text>
+          <Text style={[styles.businessAddress, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.address}, {item.city}
+          </Text>
         </View>
-        
-        <Text style={styles.businessDescription as TextStyle} numberOfLines={2}>
-          {business.description}
-        </Text>
-        
-        <View style={styles.businessFooter}>
+        <View style={styles.businessMeta}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.rating as TextStyle}>⭐ {business.rating || '4.5'}</Text>
-            <Text style={styles.reviewCount as TextStyle}>({business.review_count || 0})</Text>
+            <Ionicons name="star" size={14} color="#F59E0B" />
+            <Text style={[styles.rating, { color: colors.colors?.text || '#1E293B' }]}>
+              {item.rating?.toFixed(1) || '0.0'}
+            </Text>
           </View>
-          {business.is_open && (
-            <View style={styles.openBadge}>
-              <Text style={styles.openText as TextStyle}>{t('business.open')}</Text>
-            </View>
-          )}
+          <Text style={[styles.distance, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.distance_km?.toFixed(1) || '0.0'} km
+          </Text>
         </View>
-      </TouchableOpacity>
-    </MotiView>
-  );
-
-  const renderProductCard = (product: ProductWithBusiness, index: number) => (
-    <MotiView
-      key={product.id}
-      from={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        type: 'spring',
-        damping: 15,
-        stiffness: 200,
-        delay: index * 50
-      }}
-      style={styles.productCard}
-    >
-      <TouchableOpacity
-        onPress={() => {/* Navigate to product detail */}}
-        style={styles.productCardContent}
-      >
-        <View style={styles.productImagePlaceholder}>
-          <Text style={styles.productImageIcon as TextStyle}>📦</Text>
+      </View>
+      
+      <View style={styles.businessFooter}>
+        <View style={styles.statusContainer}>
+          <View style={[
+            styles.statusDot, 
+            { backgroundColor: item.is_open ? '#10B981' : '#EF4444' }
+          ]} />
+          <Text style={[styles.statusText, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            {item.is_open ? 'Open' : 'Closed'}
+          </Text>
         </View>
-        <Text style={styles.productName as TextStyle} numberOfLines={2}>{product.name}</Text>
-        <Text style={styles.productPrice as TextStyle}>₹{product.price}</Text>
-        <Text style={styles.productBusiness as TextStyle}>{product.business?.name}</Text>
-      </TouchableOpacity>
-    </MotiView>
+        
+        {item.delivery_available && (
+          <View style={styles.deliveryBadge}>
+            <Ionicons name="bicycle-outline" size={14} color={colors.colors?.primary || '#3B82F6'} />
+            <Text style={[styles.deliveryText, { color: colors.colors?.primary || '#3B82F6' }]}>
+              Delivery
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
   );
 
-  const renderCategoryChip = (category: Category, index: number) => (
-    <MotiView
-      key={category.id}
-      from={{ opacity: 0, translateY: 20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ 
-        type: 'timing',
-        duration: 200,
-        delay: index * 50
-      }}
-    >
-      <TouchableOpacity
-        onPress={() => setSelectedCategory(category.id)}
-        style={[
-          styles.categoryChip,
-          selectedCategory === category.id && styles.selectedCategoryChip
-        ]}
-      >
-        <Text style={[
-          styles.categoryText as TextStyle,
-          selectedCategory === category.id && (styles.selectedCategoryText as TextStyle)
-        ]}>
-          {category.name}
-        </Text>
-      </TouchableOpacity>
-    </MotiView>
-  );
-
-  if (isLoading && nearbyBusinesses.length === 0) {
+  if (loading && businesses.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.colors?.background || '#FFFFFF' }]}>
         <View style={styles.loadingContainer}>
-          <MotiView
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ type: 'timing', duration: 500, loop: true }}
-          >
-            <Text style={styles.loadingText as TextStyle}>{t('common.loading')}</Text>
-          </MotiView>
+          <ActivityIndicator size="large" color={colors.colors?.primary || '#3B82F6'} />
+          <Text style={[styles.loadingText, { color: colors.colors?.text || '#1E293B' }]}>
+            Finding nearby businesses...
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            colors={[COLORS.primary[500]]}
-            tintColor={COLORS.primary[500]}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <MotiView
-          from={{ opacity: 0, translateY: -20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500 }}
-        >
-          <View style={styles.header}>
-            <Text style={styles.greeting as TextStyle}>
-              {t('customer.home.greeting', { name: user?.profile?.full_name?.split(' ')[0] || 'User' })}
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.colors?.background || '#FFFFFF' }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.colors?.primary || '#3B82F6' }]}>
+        <View>
+          <Text style={styles.greeting}>
+            Hello{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+          </Text>
+          <Text style={styles.subtitle}>
+            Discover local businesses near you
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.locationButton}>
+          <Ionicons name="location-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.locationText}>
+            {userLocation ? `${userLocation.latitude.toFixed(3)}, ${userLocation.longitude.toFixed(3)}` : 'Getting location...'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Quick Stats */}
+      <View style={styles.statsContainer}>
+        <View style={[styles.statCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}>
+          <Text style={[styles.statNumber, { color: colors.colors?.primary || '#3B82F6' }]}>
+            {businesses.length}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            Nearby Businesses
+          </Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}>
+          <Text style={[styles.statNumber, { color: colors.colors?.primary || '#3B82F6' }]}>
+            20km
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            Search Radius
+          </Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}>
+          <Text style={[styles.statNumber, { color: colors.colors?.primary || '#3B82F6' }]}>
+            {businesses.filter(b => b.is_open).length}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.colors?.textSecondary || '#64748B' }]}>
+            Open Now
+          </Text>
+        </View>
+      </View>
+
+      {/* Business List */}
+      <View style={styles.businessListContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.colors?.text || '#1E293B' }]}>
+          Nearby Businesses
+        </Text>
+        
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
+              {error}
             </Text>
-            <Text style={styles.subtitle as TextStyle}>{t('customer.home.subtitle')}</Text>
-            
-            {cartItems.length > 0 && (
-              <TouchableOpacity style={styles.cartBadge}>
-                <Text style={styles.cartCount as TextStyle}>{cartItems.length}</Text>
-                <Text style={styles.cartIcon as TextStyle}>🛒</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity 
+              style={[styles.retryButton, { backgroundColor: colors.colors?.primary || '#3B82F6' }]}
+              onPress={onRefresh}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
-        </MotiView>
-
-        {/* Search Bar */}
-        <MotiView
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 200 }}
-        >
-          <Card>
-            <View style={styles.searchContainer}>
-              <Input
-                placeholder={t('customer.home.searchPlaceholder')}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <Button
-                title={t('common.search')}
-                onPress={handleSearch}
-                variant="primary"
-                size="sm"
-                icon="🔍"
-              />
-            </View>
-          </Card>
-        </MotiView>
-
-        {/* Categories */}
-        {categories.length > 0 && (
-          <MotiView
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 400 }}
-          >
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.categories')}</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoriesContainer}
-              >
-                {categories.map((category, index) => renderCategoryChip(category, index))}
-              </ScrollView>
-            </View>
-          </MotiView>
         )}
 
-        {/* Nearby Businesses */}
-        {nearbyBusinesses.length > 0 && (
-          <MotiView
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 600 }}
-          >
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.nearbyBusinesses')}</Text>
-                <View style={styles.realtimeIndicator}>
-                  <View style={styles.realtimeDot} />
-                  <Text style={styles.realtimeText as TextStyle}>📡 Live ({nearbyBusinesses.length})</Text>
-                </View>
-              </View>
-              <View style={styles.businessesList}>
-                {nearbyBusinesses.slice(0, 3).map((business, index) => 
-                  renderBusinessCard(business, index)
-                )}
-              </View>
-              <Button
-                title={t('customer.home.viewAllBusinesses')}
-                onPress={() => {/* Navigate to all businesses */}}
-                variant="outline"
-                size="sm"
+        <FlatList
+          data={businesses}
+          renderItem={renderBusinessItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.colors?.primary || '#3B82F6']}
+              tintColor={colors.colors?.primary || '#3B82F6'}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons 
+                name="business-outline" 
+                size={48} 
+                color={colors.colors?.textSecondary || '#64748B'} 
               />
+              <Text style={[styles.emptyText, { color: colors.colors?.textSecondary || '#64748B' }]}>
+                No businesses found nearby
+              </Text>
+              <Text style={[styles.emptySubtext, { color: colors.colors?.textSecondary || '#64748B' }]}>
+                Try adjusting your location or refresh
+              </Text>
             </View>
-          </MotiView>
-        )}
-
-        {/* Popular Products */}
-        {popularProducts.length > 0 && (
-          <MotiView
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 800 }}
-          >
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle as TextStyle}>{t('customer.home.popularProducts')}</Text>
-              <FlatList
-                data={popularProducts}
-                renderItem={({ item, index }) => renderProductCard(item, index)}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.productsContainer}
-              />
-            </View>
-          </MotiView>
-        )}
-
-        {/* Empty State */}
-        {nearbyBusinesses.length === 0 && !isLoading && (
-          <MotiView
-            from={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', damping: 15 }}
-          >
-            <Card>
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateIcon as TextStyle}>🏪</Text>
-                <Text style={styles.emptyStateTitle as TextStyle}>{t('customer.home.noBusinesses')}</Text>
-                <Text style={styles.emptyStateMessage as TextStyle}>{t('customer.home.noBusinessesMessage')}</Text>
-                <Button
-                  title={t('customer.home.exploreMore')}
-                  onPress={() => {/* Navigate to explore */}}
-                  variant="primary"
-                />
-              </View>
-            </Card>
-          </MotiView>
-        )}
-      </ScrollView>
+          }
+          contentContainerStyle={businesses.length === 0 ? styles.emptyList : undefined}
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -428,13 +216,6 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: DIMENSIONS.PADDING.md,
   },
   loadingContainer: {
     flex: 1,
@@ -442,260 +223,189 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
+    marginTop: 16,
     fontSize: 16,
-    color: COLORS.text.secondary,
   },
   header: {
-    marginBottom: DIMENSIONS.PADDING.lg,
-    position: 'relative',
+    padding: 20,
+    paddingTop: 16,
   },
   greeting: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text.primary,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.text.secondary,
-    marginTop: DIMENSIONS.PADDING.xs,
-    lineHeight: 24,
+    fontSize: 14,
+    color: '#E2E8F0',
+    marginBottom: 16,
   },
-  cartBadge: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
+  locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary[500],
-    paddingHorizontal: DIMENSIONS.PADDING.sm,
-    paddingVertical: DIMENSIONS.PADDING.xs,
-    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
   },
-  cartCount: {
-    color: COLORS.white,
-    fontWeight: '600',
-    marginRight: DIMENSIONS.PADDING.xs,
+  locationText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginLeft: 6,
   },
-  cartIcon: {
-    fontSize: 16,
-  },
-  searchContainer: {
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: DIMENSIONS.PADDING.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
   },
-  section: {
-    marginBottom: DIMENSIONS.PADDING.lg,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    marginBottom: DIMENSIONS.PADDING.md,
-  },
-  categoriesContainer: {
-    paddingHorizontal: DIMENSIONS.PADDING.xs,
-    gap: DIMENSIONS.PADDING.sm,
-  },
-  categoryChip: {
-    backgroundColor: COLORS.gray[100],
-    paddingHorizontal: DIMENSIONS.PADDING.md,
-    paddingVertical: DIMENSIONS.PADDING.sm,
-    borderRadius: DIMENSIONS.BORDER_RADIUS.full,
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
-  },
-  selectedCategoryChip: {
-    backgroundColor: COLORS.primary[500],
-    borderColor: COLORS.primary[500],
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text.secondary,
-  },
-  selectedCategoryText: {
-    color: COLORS.white,
-  },
-  businessesList: {
-    gap: DIMENSIONS.PADDING.md,
-    marginBottom: DIMENSIONS.PADDING.md,
-  },
-  businessCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: DIMENSIONS.BORDER_RADIUS.lg,
-    shadowColor: COLORS.black,
+  statCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  businessCardContent: {
-    padding: DIMENSIONS.PADDING.md,
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  businessListContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  businessCard: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   businessHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: DIMENSIONS.PADDING.sm,
-  },
-  businessTypeIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: DIMENSIONS.PADDING.md,
-  },
-  businessIcon: {
-    fontSize: 20,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   businessInfo: {
     flex: 1,
+    marginRight: 12,
   },
   businessName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: COLORS.text.primary,
+    marginBottom: 4,
   },
   businessCategory: {
     fontSize: 14,
-    color: COLORS.text.secondary,
-    marginTop: DIMENSIONS.PADDING.xs,
+    marginBottom: 4,
   },
-  businessDistance: {
+  businessAddress: {
     fontSize: 12,
-    color: COLORS.info[500],
-    marginTop: DIMENSIONS.PADDING.xs,
   },
-  businessDescription: {
+  businessMeta: {
+    alignItems: 'flex-end',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  rating: {
     fontSize: 14,
-    color: COLORS.text.secondary,
-    lineHeight: 20,
-    marginBottom: DIMENSIONS.PADDING.sm,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  distance: {
+    fontSize: 12,
   },
   businessFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  ratingContainer: {
+  statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  rating: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text.primary,
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
   },
-  reviewCount: {
+  statusText: {
     fontSize: 12,
-    color: COLORS.text.secondary,
-    marginLeft: DIMENSIONS.PADDING.xs,
   },
-  openBadge: {
-    backgroundColor: COLORS.success[500],
-    paddingHorizontal: DIMENSIONS.PADDING.sm,
-    paddingVertical: DIMENSIONS.PADDING.xs,
-    borderRadius: DIMENSIONS.BORDER_RADIUS.sm,
-  },
-  openText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  productsContainer: {
-    paddingHorizontal: DIMENSIONS.PADDING.xs,
-    gap: DIMENSIONS.PADDING.md,
-  },
-  productCard: {
-    width: 150,
-    backgroundColor: COLORS.white,
-    borderRadius: DIMENSIONS.BORDER_RADIUS.lg,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  productCardContent: {
-    padding: DIMENSIONS.PADDING.sm,
-  },
-  productImagePlaceholder: {
-    width: '100%',
-    height: 100,
-    backgroundColor: COLORS.gray[100],
-    borderRadius: DIMENSIONS.BORDER_RADIUS.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: DIMENSIONS.PADDING.sm,
-  },
-  productImageIcon: {
-    fontSize: 24,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    marginBottom: DIMENSIONS.PADDING.xs,
-    lineHeight: 18,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.success[600],
-    marginBottom: DIMENSIONS.PADDING.xs,
-  },
-  productBusiness: {
-    fontSize: 12,
-    color: COLORS.text.secondary,
-  },
-  emptyState: {
-    alignItems: 'center',
-    padding: DIMENSIONS.PADDING.xl,
-  },
-  emptyStateIcon: {
-    fontSize: 48,
-    marginBottom: DIMENSIONS.PADDING.md,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    textAlign: 'center',
-    marginBottom: DIMENSIONS.PADDING.sm,
-  },
-  emptyStateMessage: {
-    fontSize: 14,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: DIMENSIONS.PADDING.lg,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: DIMENSIONS.PADDING.md,
-  },
-  realtimeIndicator: {
+  deliveryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E8',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  realtimeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.success,
-    marginRight: 4,
+  deliveryText: {
+    fontSize: 12,
+    marginLeft: 4,
+    fontWeight: '500',
   },
-  realtimeText: {
-    fontSize: 10,
+  errorContainer: {
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
-    color: '#2E7D32',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyList: {
+    flexGrow: 1,
   },
 });
 

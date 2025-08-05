@@ -1,5 +1,5 @@
 import React from 'react';
-import ExploreScreen from '../../src/screens/shared/ExploreScreen';
+import ExploreScreen from '../../src/screens/customer/ExploreScreen';
 
 export default function ExploreTab() {
   return <ExploreScreen />;

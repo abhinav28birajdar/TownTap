@@ -72,16 +72,16 @@ const CustomerTabs = () => {
 
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
-        tabBarActiveTintColor: colors.colors.primary,
-        tabBarInactiveTintColor: colors.colors.textSecondary,
+        tabBarActiveTintColor: colors.colors?.primary || '#3B82F6',
+        tabBarInactiveTintColor: colors.colors?.textSecondary || '#64748B',
         tabBarStyle: {
-          backgroundColor: colors.colors.background,
-          borderTopColor: colors.colors.border,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
+          borderTopColor: colors.colors?.border || '#E2E8F0',
         },
         headerStyle: {
-          backgroundColor: colors.colors.background,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
         },
-        headerTintColor: colors.colors.text,
+        headerTintColor: colors.colors?.text || '#1E293B',
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -124,16 +124,16 @@ const BusinessTabs = () => {
 
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
-        tabBarActiveTintColor: colors.colors.secondary,
-        tabBarInactiveTintColor: colors.colors.textSecondary,
+        tabBarActiveTintColor: colors.colors?.secondary || '#34D399',
+        tabBarInactiveTintColor: colors.colors?.textSecondary || '#64748B',
         tabBarStyle: {
-          backgroundColor: colors.colors.background,
-          borderTopColor: colors.colors.border,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
+          borderTopColor: colors.colors?.border || '#E2E8F0',
         },
         headerStyle: {
-          backgroundColor: colors.colors.background,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
         },
-        headerTintColor: colors.colors.text,
+        headerTintColor: colors.colors?.text || '#1E293B',
       })}
     >
       <Tab.Screen name="Dashboard" component={BusinessDashboardScreen} />
@@ -153,9 +153,9 @@ const AuthStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.colors.background,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
         },
-        headerTintColor: colors.colors.text,
+        headerTintColor: colors.colors?.text || '#1E293B',
       }}
     >
       <Stack.Screen 
@@ -196,9 +196,9 @@ const AppStack = ({ userType }: { userType: 'customer' | 'business' }) => {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.colors.background,
+          backgroundColor: colors.colors?.background || '#FFFFFF',
         },
-        headerTintColor: colors.colors.text,
+        headerTintColor: colors.colors?.text || '#1E293B',
       }}
     >
       {userType === 'customer' ? (
@@ -278,12 +278,12 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
       theme={{
         dark: false,
         colors: {
-          primary: colors.colors.primary,
-          background: colors.colors.background,
-          card: colors.colors.surface,
-          text: colors.colors.text,
-          border: colors.colors.border,
-          notification: colors.colors.error,
+          primary: colors.colors?.primary || '#3B82F6',
+          background: colors.colors?.background || '#FFFFFF',
+          card: colors.colors?.surface || '#FFFFFF',
+          text: colors.colors?.text || '#1E293B',
+          border: colors.colors?.border || '#E2E8F0',
+          notification: colors.colors?.error || '#EF4444',
         },
         fonts: {
           regular: {
