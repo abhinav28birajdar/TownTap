@@ -37,7 +37,7 @@ export const useCartStore = create<CartStore>()(
         
         // If cart is empty or same business, allow adding
         if (!businessId || businessId === product.business_id) {
-          const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+          const existingItemIndex = items.findIndex(item => item.productId === product.id);
           
           if (existingItemIndex >= 0) {
             // Update existing item quantity
@@ -48,32 +48,45 @@ export const useCartStore = create<CartStore>()(
             // Add new item
             const newItem: CartItem = {
               id: `${product.id}_${Date.now()}`,
-              product,
+              type: 'product',
+              businessId: product.business_id || '',
+              productId: product.id,
+              product: product,
+              name: product.name,
+              price: product.price,
               quantity,
             };
+            
             set({ 
               items: [...items, newItem],
-              businessId: product.business_id,
+              businessId: product.business_id || null
             });
           }
-          get().calculateTotal();
         } else {
-          // Different business - clear cart first
+          // Different business - clear cart and add new item
+          const newItem: CartItem = {
+            id: `${product.id}_${Date.now()}`,
+            type: 'product',
+            businessId: product.business_id || '',
+            productId: product.id,
+            product: product,
+            name: product.name,
+            price: product.price,
+            quantity,
+          };
+          
           set({
-            items: [{
-              id: `${product.id}_${Date.now()}`,
-              product,
-              quantity,
-            }],
-            businessId: product.business_id,
+            items: [newItem],
+            businessId: product.business_id || null
           });
-          get().calculateTotal();
         }
+        
+        get().calculateTotal();
       },
 
       removeItem: (productId: string) => {
         const { items } = get();
-        const updatedItems = items.filter(item => item.product.id !== productId);
+        const updatedItems = items.filter(item => item.productId !== productId);
         
         set({ 
           items: updatedItems,
@@ -91,7 +104,7 @@ export const useCartStore = create<CartStore>()(
         }
 
         const updatedItems = items.map(item =>
-          item.product.id === productId 
+          item.productId === productId 
             ? { ...item, quantity }
             : item
         );
@@ -112,7 +125,7 @@ export const useCartStore = create<CartStore>()(
       calculateTotal: () => {
         const { items } = get();
         const subtotal = items.reduce((total, item) => {
-          const price = item.product.discount_price || item.product.price;
+          const price = item.product?.price || item.price;
           return total + (price * item.quantity);
         }, 0);
 
