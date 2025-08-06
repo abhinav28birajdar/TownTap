@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ![TownTap Logo](./assets/images/icon.png)
 
 # 🏪 TownTap - Local Business Discovery Platform
@@ -329,3 +330,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Built with ❤️ using React Native, Expo, and Supabase**
+=======
+-----
+>>>>>>> 3e19008e9954047e9764562d063d6d4b07a609a0
