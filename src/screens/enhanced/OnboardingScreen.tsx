@@ -3,23 +3,22 @@
 // AI-powered user type selection and preference setup
 // =====================================================
 
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MotiView, MotiText } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useAuthStore, useAuthActions } from '../stores/auth-store';
-import { lightTheme as theme } from '../theme/enhanced-theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiText, MotiView } from 'moti';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+    Alert,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { useAuthActions, useAuthStore } from '../../stores/auth-store';
+import { lightTheme as theme } from '../../theme/enhanced-theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -183,7 +182,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             <Ionicons
               name="person-outline"
               size={48}
-              color={userType === 'customer' ? theme.colors.primary : theme.colors.gray[600]}
+              color={userType === 'customer' ? theme.colors.primary : theme.colors.textSecondary}
             />
           </View>
           <Text style={[
@@ -224,7 +223,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             <Ionicons
               name="business-outline"
               size={48}
-              color={userType === 'business_owner' ? theme.colors.secondary[500] : theme.colors.gray[600]}
+              color={userType === 'business_owner' ? theme.colors.secondary : theme.colors.textSecondary}
             />
           </View>
           <Text style={[
@@ -492,7 +491,7 @@ const styles = StyleSheet.create({
   userTypeTitle: {
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.gray[800],
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
   },
@@ -500,11 +499,11 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   userTypeTitleSelectedBusiness: {
-    color: theme.colors.secondary[500],
+    color: theme.colors.secondary,
   },
   userTypeDescription: {
     fontSize: theme.typography.sizes.sm,
-    color: theme.colors.gray[600],
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: theme.spacing.md,
@@ -514,7 +513,7 @@ const styles = StyleSheet.create({
   },
   userTypeFeature: {
     fontSize: theme.typography.sizes.xs,
-    color: theme.colors.gray[500],
+    color: theme.colors.textTertiary,
     marginBottom: 4,
     textAlign: 'center',
   },
@@ -570,266 +569,3 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
 });
-    
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handleComplete = async () => {
-    try {
-      // Sign in anonymously to start using the app
-      await signInAnonymously();
-      onComplete();
-    } catch (error) {
-      console.error('Error during onboarding completion:', error);
-      Alert.alert('Error', 'Failed to complete onboarding. Please try again.');
-    }
-  };
-
-  const currentStepData = steps[currentStep];
-
-  return (
-    <LinearGradient
-      colors={[theme.colors.primary, theme.colors.secondary]}
-      style={styles.container}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          {steps.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.progressDot,
-                {
-                  backgroundColor: index <= currentStep 
-                    ? theme.colors.surface 
-                    : `${theme.colors.surface}30`,
-                },
-              ]}
-            />
-          ))}
-        </View>
-
-        {/* Content */}
-        <View style={styles.content}>
-          <Image
-            source={currentStepData.image}
-            style={styles.image}
-            resizeMode="contain"
-          />
-          
-          <Text style={[styles.title, { color: theme.colors.surface }]}>
-            {currentStepData.title}
-          </Text>
-          
-          <Text style={[styles.description, { color: `${theme.colors.surface}90` }]}>
-            {currentStepData.description}
-          </Text>
-
-          {/* User Type Selection */}
-          {currentStepData.isUserTypeSelection && (
-            <View style={styles.userTypeContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  {
-                    backgroundColor: userType === 'customer' ? theme.colors.surface : 'transparent',
-                    borderColor: theme.colors.surface,
-                  },
-                ]}
-                onPress={() => setUserType('customer')}
-              >
-                <Text style={[
-                  styles.userTypeIcon,
-                  { color: userType === 'customer' ? theme.colors.primary : theme.colors.surface }
-                ]}>
-                  🛍️
-                </Text>
-                <Text style={[
-                  styles.userTypeTitle,
-                  { color: userType === 'customer' ? theme.colors.primary : theme.colors.surface }
-                ]}>
-                  I'm a Customer
-                </Text>
-                <Text style={[
-                  styles.userTypeDesc,
-                  { color: userType === 'customer' ? theme.colors.primary : `${theme.colors.surface}80` }
-                ]}>
-                  Find and order from local businesses
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  {
-                    backgroundColor: userType === 'business' ? theme.colors.surface : 'transparent',
-                    borderColor: theme.colors.surface,
-                  },
-                ]}
-                onPress={() => setUserType('business')}
-              >
-                <Text style={[
-                  styles.userTypeIcon,
-                  { color: userType === 'business' ? theme.colors.primary : theme.colors.surface }
-                ]}>
-                  🏪
-                </Text>
-                <Text style={[
-                  styles.userTypeTitle,
-                  { color: userType === 'business' ? theme.colors.primary : theme.colors.surface }
-                ]}>
-                  I'm a Business Owner
-                </Text>
-                <Text style={[
-                  styles.userTypeDesc,
-                  { color: userType === 'business' ? theme.colors.primary : `${theme.colors.surface}80` }
-                ]}>
-                  Manage my business and reach customers
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* Navigation */}
-        <View style={styles.navigation}>
-          {currentStep > 0 && (
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={() => setCurrentStep(currentStep - 1)}
-            >
-              <Text style={[styles.buttonText, { color: theme.colors.surface }]}>
-                Back
-              </Text>
-            </TouchableOpacity>
-          )}
-          
-          <TouchableOpacity
-            style={[
-              styles.button,
-              styles.primaryButton,
-              { 
-                backgroundColor: theme.colors.surface,
-                opacity: (currentStep === 1 && !userType) ? 0.5 : 1,
-              },
-            ]}
-            onPress={handleNext}
-          >
-            <Text style={[styles.buttonText, { color: theme.colors.primary }]}>
-              {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </LinearGradient>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 40,
-  },
-  progressDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  image: {
-    width: 120,
-    height: 120,
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  userTypeContainer: {
-    width: '100%',
-    gap: 16,
-    marginTop: 20,
-  },
-  userTypeButton: {
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 2,
-    alignItems: 'center',
-    minHeight: 120,
-    justifyContent: 'center',
-  },
-  userTypeIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  userTypeTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  userTypeDesc: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  navigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 40,
-    gap: 16,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButton: {
-    // backgroundColor set dynamically
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
-
-export default OnboardingScreen;

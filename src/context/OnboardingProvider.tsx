@@ -26,7 +26,7 @@ const ONBOARDING_KEY = '@towntap_onboarding_completed';
 
 export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed to false for instant display
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -41,8 +41,6 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
     } catch (error) {
       console.error('Error checking onboarding status:', error);
       setHasCompletedOnboarding(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
