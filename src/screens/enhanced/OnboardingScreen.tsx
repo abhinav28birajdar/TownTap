@@ -9,16 +9,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MotiText, MotiView } from 'moti';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Colors, LightTheme } from '../../constants/YYY.01_colors';
+import { FontSizes, FontWeights } from '../../constants/YYY.02_typography';
+import { BorderRadius, Spacing } from '../../constants/YYY.03_dimensions';
 import { useAuthActions, useAuthStore } from '../../stores/auth-store';
-import { lightTheme as theme } from '../../theme/enhanced-theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -28,7 +30,7 @@ interface OnboardingStep {
   subtitle: string;
   description: string;
   icon: keyof typeof Ionicons.glyphMap;
-  gradient: string[];
+  gradient: [string, string]; // Fixed gradient type to ensure at least 2 colors
   features?: string[];
 }
 
@@ -39,7 +41,7 @@ const onboardingSteps: OnboardingStep[] = [
     subtitle: 'Your Hyperlocal Business Ecosystem',
     description: 'Discover, connect, and thrive with AI-powered local commerce. Experience the future of community-driven business interactions.',
     icon: 'storefront-outline',
-    gradient: ['#667eea', '#764ba2'],
+    gradient: [Colors.primary[500], Colors.primary[700]],
     features: [
       'Real-time business discovery',
       'AI-powered recommendations',
@@ -53,7 +55,7 @@ const onboardingSteps: OnboardingStep[] = [
     subtitle: 'Tailored Experience Just for You',
     description: 'Select your role to unlock personalized features designed specifically for your needs.',
     icon: 'people-outline',
-    gradient: ['#f093fb', '#f5576c'],
+    gradient: [Colors.secondary[400], Colors.secondary[600]],
   },
   {
     id: 'ai_features',
@@ -61,7 +63,7 @@ const onboardingSteps: OnboardingStep[] = [
     subtitle: 'Smart Assistant at Your Service',
     description: 'Our advanced AI learns your preferences, suggests relevant businesses, and helps optimize your experience.',
     icon: 'bulb-outline',
-    gradient: ['#4facfe', '#00f2fe'],
+    gradient: [Colors.info[400], Colors.info[600]],
     features: [
       'Intelligent search & discovery',
       'Personalized recommendations',
@@ -75,7 +77,7 @@ const onboardingSteps: OnboardingStep[] = [
     subtitle: 'Your Local Community Awaits',
     description: 'Everything is set up! Start discovering amazing local businesses and services in your area.',
     icon: 'rocket-outline',
-    gradient: ['#fa709a', '#fee140'],
+    gradient: [Colors.success[400], Colors.success[600]],
   },
 ];
 
@@ -182,7 +184,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             <Ionicons
               name="person-outline"
               size={48}
-              color={userType === 'customer' ? theme.colors.primary : theme.colors.textSecondary}
+              color={userType === 'customer' ? LightTheme.primary : LightTheme.textSecondary}
             />
           </View>
           <Text style={[
@@ -223,7 +225,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             <Ionicons
               name="business-outline"
               size={48}
-              color={userType === 'business_owner' ? theme.colors.secondary : theme.colors.textSecondary}
+              color={userType === 'business_owner' ? LightTheme.secondary : LightTheme.textSecondary}
             />
           </View>
           <Text style={[
@@ -249,7 +251,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const renderStep = (step: OnboardingStep, index: number) => (
     <View key={step.id} style={styles.stepContainer}>
       <LinearGradient
-        colors={step.gradient}
+        colors={step.gradient as readonly [string, string, ...string[]]}
         style={styles.stepGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -358,7 +360,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         <Ionicons 
           name={currentStep === onboardingSteps.length - 1 ? 'rocket' : 'chevron-forward'} 
           size={24} 
-          color={theme.colors.primary} 
+          color={LightTheme.primary} 
         />
       </TouchableOpacity>
     </View>
@@ -401,14 +403,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: Spacing[6], // lg = 24px
   },
   stepContent: {
     alignItems: 'center',
     maxWidth: 350,
   },
   stepIconContainer: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: Spacing[12], // xl = 48px
   },
   stepIconBg: {
     width: 120,
@@ -421,49 +423,49 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   stepTitle: {
-    fontSize: theme.typography.sizes.h2,
-    fontWeight: theme.typography.weights.bold,
+    fontSize: FontSizes['2xl'], // h2 = 24px
+    fontWeight: FontWeights.bold,
     color: 'white',
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: Spacing[2], // sm = 8px
   },
   stepSubtitle: {
-    fontSize: theme.typography.sizes.lg,
-    fontWeight: theme.typography.weights.medium,
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.medium,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: Spacing[4], // md = 16px
   },
   stepDescription: {
-    fontSize: theme.typography.sizes.md,
+    fontSize: FontSizes.base,
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: theme.spacing.lg,
+    marginBottom: Spacing[6], // lg = 24px
   },
   stepFeatures: {
     alignSelf: 'stretch',
-    marginTop: theme.spacing.md,
+    marginTop: Spacing[4], // md = 16px
   },
   stepFeatureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: Spacing[2], // sm = 8px
   },
   stepFeatureText: {
-    fontSize: theme.typography.sizes.md,
+    fontSize: FontSizes.base,
     color: 'white',
-    marginLeft: theme.spacing.sm,
+    marginLeft: Spacing[2], // sm = 8px
     flex: 1,
   },
   userTypeContainer: {
-    marginTop: theme.spacing.xl,
+    marginTop: Spacing[12], // xl = 48px
     width: '100%',
   },
   userTypeCard: {
     backgroundColor: 'white',
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing[4], // md = 16px
     overflow: 'hidden',
     elevation: 4,
     shadowColor: '#000',
@@ -473,10 +475,10 @@ const styles = StyleSheet.create({
   },
   userTypeCardSelected: {
     borderWidth: 2,
-    borderColor: theme.colors.primary,
+    borderColor: LightTheme.primary,
   },
   userTypeCardContent: {
-    padding: theme.spacing.lg,
+    padding: Spacing[6], // lg = 24px
     alignItems: 'center',
   },
   userTypeIconContainer: {
@@ -486,34 +488,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: Spacing[4], // md = 16px
   },
   userTypeTitle: {
-    fontSize: theme.typography.sizes.xl,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
+    fontSize: FontSizes.xl,
+    fontWeight: FontWeights.bold,
+    color: LightTheme.text,
+    marginBottom: Spacing[2], // sm = 8px
     textAlign: 'center',
   },
   userTypeTitleSelected: {
-    color: theme.colors.primary,
+    color: LightTheme.primary,
   },
   userTypeTitleSelectedBusiness: {
-    color: theme.colors.secondary,
+    color: LightTheme.secondary,
   },
   userTypeDescription: {
-    fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textSecondary,
+    fontSize: FontSizes.sm,
+    color: LightTheme.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: theme.spacing.md,
+    marginBottom: Spacing[4], // md = 16px
   },
   userTypeFeatures: {
     alignSelf: 'stretch',
   },
   userTypeFeature: {
-    fontSize: theme.typography.sizes.xs,
-    color: theme.colors.textTertiary,
+    fontSize: FontSizes.xs,
+    color: Colors.text.tertiary,
     marginBottom: 4,
     textAlign: 'center',
   },
@@ -522,15 +524,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: theme.layout.safeAreaBottom || theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: Spacing[6], // lg = 24px
+    paddingHorizontal: Spacing[6], // lg = 24px
     backgroundColor: 'transparent',
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: Spacing[6], // lg = 24px
   },
   paginationDot: {
     height: 8,
@@ -540,14 +542,14 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: Spacing[4], // md = 16px
   },
   controlButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
+    paddingVertical: Spacing[4], // md = 16px
+    paddingHorizontal: Spacing[6], // lg = 24px
+    borderRadius: BorderRadius.lg,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -560,12 +562,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   controlButtonText: {
-    fontSize: theme.typography.sizes.md,
-    fontWeight: theme.typography.weights.medium,
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.medium,
     color: 'white',
-    marginHorizontal: theme.spacing.sm,
+    marginHorizontal: Spacing[2], // sm = 8px
   },
   controlButtonTextPrimary: {
-    color: theme.colors.primary,
+    color: LightTheme.primary,
   },
 });

@@ -12,12 +12,55 @@ import { AppState } from 'react-native';
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+// Demo mode check
+const isDemoMode = !supabaseUrl || supabaseUrl.includes('demo') || !supabaseAnonKey || supabaseAnonKey.includes('demo');
+
+if (isDemoMode) {
+  console.log('🚧 TownTap running in DEMO MODE - Replace with your Supabase project');
 }
 
+// Create a mock client for demo mode
+const createDemoClient = () => ({
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+    signUp: () => Promise.resolve({ data: { user: null, session: null }, error: { message: 'Demo mode - create your Supabase project' } }),
+    signInWithPassword: () => Promise.resolve({ data: { user: null, session: null }, error: { message: 'Demo mode - create your Supabase project' } }),
+    signOut: () => Promise.resolve({ error: null }),
+    onAuthStateChange: (callback: any) => {
+      callback('SIGNED_OUT', null);
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    },
+  },
+  from: () => ({
+    select: () => ({
+      eq: () => ({
+        single: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+      }),
+    }),
+    insert: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+    update: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+    delete: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+  }),
+  channel: () => ({
+    on: () => ({}),
+    subscribe: () => Promise.resolve('OK'),
+    unsubscribe: () => Promise.resolve('OK'),
+  }),
+  storage: {
+    from: () => ({
+      upload: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+      download: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+    }),
+  },
+  functions: {
+    invoke: () => Promise.resolve({ data: null, error: { message: 'Demo mode' } }),
+  },
+});
+
 // Enhanced Supabase client configuration
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase: SupabaseClient = isDemoMode ? createDemoClient() as any : createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     // Use AsyncStorage for token persistence
     storage: AsyncStorage,
