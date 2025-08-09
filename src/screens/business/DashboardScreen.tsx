@@ -85,11 +85,9 @@ const DashboardScreen: React.FC = () => {
     <MotiView
       from={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        type: 'spring',
-        damping: 15,
-        stiffness: 200,
-        delay: delay * 100
+      transition={{
+        opacity: { type: 'spring', damping: 15, stiffness: 200, delay: delay * 100 },
+        scale: { type: 'spring', damping: 15, stiffness: 200, delay: delay * 100 }
       }}
       style={[styles.metricCard, { borderLeftColor: color }]}
     >
@@ -106,10 +104,9 @@ const DashboardScreen: React.FC = () => {
       key={order.id}
       from={{ opacity: 0, translateX: -50 }}
       animate={{ opacity: 1, translateX: 0 }}
-      transition={{ 
-        type: 'timing',
-        duration: 300,
-        delay: index * 100
+      transition={{
+        opacity: { type: 'timing', duration: 300, delay: index * 100 },
+        translateX: { type: 'timing', duration: 300, delay: index * 100 }
       }}
       style={styles.orderItem}
     >
@@ -157,7 +154,7 @@ const DashboardScreen: React.FC = () => {
           <MotiView
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ type: 'timing', duration: 500, loop: true }}
+            transition={{ opacity: { type: 'timing', duration: 500, loop: true } }}
           >
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </MotiView>
@@ -185,7 +182,10 @@ const DashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: -20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500 }}
+          transition={{
+            opacity: { type: 'timing', duration: 500 },
+            translateY: { type: 'timing', duration: 500 }
+          }}
         >
           <View style={styles.header}>
             <Text style={styles.title}>{t('business.dashboard.title')}</Text>
@@ -199,7 +199,10 @@ const DashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 200 }}
+          transition={{
+            opacity: { type: 'timing', duration: 500, delay: 200 },
+            translateY: { type: 'timing', duration: 500, delay: 200 }
+          }}
         >
           <Card>
             <Text style={styles.sectionTitle}>{t('business.dashboard.quickActions')}</Text>
@@ -234,7 +237,10 @@ const DashboardScreen: React.FC = () => {
           <MotiView
             from={{ opacity: 0, translateY: 20 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 400 }}
+            transition={{
+              opacity: { type: 'timing', duration: 500, delay: 400 },
+              translateY: { type: 'timing', duration: 500, delay: 400 }
+            }}
           >
             <Card>
               <Text style={styles.sectionTitle}>{t('business.dashboard.overview')}</Text>
@@ -277,7 +283,10 @@ const DashboardScreen: React.FC = () => {
           <MotiView
             from={{ opacity: 0, translateY: 20 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 600 }}
+            transition={{
+              opacity: { type: 'timing', duration: 500, delay: 600 },
+              translateY: { type: 'timing', duration: 500, delay: 600 }
+            }}
           >
             <Card>
               <Text style={styles.sectionTitle}>{t('business.dashboard.revenue')}</Text>
@@ -312,7 +321,10 @@ const DashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 800 }}
+          transition={{
+            opacity: { type: 'timing', duration: 500, delay: 800 },
+            translateY: { type: 'timing', duration: 500, delay: 800 }
+          }}
         >
           <Card>
             <View style={styles.sectionHeader}>

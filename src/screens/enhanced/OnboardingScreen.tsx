@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiText, MotiView } from 'moti';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Dimensions,
@@ -177,7 +177,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             scale: userType === 'customer' ? 1.05 : 1,
             backgroundColor: userType === 'customer' ? '#E3F2FD' : 'white',
           }}
-          transition={{ type: 'spring', damping: 15 }}
+          transition={{
+            scale: { type: 'spring', damping: 15 },
+            backgroundColor: { type: 'spring', damping: 15 }
+          }}
           style={styles.userTypeCardContent}
         >
           <View style={styles.userTypeIconContainer}>
@@ -218,7 +221,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             scale: userType === 'business_owner' ? 1.05 : 1,
             backgroundColor: userType === 'business_owner' ? '#E8F5E8' : 'white',
           }}
-          transition={{ type: 'spring', damping: 15 }}
+          transition={{
+            scale: { type: 'spring', damping: 15 },
+            backgroundColor: { type: 'spring', damping: 15 }
+          }}
           style={styles.userTypeCardContent}
         >
           <View style={styles.userTypeIconContainer}>
@@ -251,7 +257,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const renderStep = (step: OnboardingStep, index: number) => (
     <View key={step.id} style={styles.stepContainer}>
       <LinearGradient
-        colors={step.gradient as readonly [string, string, ...string[]]}
+        colors={step.gradient as readonly [string, string]}
         style={styles.stepGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -259,7 +265,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         <MotiView
           from={{ opacity: 0, translateY: 50 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 800, delay: index * 200 }}
+          transition={{
+            opacity: { type: 'timing', duration: 800, delay: index * 200 },
+            translateY: { type: 'timing', duration: 800, delay: index * 200 }
+          }}
           style={styles.stepContent}
         >
           <View style={styles.stepIconContainer}>
@@ -326,7 +335,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             width: index === currentStep ? 24 : 8,
             backgroundColor: index === currentStep ? 'white' : 'rgba(255, 255, 255, 0.5)',
           }}
-          transition={{ type: 'spring', damping: 15 }}
+            transition={{
+              width: { type: 'spring', damping: 15 },
+              backgroundColor: { type: 'spring', damping: 15 }
+            }}
           style={styles.paginationDot}
         />
       ))}

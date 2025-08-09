@@ -81,10 +81,8 @@ const SimpleDashboardScreen: React.FC = () => {
       from={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ 
-        type: 'spring',
-        damping: 15,
-        stiffness: 200,
-        delay: delay * 100
+        opacity: { type: 'spring', damping: 15, stiffness: 200, delay: delay * 100 },
+        scale: { type: 'spring', damping: 15, stiffness: 200, delay: delay * 100 }
       }}
       key={title}
       style={[styles.metricCard, { borderLeftColor: color }]}
@@ -103,9 +101,8 @@ const SimpleDashboardScreen: React.FC = () => {
       from={{ opacity: 0, translateX: -50 }}
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ 
-        type: 'timing',
-        duration: 300,
-        delay: index * 100
+        opacity: { type: 'timing', duration: 300, delay: index * 100 },
+        translateX: { type: 'timing', duration: 300, delay: index * 100 }
       }}
       style={styles.orderItem}
     >
@@ -134,7 +131,10 @@ const SimpleDashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: -20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 500 },
+            translateY: { type: 'timing', duration: 500 }
+          }}
         >
           <View style={styles.header}>
             <View>
@@ -158,7 +158,10 @@ const SimpleDashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 200 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 500, delay: 200 },
+            translateY: { type: 'timing', duration: 500, delay: 200 }
+          }}
         >
           <Card>
             <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -192,7 +195,10 @@ const SimpleDashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 400 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 500, delay: 400 },
+            translateY: { type: 'timing', duration: 500, delay: 400 }
+          }}
         >
           <Card>
             <Text style={styles.sectionTitle}>Overview</Text>
@@ -233,7 +239,10 @@ const SimpleDashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 600 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 500, delay: 600 },
+            translateY: { type: 'timing', duration: 500, delay: 600 }
+          }}
         >
           <Card>
             <Text style={styles.sectionTitle}>Revenue</Text>
@@ -267,7 +276,10 @@ const SimpleDashboardScreen: React.FC = () => {
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 500, delay: 800 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 500, delay: 800 },
+            translateY: { type: 'timing', duration: 500, delay: 800 }
+          }}
         >
           <Card>
             <View style={styles.sectionHeader}>

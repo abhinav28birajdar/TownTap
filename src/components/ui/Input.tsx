@@ -50,8 +50,7 @@ const Input: React.FC<InputProps> = ({
         scale: 1,
       }}
       transition={{
-        type: 'timing',
-        duration: 150,
+        scale: { type: 'timing', duration: 150 }
       }}
     >
       {label && (
@@ -110,7 +109,10 @@ const Input: React.FC<InputProps> = ({
         <MotiView
           from={{ opacity: 0, translateY: -10 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 200 }}
+          transition={{ 
+            opacity: { type: 'timing', duration: 200 },
+            translateY: { type: 'timing', duration: 200 }
+          }}
         >
           <Text style={styles.errorText}>{error}</Text>
         </MotiView>

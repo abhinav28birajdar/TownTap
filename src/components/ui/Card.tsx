@@ -59,8 +59,8 @@ const Card: React.FC<CardProps> = ({
       from={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
-        type: 'timing',
-        duration: 300,
+        opacity: { type: 'timing', duration: 300 },
+        scale: { type: 'timing', duration: 300 }
       }}
     >
       {children}

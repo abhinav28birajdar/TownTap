@@ -181,10 +181,8 @@ const AIContentGeneratorScreen: React.FC = () => {
             from={{ opacity: 0, translateY: 50 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ 
-              type: 'spring', 
-              damping: 20,
-              stiffness: 200,
-              delay: 300 
+              opacity: { type: 'spring', damping: 20, stiffness: 200, delay: 300 },
+              translateY: { type: 'spring', damping: 20, stiffness: 200, delay: 300 }
             }}
             style={styles.resultContainer}
           >

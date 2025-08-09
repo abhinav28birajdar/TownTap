@@ -129,8 +129,7 @@ const Button: React.FC<ButtonProps> = ({
         scale: disabled || loading ? 1 : 1,
       }}
       transition={{
-        type: 'timing',
-        duration: 150,
+        scale: { type: 'timing', duration: 150 }
       }}
     >
       <TouchableOpacity
