@@ -9,10 +9,16 @@
     "lib": ["ES2017", "DOM"],
     "downlevelIteration": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@app/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@screens/*": ["src/screens/*"],
+      "@services/*": ["src/services/*"],
+      "@utils/*": ["src/utils/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@assets/*": ["assets/*"]
     }
   },
   "include": [

@@ -1,4 +1,7 @@
-// Database Types for Supabase
+// =====================================================
+// TOWNTAP - SUPABASE DATABASE SCHEMA
+// Complete type definitions for database structure
+// =====================================================
 
 export interface Database {
   public: {
@@ -534,15 +537,104 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+// Enhanced Type Exports with Documentation
+/**
+ * User profile information
+ * Contains personal details, preferences, and authentication data
+ */
 export type Profile = Database['public']['Tables']['profiles']['Row'];
+
+/**
+ * Business entity information
+ * Contains details about registered businesses in the platform
+ */
 export type Business = Database['public']['Tables']['businesses']['Row'];
+
+/**
+ * Business or product category
+ * Used for classification and discovery of businesses and products
+ */
 export type Category = Database['public']['Tables']['categories']['Row'];
+
+/**
+ * Product information
+ * Physical items that businesses sell through the platform
+ */
 export type Product = Database['public']['Tables']['products']['Row'];
+
+/**
+ * Service information
+ * Services that businesses offer through the platform
+ */
 export type Service = Database['public']['Tables']['services']['Row'];
+
+/**
+ * Order information
+ * Records of customer purchases from businesses
+ */
 export type Order = Database['public']['Tables']['orders']['Row'];
+
+/**
+ * Order item information
+ * Individual products within an order
+ */
 export type OrderItem = Database['public']['Tables']['order_items']['Row'];
+
+/**
+ * Service request information
+ * Customer requests for services from businesses
+ */
 export type ServiceRequest = Database['public']['Tables']['service_requests']['Row'];
+
+/**
+ * Customer inquiry information
+ * Questions or information requests from customers to businesses
+ */
 export type Inquiry = Database['public']['Tables']['inquiries']['Row'];
+
+/**
+ * Review information
+ * Customer feedback about businesses, products, or services
+ */
 export type Review = Database['public']['Tables']['reviews']['Row'];
+
+/**
+ * AI interaction history
+ * Records of user interactions with AI features
+ */
 export type AIPromptHistory = Database['public']['Tables']['ai_prompts_history']['Row'];
+
+/**
+ * User address information
+ * Stored addresses for delivery or service locations
+ */
 export type Address = Database['public']['Tables']['addresses']['Row'];
+
+// Enhanced composite types for application use
+
+/**
+ * Complete order with items
+ * Combines order and related order items
+ */
+export interface CompleteOrder extends Order {
+  items: OrderItem[];
+  business?: Business;
+  customer?: Profile;
+}
+
+/**
+ * Business with category information
+ * Combines business and its primary category
+ */
+export interface BusinessWithCategory extends Business {
+  category: Category;
+  distance_km?: number;
+}
+
+/**
+ * Product with business information
+ * Combines product and its parent business
+ */
+export interface ProductWithBusiness extends Product {
+  business: Business;
+}
