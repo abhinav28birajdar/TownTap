@@ -7,6 +7,11 @@ module.exports = function(api) {
       }]
     ],
     plugins: [
+      // React Native and JSX handling
+      ['@babel/plugin-transform-react-jsx', {
+        runtime: 'automatic'
+      }],
+      
       // Handle class properties and private methods
       ['@babel/plugin-proposal-class-properties', { loose: true }],
       ['@babel/plugin-transform-private-methods', { loose: true }],
@@ -16,13 +21,12 @@ module.exports = function(api) {
       ['@babel/plugin-transform-typescript', { 
         allowDeclareFields: true,
         allowNamespaces: true,
-        onlyRemoveTypeImports: false // Important - handle "import type" syntax
+        isTSX: true,
+        onlyRemoveTypeImports: false
       }],
-      ['@babel/plugin-transform-flow-strip-types'],
       
-      // Animation support - Updated plugin name
-      // 'react-native-reanimated/plugin', // Deprecated - use worklets instead
-      // 'react-native-worklets/plugin', // New plugin name (if using worklets)
+      // Animation support - Using reanimated
+      'react-native-reanimated/plugin',
       
       // Enable path aliases
       ['module-resolver', {
