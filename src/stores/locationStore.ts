@@ -1,192 +1,158 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from 'expo-location';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Address, Location as LocationType } from '../types';
+import { LocationService } from '../services/locationService';
+import type {
+    Business,
+    BusinessCategory,
+    BusinessSearchParams,
+    Location,
+    LocationState,
+    NearbyBusinessesResponse
+} from '../types/index_location';
 
-interface LocationStore {
-  // State
-  currentLocation: LocationType | null;
-  location: LocationType | null; // Alias for currentLocation
-  selectedAddress: Address | null;
-  savedAddresses: Address[];
-  loading: boolean;
-  error: string | null;
-  permissionGranted: boolean;
-  
-  // Actions
+interface LocationStore extends LocationState {
+  // Location actions
   requestLocationPermission: () => Promise<boolean>;
-  getCurrentLocation: () => Promise<LocationType | null>;
-  setCurrentLocation: (location: LocationType) => void;
-  setLocation: (location: LocationType) => void; // Alias for setCurrentLocation
-  setSelectedAddress: (address: Address | null) => void;
-  addSavedAddress: (address: Address) => void;
-  updateSavedAddress: (addressId: string, updates: Partial<Address>) => void;
-  removeSavedAddress: (addressId: string) => void;
-  setDefaultAddress: (addressId: string) => void;
+  getCurrentLocation: () => Promise<Location | null>;
+  updateLocation: (location: Location) => void;
+  getAddressFromCoordinates: (lat: number, lng: number) => Promise<string>;
+  
+  // Business discovery actions
+  nearbyBusinesses: Business[];
+  businessCategories: BusinessCategory[];
+  searchResults: Business[];
+  selectedBusiness: Business | null;
+  
+  getNearbyBusinesses: (params: BusinessSearchParams) => Promise<NearbyBusinessesResponse>;
+  getBusinessCategories: () => Promise<BusinessCategory[]>;
+  searchBusinesses: (query: string, location: Location, filters?: any) => Promise<Business[]>;
+  setSelectedBusiness: (business: Business | null) => void;
+  
+  // Error handling
+  setError: (error: string | null) => void;
   clearError: () => void;
 }
 
 export const useLocationStore = create<LocationStore>()(
   persist(
     (set, get) => ({
-      // Initial State
+      // Initial state
       currentLocation: null,
-      location: null,
-      selectedAddress: null,
-      savedAddresses: [],
+      permissionGranted: false,
       loading: false,
       error: null,
-      permissionGranted: false,
+      nearbyBusinesses: [],
+      businessCategories: [],
+      searchResults: [],
+      selectedBusiness: null,
 
-      // Actions
+      // Location actions
       requestLocationPermission: async () => {
+        set({ loading: true, error: null });
         try {
-          set({ loading: true, error: null });
-          
-          const { status } = await Location.requestForegroundPermissionsAsync();
-          const granted = status === 'granted';
-          
+          const granted = await LocationService.requestLocationPermission();
           set({ permissionGranted: granted, loading: false });
           return granted;
-        } catch (error: any) {
-          set({ 
-            loading: false, 
-            error: error.message || 'Failed to request location permission',
-            permissionGranted: false 
-          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to request location permission';
+          set({ error: errorMessage, loading: false, permissionGranted: false });
           return false;
         }
       },
 
       getCurrentLocation: async () => {
+        set({ loading: true, error: null });
         try {
-          set({ loading: true, error: null });
-          
-          // Check permission first
-          const { status } = await Location.getForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            const granted = await get().requestLocationPermission();
-            if (!granted) {
-              set({ loading: false, error: 'Location permission denied' });
-              return null;
-            }
+          const location = await LocationService.getCurrentLocation();
+          if (location) {
+            set({ 
+              currentLocation: location, 
+              loading: false, 
+              permissionGranted: true 
+            });
+          } else {
+            set({ 
+              error: 'Unable to get current location', 
+              loading: false 
+            });
           }
-
-          // Get current location
-          const location = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.High,
-          });
-
-          const currentLocation: LocationType = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          };
-
-          set({ 
-            currentLocation, 
-            location: currentLocation,
-            loading: false, 
-            permissionGranted: true 
-          });
-
-          return currentLocation;
-        } catch (error: any) {
-          set({ 
-            loading: false, 
-            error: error.message || 'Failed to get current location' 
-          });
+          return location;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to get current location';
+          set({ error: errorMessage, loading: false });
           return null;
         }
       },
 
-      setCurrentLocation: (location: LocationType) => {
-        set({ currentLocation: location, location: location });
+      updateLocation: (location: Location) => {
+        set({ currentLocation: location, error: null });
       },
 
-      setLocation: (location: LocationType) => {
-        set({ currentLocation: location, location: location });
-      },
-
-      setSelectedAddress: (address: Address | null) => {
-        set({ selectedAddress: address });
-      },
-
-      addSavedAddress: (address: Address) => {
-        const savedAddresses = get().savedAddresses;
-        const newAddress = {
-          ...address,
-          id: address.id || Date.now().toString(),
-        };
-
-        // If this is the first address or marked as default, make it default
-        if (savedAddresses.length === 0 || address.is_default) {
-          // Remove default from other addresses
-          const updatedAddresses = savedAddresses.map(addr => ({
-            ...addr,
-            is_default: false,
-          }));
-          
-          set({ 
-            savedAddresses: [...updatedAddresses, { ...newAddress, is_default: true }],
-            selectedAddress: newAddress,
-          });
-        } else {
-          set({ 
-            savedAddresses: [...savedAddresses, newAddress],
-          });
+      getAddressFromCoordinates: async (lat: number, lng: number) => {
+        try {
+          return await LocationService.getAddressFromCoordinates(lat, lng);
+        } catch (error) {
+          console.error('Error getting address:', error);
+          return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         }
       },
 
-      updateSavedAddress: (addressId: string, updates: Partial<Address>) => {
-        const savedAddresses = get().savedAddresses;
-        const updatedAddresses = savedAddresses.map(address =>
-          address.id === addressId ? { ...address, ...updates } : address
-        );
-
-        // If setting as default, remove default from others
-        if (updates.is_default) {
-          const finalAddresses = updatedAddresses.map(address => ({
-            ...address,
-            is_default: address.id === addressId,
-          }));
-          
-          const defaultAddress = finalAddresses.find(addr => addr.is_default);
+      // Business discovery actions
+      getNearbyBusinesses: async (params: BusinessSearchParams) => {
+        set({ loading: true, error: null });
+        try {
+          const response = await LocationService.getNearbyBusinesses(params);
           set({ 
-            savedAddresses: finalAddresses,
-            selectedAddress: defaultAddress || get().selectedAddress,
+            nearbyBusinesses: response.businesses, 
+            loading: false 
           });
-        } else {
-          set({ savedAddresses: updatedAddresses });
+          return response;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to get nearby businesses';
+          set({ error: errorMessage, loading: false, nearbyBusinesses: [] });
+          return {
+            businesses: [],
+            total_count: 0,
+            radius_km: params.filters?.radius_km || 5,
+            center_location: params.location,
+          };
         }
       },
 
-      removeSavedAddress: (addressId: string) => {
-        const savedAddresses = get().savedAddresses;
-        const filteredAddresses = savedAddresses.filter(
-          address => address.id !== addressId
-        );
-
-        // If removing default address, set first address as default
-        const removedAddress = savedAddresses.find(addr => addr.id === addressId);
-        if (removedAddress?.is_default && filteredAddresses.length > 0) {
-          filteredAddresses[0].is_default = true;
-          set({ 
-            savedAddresses: filteredAddresses,
-            selectedAddress: filteredAddresses[0],
-          });
-        } else {
-          set({ 
-            savedAddresses: filteredAddresses,
-            selectedAddress: get().selectedAddress?.id === addressId 
-              ? null 
-              : get().selectedAddress,
-          });
+      getBusinessCategories: async () => {
+        set({ loading: true, error: null });
+        try {
+          const categories = await LocationService.getBusinessCategories();
+          set({ businessCategories: categories, loading: false });
+          return categories;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to get business categories';
+          set({ error: errorMessage, loading: false, businessCategories: [] });
+          return [];
         }
       },
 
-      setDefaultAddress: (addressId: string) => {
-        get().updateSavedAddress(addressId, { is_default: true });
+      searchBusinesses: async (query: string, location: Location, filters?: any) => {
+        set({ loading: true, error: null });
+        try {
+          const results = await LocationService.searchBusinesses(query, location, filters);
+          set({ searchResults: results, loading: false });
+          return results;
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to search businesses';
+          set({ error: errorMessage, loading: false, searchResults: [] });
+          return [];
+        }
+      },
+
+      setSelectedBusiness: (business: Business | null) => {
+        set({ selectedBusiness: business });
+      },
+
+      // Error handling
+      setError: (error: string | null) => {
+        set({ error });
       },
 
       clearError: () => {
@@ -194,12 +160,12 @@ export const useLocationStore = create<LocationStore>()(
       },
     }),
     {
-      name: 'location-storage',
+      name: 'location-storage-new',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        savedAddresses: state.savedAddresses,
-        selectedAddress: state.selectedAddress,
+        currentLocation: state.currentLocation,
         permissionGranted: state.permissionGranted,
+        businessCategories: state.businessCategories,
       }),
     }
   )

@@ -7,7 +7,15 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "fix-jsx": "node scripts/fix-jsx-in-js.js",
-    "clean-start": "npm run fix-jsx && expo start --clear"
+    "clean-start": "npm run fix-jsx && expo start --clear",
+    "cleanup": "node scripts/cleanup-project.js",
+    "optimize": "node scripts/optimize-project.js",
+    "optimize-imports": "node scripts/optimize-imports.js",
+    "final-cleanup": "node scripts/final-cleanup.js",
+    "full-optimize": "npm run optimize && npm run optimize-imports",
+    "dev": "expo start --clear",
+    "build": "expo build",
+    "prebuild": "expo prebuild"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.0",
