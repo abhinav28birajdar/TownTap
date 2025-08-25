@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
+import { useAIRecommendations } from '../../hooks/useAIRecommendations';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
 import { useAuthStore } from '../../stores/authStore';
+import { AIRecommendation } from '../../types/ai';
 
 interface Business {
   id: string;
@@ -33,11 +35,67 @@ const HomeScreen: React.FC = () => {
   const { colors } = useModernTheme();
   const { user } = useAuthStore();
   const { businesses, userLocation, loading, error, refetch } = useLocationBasedRealtime(20);
+  const { getRecommendations, getPersonalizedGreeting, isLoading: aiLoading } = useAIRecommendations();
   const [refreshing, setRefreshing] = useState(false);
+  const [greeting, setGreeting] = useState('Hello!');
+  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
+
+  useEffect(() => {
+    loadAIContent();
+  }, [user, userLocation]);
+
+  const loadAIContent = async () => {
+    if (user && userLocation) {
+      // Get personalized greeting
+      const personalizedGreeting = await getPersonalizedGreeting(
+        user.email?.split('@')[0],
+        {
+          timeOfDay: getTimeOfDay(),
+          lastVisit: user.last_sign_in_at ? new Date(user.last_sign_in_at) : undefined,
+          previousOrders: 0 // We'll update this when we have the order history
+        }
+      );
+      setGreeting(personalizedGreeting);
+
+      // Get AI recommendations
+      const recommendationsResult = await getRecommendations({
+        location: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude
+        },
+        previousOrders: [], // We'll update this when we have the order history
+        timeOfDay: getTimeOfDay(),
+        dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' })
+      });
+
+      if (recommendationsResult) {
+        const aiRecommendations: AIRecommendation[] = recommendationsResult.businesses.map(business => ({
+          businessId: business.id,
+          score: business.rating || 0,
+          reason: `Recommended based on your preferences and location`,
+          confidence: 0.8,
+          relevantFeatures: [
+            'location',
+            business.category.toLowerCase(),
+            business.is_open ? 'open_now' : 'closed',
+            business.delivery_available ? 'delivery' : 'pickup_only'
+          ]
+        }));
+        setRecommendations(aiRecommendations);
+      }
+    }
+  };
+
+  const getTimeOfDay = (): string => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), loadAIContent()]);
     setRefreshing(false);
   };
 
@@ -116,7 +174,7 @@ const HomeScreen: React.FC = () => {
       <View style={[styles.header, { backgroundColor: colors.colors?.primary || '#3B82F6' }]}>
         <View>
           <Text style={styles.greeting}>
-            Hello{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+            {greeting}
           </Text>
           <Text style={styles.subtitle}>
             Discover local businesses near you
@@ -158,13 +216,38 @@ const HomeScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Business List */}
-      <View style={styles.businessListContainer}>
-        <Text style={[styles.sectionTitle, { color: colors.colors?.text || '#1E293B' }]}>
-          Nearby Businesses
-        </Text>
-        
-        {error && (
+          {/* AI Recommendations */}
+          {recommendations.length > 0 && (
+            <View style={styles.recommendationsContainer}>
+              <Text style={[styles.sectionTitle, { color: colors.colors?.text || '#1E293B' }]}>
+                Recommended for You
+              </Text>
+              {recommendations.map((recommendation) => {
+                const business = businesses.find(b => b.id === recommendation.businessId);
+                if (!business) return null;
+                return (
+                  <View key={recommendation.businessId} style={styles.recommendedCard}>
+                    <View style={styles.recommendedHeader}>
+                      <Ionicons name="sparkles" size={16} color="#F59E0B" />
+                      <Text style={[styles.recommendedLabel, { color: colors.colors?.primary || '#3B82F6' }]}>
+                        Personal Recommendation
+                      </Text>
+                    </View>
+                    {renderBusinessItem({ item: business })}
+                    <Text style={[styles.recommendationReason, { color: colors.colors?.textSecondary || '#64748B' }]}>
+                      {recommendation.reason}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Business List */}
+          <View style={styles.businessListContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.colors?.text || '#1E293B' }]}>
+              Nearby Businesses
+            </Text>        {error && (
           <View style={styles.errorContainer}>
             <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {error}
@@ -216,6 +299,38 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  recommendationsContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  recommendedCard: {
+    borderRadius: 12,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  recommendedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  recommendedLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  recommendationReason: {
+    fontSize: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontStyle: 'italic',
   },
   loadingContainer: {
     flex: 1,

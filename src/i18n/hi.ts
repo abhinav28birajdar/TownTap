@@ -39,6 +39,10 @@ export default {
   auth: {
     welcome: 'TownTap में आपका स्वागत है',
     subtitle: 'आपका स्मार्ट बिजनेस साथी',
+    signIn: 'साइन इन',
+    createAccount: 'खाता बनाएं',
+    chooseRole: 'अपनी भूमिका चुनें',
+    demoLogin: 'डेमो लॉगिन',
     login: 'लॉगिन',
     signup: 'साइन अप',
     email: 'ईमेल',
@@ -60,18 +64,35 @@ export default {
     acceptTerms: 'मैं नियम और शर्तें स्वीकार करता/करती हूं',
   },
 
+  // Screens - स्क्रीन
+  screens: {
+    businessDetail: 'व्यापार विवरण',
+    productDetail: 'उत्पाद विवरण',
+    cart: 'आपका कार्ट',
+    checkout: 'चेकआउट',
+    orderTracking: 'ऑर्डर ट्रैक करें',
+    chat: 'चैट',
+    aiAssistant: 'AI असिस्टेंट',
+    aiContentGenerator: 'AI कंटेंट जेनरेटर',
+  },
+
   // Navigation - नेविगेशन
   navigation: {
     home: 'होम',
-    search: 'खोजें',
     orders: 'ऑर्डर',
     profile: 'प्रोफाइल',
+    settings: 'सेटिंग्स',
     dashboard: 'डैशबोर्ड',
-    aiTools: 'AI टूल्स',
     analytics: 'एनालिटिक्स',
+    aiAssistant: 'AI असिस्टेंट',
+    aiContent: 'AI कंटेंट',
     chat: 'चैट',
     notifications: 'सूचनाएं',
-    settings: 'सेटिंग्स',
+    paymentMethods: 'भुगतान विधियां',
+    businessDetail: 'व्यापार विवरण',
+    order: 'ऑर्डर',
+    explore: 'खोजें',
+    products: 'उत्पाद',
   },
 
   // AI Features - AI सुविधाएं

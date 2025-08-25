@@ -50,12 +50,18 @@ export default {
     paymentMethods: 'Payment Methods',
     businessDetail: 'Business Detail',
     order: 'Order',
+    explore: 'Explore',
+    products: 'Products',
   },
 
   // Authentication
   auth: {
     welcome: 'Welcome to TownTap',
     subtitle: 'Your Smart Business Companion',
+    signIn: 'Sign In',
+    createAccount: 'Create Account',
+    chooseRole: 'Choose Your Role',
+    demoLogin: 'Demo Login',
     login: 'Login',
     signup: 'Sign Up',
     email: 'Email',
@@ -75,6 +81,18 @@ export default {
     customer: 'Customer',
     business: 'Business Owner',
     acceptTerms: 'I accept the Terms and Conditions',
+  },
+
+  // Screens
+  screens: {
+    businessDetail: 'Business Details',
+    productDetail: 'Product Details',
+    cart: 'Your Cart',
+    checkout: 'Checkout',
+    orderTracking: 'Track Order',
+    chat: 'Chat',
+    aiAssistant: 'AI Assistant',
+    aiContentGenerator: 'AI Content Generator',
   },
 
   // AI Features

@@ -2,6 +2,74 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { useModernTheme } from '../context/ModernThemeContext';
+
+// Screen imports
+import CustomerDashboard from '../screens/customer/CustomerDashboard';
+import CustomerExplore from '../screens/customer/CustomerExplore';
+import CustomerOrders from '../screens/customer/CustomerOrders';
+import CustomerProfile from '../screens/customer/CustomerProfile';
+
+import BusinessAnalytics from '../screens/business/BusinessAnalytics';
+import BusinessCustomers from '../screens/business/BusinessCustomers';
+import BusinessDashboard from '../screens/business/BusinessDashboard';
+import BusinessOrders from '../screens/business/BusinessOrders';
+import BusinessProfile from '../screens/business/BusinessProfile';
+
+import AuthScreen from '../screens/auth/AuthScreen';
+import DemoLoginScreen from '../screens/auth/DemoLoginScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
+import SignUpScreen from '../screens/auth/SignUpScreen';
+
+// Navigation Types
+type AuthStackParamList = {
+  AuthLanding: undefined;
+  DemoLogin: undefined;
+  Login: undefined;
+  SignUp: undefined;
+};
+
+type CustomerTabParamList = {
+  Home: undefined;
+  Explore: undefined;
+  Orders: undefined;
+  Profile: undefined;
+};
+
+type BusinessTabParamList = {
+  Dashboard: undefined;
+  Customers: undefined;
+  Orders: undefined;
+  Analytics: undefined;
+  Profile: undefined;
+};
+
+// Create navigators
+const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+// Navigation Props Interface
+interface AppNavigationProps {
+  session: Session | null;
+  onShowOnboarding: () => void;
+}
+
+// Customer Tab Navigator
+const CustomerTabs = () => {
+  const { colors } = useModernTheme();
+
+  return (
+    <Stack.Navigator
+      id={undefined}
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.colors?.background || '#FFFFFF',
+        },
+        headerTintColor: colors.colors?.text || '#1E293B',
+      }}
+    >eact-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Session } from '@supabase/supabase-js';
 import React from 'react';
 
@@ -49,6 +117,7 @@ const CustomerTabs = () => {
 
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
@@ -98,6 +167,7 @@ const BusinessTabs = () => {
 
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;

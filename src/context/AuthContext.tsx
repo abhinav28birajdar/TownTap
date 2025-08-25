@@ -2,10 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthError, Session, User } from '@supabase/supabase-js';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { UserProfile } from '../types';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  userProfile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError | null }>;
@@ -31,6 +33,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (event === 'SIGNED_IN' && session?.user) {
           // Create or update profile when user signs in
           await createOrUpdateProfile(session.user);
+          await fetchUserProfile(session.user.id);
         }
         
         if (event === 'SIGNED_OUT') {
@@ -105,6 +109,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error('Error in createOrUpdateProfile:', error);
+    }
+  };
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
     }
   };
 
@@ -191,6 +214,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     session,
     user: session?.user || null,
+    userProfile,
     isLoading,
     isAuthenticated: !!session,
     signIn,

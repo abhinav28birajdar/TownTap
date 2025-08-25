@@ -7,6 +7,16 @@ import { initReactI18next } from 'react-i18next';
 import en from './en';
 import hi from './hi';
 
+// Types for language and translations
+export type Language = 'en' | 'hi';
+export type Translation = typeof en;
+
+// Export translations object
+export const translations: Record<Language, Translation> = {
+  en,
+  hi,
+};
+
 const LANGUAGE_DETECTOR = {
   type: 'languageDetector' as const,
   async: true,
