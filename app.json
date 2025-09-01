@@ -11,7 +11,14 @@
     "newArchEnabled": true,
     "sdkVersion": "53.0.0",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to location for business discovery and delivery tracking.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to location for business discovery and delivery tracking.",
+        "NSCameraUsageDescription": "This app uses camera to capture photos for reviews and business registration.",
+        "NSMicrophoneUsageDescription": "This app uses microphone for voice messages in chat.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +28,18 @@
       "edgeToEdgeEnabled": true,
       "statusBarStyle": "auto",
       "statusBarTranslucent": true,
-      "package": "com.iabhinavv28.TownTap"
+      "package": "com.iabhinavv28.TownTap",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -38,6 +56,30 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs access to location for business discovery and delivery tracking.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3B82F6",
+          "defaultChannel": "default",
+          "sounds": ["./assets/sounds/notification.wav"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to photo library to select images for reviews and business registration.",
+          "cameraPermission": "This app uses camera to capture photos for reviews and business registration."
         }
       ]
     ],

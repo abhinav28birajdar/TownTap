@@ -13,21 +13,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
 import { useAIRecommendations } from '../../hooks/useAIRecommendations';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/auth-store';
+import { Business } from '../../types';
 import { AIRecommendation } from '../../types/ai';
 
-interface Business {
-  id: string;
+// Extended Business interface for HomeScreen
+interface ExtendedBusiness extends Business {
   business_name: string;
-  description: string;
-  category: string;
-  address: string;
   city: string;
-  phone: string;
-  rating: number;
+  distance_km: number;
   is_open: boolean;
   delivery_available: boolean;
-  distance_km: number;
   logo_url?: string;
 }
 
@@ -51,7 +47,7 @@ const HomeScreen: React.FC = () => {
         user.email?.split('@')[0],
         {
           timeOfDay: getTimeOfDay(),
-          lastVisit: user.last_sign_in_at ? new Date(user.last_sign_in_at) : undefined,
+          lastVisit: user.updated_at ? new Date(user.updated_at) : undefined,
           previousOrders: 0 // We'll update this when we have the order history
         }
       );
@@ -99,7 +95,7 @@ const HomeScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const renderBusinessItem = ({ item }: { item: Business }) => (
+  const renderBusinessItem = ({ item }: { item: ExtendedBusiness }) => (
     <TouchableOpacity 
       style={[styles.businessCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}
       onPress={() => {
