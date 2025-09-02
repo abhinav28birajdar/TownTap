@@ -872,21 +872,34 @@ export interface Service {
 export interface Business {
   id: string;
   name: string;
+  business_name?: string; // alias for name
   description?: string;
   category: string;
   subcategory?: string;
   phone: string;
+  phone_number?: string; // alias for phone
   email?: string;
   address: string;
+  city?: string;
   latitude: number;
   longitude: number;
+  distance_km?: number;
   image_url?: string;
+  logo_url?: string;
   rating?: number;
+  total_reviews?: number;
   is_verified: boolean;
   is_active: boolean;
+  is_open?: boolean;
+  delivery_available?: boolean;
+  landmark?: string;
+  website_url?: string;
+  pincode?: string;
+  whatsapp_number?: string;
+  services?: string;
   operating_hours?: any;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // --- API Response Types ---

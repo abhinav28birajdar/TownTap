@@ -1,33 +1,7 @@
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-
-interface Business {
-  id: string;
-  business_name: string;
-  description: string;
-  category: string;
-  address: string;
-  city: string;
-  phone: string;
-  phone_number?: string;
-  email: string;
-  rating: number;
-  total_reviews: number;
-  is_open: boolean;
-  delivery_available: boolean;
-  latitude: number;
-  longitude: number;
-  distance_km: number;
-  image_url?: string;
-  logo_url?: string;
-  landmark?: string;
-  website_url?: string;
-  pincode?: string;
-  whatsapp_number?: string;
-  services?: string;
-  created_at?: string;
-}
+import { Business } from '../types';
 
 export function useLocationBasedRealtime(radiusKm: number = 20) {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -123,13 +97,17 @@ export function useLocationBasedRealtime(radiusKm: number = 20) {
           const businessesWithDistance = fallbackData
             .map(business => ({
               ...business,
+              name: business.business_name || (business as any).name || '',
+              business_name: business.business_name || (business as any).name,
               distance_km: calculateDistance(
                 userLocation.latitude,
                 userLocation.longitude,
                 business.latitude,
                 business.longitude
               ),
-              phone: business.phone_number || business.phone
+              phone: business.phone_number || business.phone,
+              is_verified: (business as any).is_verified || false,
+              is_active: (business as any).is_active !== false, // default to true unless explicitly false
             }))
             .filter(business => business.distance_km <= radiusKm)
             .sort((a, b) => a.distance_km - b.distance_km);
@@ -185,6 +163,7 @@ export function useLocationBasedRealtime(radiusKm: number = 20) {
               if (distance <= radiusKm) {
                 const businessWithDistance: Business = {
                   id: newBusiness.id,
+                  name: newBusiness.business_name || (newBusiness as any).name || '',
                   business_name: newBusiness.business_name,
                   description: newBusiness.description || '',
                   category: newBusiness.category || '',
@@ -194,6 +173,8 @@ export function useLocationBasedRealtime(radiusKm: number = 20) {
                   email: newBusiness.email || '',
                   rating: newBusiness.rating || 0,
                   total_reviews: newBusiness.total_reviews || 0,
+                  is_verified: (newBusiness as any).is_verified || false,
+                  is_active: (newBusiness as any).is_active !== false,
                   is_open: newBusiness.is_open ?? true,
                   delivery_available: newBusiness.delivery_available ?? false,
                   latitude: newBusiness.latitude,
@@ -234,6 +215,7 @@ export function useLocationBasedRealtime(radiusKm: number = 20) {
               if (distance <= radiusKm) {
                 const businessWithDistance: Business = {
                   id: updatedBusiness.id,
+                  name: updatedBusiness.business_name || (updatedBusiness as any).name || '',
                   business_name: updatedBusiness.business_name,
                   description: updatedBusiness.description || '',
                   category: updatedBusiness.category || '',
@@ -243,6 +225,8 @@ export function useLocationBasedRealtime(radiusKm: number = 20) {
                   email: updatedBusiness.email || '',
                   rating: updatedBusiness.rating || 0,
                   total_reviews: updatedBusiness.total_reviews || 0,
+                  is_verified: (updatedBusiness as any).is_verified || false,
+                  is_active: (updatedBusiness as any).is_active !== false,
                   is_open: updatedBusiness.is_open ?? true,
                   delivery_available: updatedBusiness.delivery_available ?? false,
                   latitude: updatedBusiness.latitude,

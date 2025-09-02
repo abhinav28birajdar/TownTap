@@ -17,16 +17,6 @@ import { useAuthStore } from '../../stores/auth-store';
 import { Business } from '../../types';
 import { AIRecommendation } from '../../types/ai';
 
-// Extended Business interface for HomeScreen
-interface ExtendedBusiness extends Business {
-  business_name: string;
-  city: string;
-  distance_km: number;
-  is_open: boolean;
-  delivery_available: boolean;
-  logo_url?: string;
-}
-
 const HomeScreen: React.FC = () => {
   const { colors } = useModernTheme();
   const { user } = useAuthStore();
@@ -95,7 +85,7 @@ const HomeScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const renderBusinessItem = ({ item }: { item: ExtendedBusiness }) => (
+  const renderBusinessItem = ({ item }: { item: Business }) => (
     <TouchableOpacity 
       style={[styles.businessCard, { backgroundColor: colors.colors?.surface || '#FFFFFF' }]}
       onPress={() => {
@@ -106,7 +96,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.businessHeader}>
         <View style={styles.businessInfo}>
           <Text style={[styles.businessName, { color: colors.colors?.text || '#1E293B' }]}>
-            {item.business_name}
+            {item.business_name || item.name}
           </Text>
           <Text style={[styles.businessCategory, { color: colors.colors?.textSecondary || '#64748B' }]}>
             {item.category || 'Business'}

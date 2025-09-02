@@ -1,6 +1,7 @@
 // FILE: supabase/functions/_shared/supabaseClient.ts
 // PURPOSE: Initializes Supabase clients within Edge Functions. Handles service role key for RLS bypass.
 
+import { verify } from 'https://deno.land/x/djwt@v2.9.1/mod.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@^2.39.0';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -16,6 +17,9 @@ export const supabaseServiceRole = createClient(SUPABASE_URL, SUPABASE_SERVICE_R
   auth: { persistSession: false }, // No session persistence needed server-side
 });
 
+// Export alias for compatibility
+export const supabaseAdmin = supabaseServiceRole;
+
 // Client for operations performed ON BEHALF of the authenticated user (respects RLS)
 export const getSupabaseClientForUserRequest = (req: Request) => {
   const authHeader = req.headers.get('Authorization');
@@ -26,6 +30,30 @@ export const getSupabaseClientForUserRequest = (req: Request) => {
       global: { headers: { Authorization: `Bearer ${token}` } },
       auth: { persistSession: false },
   });
+};
+
+// JWT verification helper
+export const verifyUserJwt = async (authHeader: string | null) => {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  try {
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(SUPABASE_JWT_SECRET),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+
+    const payload = await verify(token, cryptoKey);
+    return payload;
+  } catch (error) {
+    throw new Error('Invalid JWT token');
+  }
 };
 
 // Common response helpers for HTTP functions
