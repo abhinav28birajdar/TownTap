@@ -2,17 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { COLORS } from '../../config/constants';
+import { getBusinessCategories } from '../../lib/supabase';
 import { BusinessService } from '../../services/businessService';
 import { useAuthStore } from '../../stores/authStore';
 import { useLocationStore } from '../../stores/locationStoreNew';
@@ -22,11 +23,46 @@ const BusinessRegistrationScreen: React.FC = () => {
   const { user } = useAuthStore();
   const { 
     currentLocation, 
-    businessCategories, 
-    getBusinessCategories,
     getCurrentLocation,
-    getAddressFromCoordinates,
   } = useLocationStore();
+
+  // Local state for business categories
+  const [businessCategories, setBusinessCategories] = useState<any[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  // Function to load business categories
+  const loadBusinessCategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const { data, error } = await getBusinessCategories();
+      if (error) {
+        console.error('Error loading categories:', error);
+      } else {
+        setBusinessCategories(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  // Function to get address from coordinates (simplified version)
+  const getAddressFromCoordinates = async (latitude: number, longitude: number) => {
+    try {
+      // This is a simplified version - in a real app you'd use a geocoding service
+      return {
+        address: `Address for ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+        city: 'City',
+        state: 'State',
+        latitude,
+        longitude
+      };
+    } catch (error) {
+      console.error('Error getting address:', error);
+      return null;
+    }
+  };
 
   const [formData, setFormData] = useState<BusinessRegistration>({
     business_name: '',
@@ -65,7 +101,7 @@ const BusinessRegistrationScreen: React.FC = () => {
 
   const initializeForm = async () => {
     // Load business categories
-    await getBusinessCategories();
+    await loadBusinessCategories();
     
     // Get current location if available
     if (!currentLocation) {
@@ -74,16 +110,20 @@ const BusinessRegistrationScreen: React.FC = () => {
     
     // Set location and address if available
     if (currentLocation) {
-      const address = await getAddressFromCoordinates(
+      const addressData = await getAddressFromCoordinates(
         currentLocation.latitude, 
         currentLocation.longitude
       );
       
-      setFormData(prev => ({
-        ...prev,
-        location: currentLocation,
-        address: address,
-      }));
+      if (addressData) {
+        setFormData(prev => ({
+          ...prev,
+          location: currentLocation,
+          address: addressData.address,
+          city: addressData.city,
+          state: addressData.state,
+        }));
+      }
     }
   };
 
@@ -201,14 +241,18 @@ const BusinessRegistrationScreen: React.FC = () => {
   const getCurrentLocationAddress = async () => {
     setLoading(true);
     try {
-      const location = await getCurrentLocation();
-      if (location) {
-        const address = await getAddressFromCoordinates(location.latitude, location.longitude);
-        setFormData(prev => ({
-          ...prev,
-          location,
-          address,
-        }));
+      await getCurrentLocation();
+      if (currentLocation) {
+        const addressData = await getAddressFromCoordinates(currentLocation.latitude, currentLocation.longitude);
+        if (addressData) {
+          setFormData(prev => ({
+            ...prev,
+            location: currentLocation,
+            address: addressData.address,
+            city: addressData.city,
+            state: addressData.state,
+          }));
+        }
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to get current location');

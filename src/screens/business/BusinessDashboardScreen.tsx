@@ -198,7 +198,7 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, color
 
 const BusinessDashboardScreen: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<RealTimeStats>({
     totalMessages: 0,
@@ -494,7 +494,7 @@ const BusinessDashboardScreen: React.FC = () => {
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Business Dashboard</Text>
           <Text style={styles.headerSubtitle}>
-            Welcome back, {user?.profile?.full_name || 'Business Owner'}
+            Welcome back, {userProfile?.full_name || 'Business Owner'}
           </Text>
         </View>
         <View style={styles.headerActions}>

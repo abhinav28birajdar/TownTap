@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
-import { useTheme } from '../src/context/ModernThemeContext';
+import { useTheme } from '../context/ModernThemeContext';
 
 export type ThemedViewProps = ViewProps & {
   lightColor?: string;

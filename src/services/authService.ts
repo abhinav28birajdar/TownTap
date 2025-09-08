@@ -1,14 +1,13 @@
 import { supabase } from '../lib/supabase';
 import {
-    LoginForm,
-    OnboardingData,
-    Profile,
-    ProfileInsert,
-    ProfileUpdate,
-    SignUpForm,
-    User
+  LoginForm,
+  OnboardingData,
+  Profile,
+  ProfileInsert,
+  ProfileUpdate,
+  SignUpForm,
+  User
 } from '../types';
-import { generateReferralCode } from '../utils/helpers';
 
 export class AuthService {
   // =====================================================
@@ -23,9 +22,9 @@ export class AuthService {
         password: data.password,
         options: {
           data: {
-            full_name: data.fullName,
-            phone: data.phone,
-            user_type: data.userType,
+            full_name: data.full_name,
+            phone: data.phone_number,
+            user_type: data.user_type,
           }
         }
       });
@@ -36,23 +35,11 @@ export class AuthService {
         // Create profile
         const profileData: ProfileInsert = {
           id: authData.user.id,
-          full_name: data.fullName,
-          phone: data.phone,
-          user_type: data.userType,
-          avatar_url: null,
-          is_verified: false,
-          email_verified: false,
-          phone_verified: false,
-          date_of_birth: null,
-          gender: null,
-          language_preference: 'en',
-          notification_preferences: {
-            push: true,
-            email: true,
-            sms: true
-          },
-          referral_code: generateReferralCode(data.fullName),
-          referred_by: null,
+          email: data.email,
+          full_name: data.full_name,
+          phone_number: data.phone_number,
+          user_type: data.user_type,
+          onboarding_completed: false,
         };
 
         const { data: profile, error: profileError } = await supabase
@@ -67,8 +54,9 @@ export class AuthService {
           user: {
             id: authData.user.id,
             email: authData.user.email!,
-            phone: data.phone,
-            profile: profile as Profile
+            profile: profile as Profile,
+            created_at: authData.user.created_at,
+            updated_at: authData.user.updated_at || authData.user.created_at
           },
           session: authData.session
         };
@@ -189,8 +177,9 @@ export class AuthService {
       return {
         id: user.id,
         email: user.email!,
-        phone: user.phone,
-        profile
+        profile,
+        created_at: user.created_at,
+        updated_at: user.updated_at || user.created_at
       };
     } catch (error) {
       console.error('Error getting current user:', error);
@@ -201,9 +190,7 @@ export class AuthService {
   static async completeOnboarding(userId: string, onboardingData: OnboardingData) {
     try {
       const updates: ProfileUpdate = {
-        full_name: onboardingData.personalInfo.fullName,
-        phone: onboardingData.personalInfo.phone,
-        user_type: onboardingData.userType,
+        onboarding_completed: true,
       };
 
       // If business owner, we'll handle business creation in a separate service
@@ -278,10 +265,11 @@ export class AuthService {
 
       if (error) throw error;
 
-      // Update profile to mark phone as verified
-      if (data.user) {
-        await this.updateProfile(data.user.id, { phone_verified: true });
-      }
+      // Update profile to mark phone as verified - removed as phone_verified is not in ProfileUpdate interface
+      // If needed, this should be added to the ProfileUpdate interface first
+      // if (data.user) {
+      //   await this.updateProfile(data.user.id, { phone_verified: true });
+      // }
 
       return data;
     } catch (error: any) {

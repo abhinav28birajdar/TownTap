@@ -3,8 +3,8 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, View } from 'react-native';
 
-import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
+import TabBarBackground from '../../components/ui/TabBarBackground';
+import { HapticTab } from '../../src/components/HapticTab';
 import { useModernTheme } from '../../src/context/ModernThemeContext';
 import { useAuthStore } from '../../src/stores/authStore';
 
@@ -21,9 +21,9 @@ const TabIcon = ({ name, color, size = 24 }: { name: any; color: string; size?: 
 );
 
 export default function TabLayout() {
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   const { theme } = useModernTheme();
-  const isBusinessUser = user?.profile?.user_type === 'business_owner';
+  const isBusinessUser = userProfile?.user_type === 'business_owner';
 
   // Customer Tabs
   const customerTabs = [

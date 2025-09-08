@@ -65,7 +65,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, trend, t
 
 const RealTimeBusinessDashboard: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<RealTimeStats>({
     totalMessages: 0,
@@ -218,7 +218,7 @@ const RealTimeBusinessDashboard: React.FC = () => {
           <View>
             <Text style={styles.welcomeText}>Welcome back!</Text>
             <Text style={styles.businessName}>
-              {user?.profile?.full_name || 'Business Owner'}
+              {userProfile?.full_name || 'Business Owner'}
             </Text>
           </View>
           <TouchableOpacity

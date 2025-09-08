@@ -16,7 +16,7 @@ import { useAuthStore } from '../../stores/authStore';
 
 const AIContentGeneratorScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   
   // Form state
   const [prompt, setPrompt] = useState('');
@@ -35,7 +35,7 @@ const AIContentGeneratorScreen: React.FC = () => {
       return;
     }
 
-    if (!user?.profile?.user_type || user.profile.user_type !== 'business_owner') {
+    if (!userProfile?.user_type || userProfile.user_type !== 'business_owner') {
       Alert.alert(t('common.error'), 'Only business users can generate content');
       return;
     }

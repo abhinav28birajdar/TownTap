@@ -32,7 +32,7 @@ interface DashboardStats {
 
 const ModernBusinessDashboard: React.FC = () => {
   const { theme } = useTheme();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -167,7 +167,7 @@ const ModernBusinessDashboard: React.FC = () => {
           <View>
             <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Good morning</Text>
             <Text style={[styles.businessName, { color: theme.colors.text }]}>
-              {business?.business_name || user?.profile?.full_name || 'Business Owner'}
+              {business?.business_name || userProfile?.full_name || 'Business Owner'}
             </Text>
           </View>
           <TouchableOpacity style={[styles.notificationIcon, { backgroundColor: theme.colors.card }]}>

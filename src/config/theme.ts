@@ -1,9 +1,7 @@
 // FILE: src/config/theme.ts
-// PURPOSE: Defines NativeBase custom theme ensuring consistent UI across all components
+// PURPOSE: Defines custom theme ensuring consistent UI across all components
 
-import { extendTheme } from 'native-base';
-
-export const theme = extendTheme({
+export const theme = {
   colors: {
     primary: {
       50: '#E3F2FD',
@@ -96,6 +94,11 @@ export const theme = extendTheme({
     textSecondary: '#757575',
     border: '#E0E0E0',
     shadow: '#000000',
+    // Tab bar colors
+    tabBar: '#FFFFFF',
+    tabBarBorder: '#E0E0E0',
+    iconActive: '#2196F3',
+    iconInactive: '#9E9E9E',
   },
   fonts: {
     heading: 'Poppins-Bold',
@@ -138,16 +141,28 @@ export const theme = extendTheme({
     24: 96,
     32: 128,
   },
-  sizes: {
-    full: '100%',
-    '3xs': 224,
-    '2xs': 256,
-    xs: 320,
-    sm: 384,
-    md: 448,
-    lg: 512,
-    xl: 576,
-    '2xl': 672,
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
+  },
+  typography: {
+    caption: {
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    body1: {
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    h3: {
+      fontSize: 24,
+      fontWeight: '600',
+      lineHeight: 32,
+    },
   },
   borderRadius: {
     none: 0,
@@ -161,183 +176,26 @@ export const theme = extendTheme({
     full: 9999,
   },
   shadows: {
-    sm: {
+    small: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 2,
       elevation: 1,
     },
-    base: {
+    medium: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 2,
     },
-    md: {
+    large: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 4,
     },
-    lg: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.2,
-      shadowRadius: 16,
-      elevation: 8,
-    },
-    xl: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.25,
-      shadowRadius: 24,
-      elevation: 12,
-    },
   },
-  components: {
-    Button: {
-      baseStyle: {
-        borderRadius: 'lg',
-        _text: {
-          fontWeight: '600',
-        },
-      },
-      variants: {
-        solid: (props: any) => ({
-          bg: `${props.colorScheme}.500`,
-          _pressed: {
-            bg: `${props.colorScheme}.600`,
-          },
-          _disabled: {
-            bg: 'gray.300',
-          },
-        }),
-        outline: (props: any) => ({
-          borderWidth: 2,
-          borderColor: `${props.colorScheme}.500`,
-          bg: 'transparent',
-          _text: {
-            color: `${props.colorScheme}.500`,
-          },
-          _pressed: {
-            bg: `${props.colorScheme}.50`,
-          },
-        }),
-        ghost: (props: any) => ({
-          bg: 'transparent',
-          _text: {
-            color: `${props.colorScheme}.500`,
-          },
-          _pressed: {
-            bg: `${props.colorScheme}.50`,
-          },
-        }),
-      },
-      sizes: {
-        sm: {
-          px: 3,
-          py: 2,
-          _text: {
-            fontSize: 'sm',
-          },
-        },
-        md: {
-          px: 4,
-          py: 3,
-          _text: {
-            fontSize: 'md',
-          },
-        },
-        lg: {
-          px: 6,
-          py: 4,
-          _text: {
-            fontSize: 'lg',
-          },
-        },
-      },
-      defaultProps: {
-        colorScheme: 'primary',
-        size: 'md',
-        variant: 'solid',
-      },
-    },
-    Input: {
-      baseStyle: {
-        borderRadius: 'md',
-        borderWidth: 1,
-        borderColor: 'gray.300',
-        px: 4,
-        py: 3,
-        fontSize: 'md',
-        _focus: {
-          borderColor: 'primary.500',
-          bg: 'white',
-        },
-        _invalid: {
-          borderColor: 'error.500',
-        },
-      },
-      variants: {
-        outline: {
-          bg: 'white',
-        },
-        filled: {
-          bg: 'gray.100',
-          borderColor: 'transparent',
-        },
-      },
-      defaultProps: {
-        variant: 'outline',
-      },
-    },
-    Card: {
-      baseStyle: {
-        bg: 'white',
-        borderRadius: 'lg',
-        p: 4,
-        shadow: 'sm',
-      },
-    },
-    Badge: {
-      baseStyle: {
-        borderRadius: 'full',
-        px: 2,
-        py: 1,
-        _text: {
-          fontSize: 'xs',
-          fontWeight: '600',
-        },
-      },
-      variants: {
-        solid: (props: any) => ({
-          bg: `${props.colorScheme}.500`,
-          _text: {
-            color: 'white',
-          },
-        }),
-        outline: (props: any) => ({
-          borderWidth: 1,
-          borderColor: `${props.colorScheme}.500`,
-          bg: 'transparent',
-          _text: {
-            color: `${props.colorScheme}.500`,
-          },
-        }),
-        subtle: (props: any) => ({
-          bg: `${props.colorScheme}.100`,
-          _text: {
-            color: `${props.colorScheme}.800`,
-          },
-        }),
-      },
-      defaultProps: {
-        colorScheme: 'primary',
-        variant: 'solid',
-      },
-    },
-  },
-});
+};

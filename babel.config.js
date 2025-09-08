@@ -25,8 +25,11 @@ module.exports = function(api) {
         onlyRemoveTypeImports: false
       }],
       
-      // Animation support - Using reanimated
-      'react-native-reanimated/plugin',
+      // Fix for Reanimated 3.7.0 that works with Expo SDK 53
+      require('@babel/plugin-transform-export-namespace-from'),
+      
+      // Use react-native-worklets plugin instead of reanimated plugin
+      'react-native-worklets/plugin',
       
       // Enable path aliases
       ['module-resolver', {

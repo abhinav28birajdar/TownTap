@@ -6,11 +6,11 @@ import { useAuthStore } from '../../stores/authStore';
 
 const ProfileScreen: React.FC = () => {
   const { colors, toggleTheme, isDark } = useModernTheme();
-  const { user, logout, loading: authLoading } = useAuthStore();
+  const { user, userProfile, logout, loading: authLoading } = useAuthStore();
 
   // The profile data is already available in the user object from the auth store.
   // No need to fetch it again.
-  const profile = user?.profile;
+  const profile = userProfile;
 
   if (authLoading && !profile) {
     return (
@@ -32,7 +32,7 @@ const ProfileScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.colors?.background || '#F8FAFC' }]}>
       <View style={styles.header}>
         <Image
-          source={profile?.avatar_url ? { uri: profile.avatar_url } : require('../../../assets/images/icon.png')}
+          source={profile?.profile_picture_url ? { uri: profile.profile_picture_url } : require('../../../assets/images/icon.png')}
           style={styles.avatar}
         />
         <Text style={[styles.name, { color: colors.colors?.text || '#1E293B' }]}>{profile?.full_name || 'User'}</Text>

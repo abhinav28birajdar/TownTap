@@ -1,23 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    FlatList,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useTheme } from '../../context/ModernThemeContext';
 import { useAuthStore } from '../../stores/authStore';
 
 const ExploreScreen: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   
-  const isBusinessUser = user?.profile?.user_type === 'business_owner';
+  const isBusinessUser = userProfile?.user_type === 'business_owner';
 
   // Mock data for demonstration
   const exploreData = isBusinessUser 

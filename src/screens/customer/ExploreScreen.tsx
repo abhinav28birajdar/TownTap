@@ -12,21 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
-
-interface Business {
-  id: string;
-  business_name: string;
-  description: string;
-  category: string;
-  address: string;
-  city: string;
-  phone: string;
-  rating: number;
-  is_open: boolean;
-  delivery_available: boolean;
-  distance_km: number;
-  logo_url?: string;
-}
+import { Business } from '../../types';
 
 const CATEGORIES = [
   { id: 'all', name: 'All', icon: 'grid-outline' },

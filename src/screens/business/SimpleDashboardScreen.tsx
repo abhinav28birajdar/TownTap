@@ -11,7 +11,7 @@ import { useAuthStore } from '../../stores/authStore';
 
 const SimpleDashboardScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { user, logout } = useAuthStore();
+  const { user, userProfile, logout } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
@@ -140,7 +140,7 @@ const SimpleDashboardScreen: React.FC = () => {
             <View>
               <Text style={styles.title}>Business Dashboard</Text>
               <Text style={styles.subtitle}>
-                Welcome back, {user?.profile?.full_name || 'Business Owner'}!
+                Welcome back, {userProfile?.full_name || 'Business Owner'}!
               </Text>
             </View>
             <View style={{ alignSelf: 'flex-start' }}>

@@ -1,5 +1,7 @@
 <<<<<<< HEAD
-![TownTap Logo](./assets/images/icon.png)
+<div align="center">
+  <img src="/assets/images/icon.png" alt="Town Tap" width="152" height="152">
+</div>
 
 # 🏪 TownTap - Local Business Discovery Platform
 

@@ -1,44 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextStyle,
-    TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocationBasedRealtime } from '../hooks/useLocationBasedRealtime';
-
-interface Business {
-  id: string;
-  business_name: string;
-  description: string;
-  category: string;
-  address: string;
-  city: string;
-  phone: string;
-  phone_number?: string;
-  email: string;
-  rating: number;
-  total_reviews: number;
-  is_open: boolean;
-  delivery_available: boolean;
-  latitude: number;
-  longitude: number;
-  distance_km: number;
-  image_url?: string;
-  logo_url?: string;
-  landmark?: string;
-  website_url?: string;
-  pincode?: string;
-  whatsapp_number?: string;
-  services?: string;
-  created_at?: string;
-}
+import { Business } from '../types';
 
 interface Props {
   navigation?: any;

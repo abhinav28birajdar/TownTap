@@ -21,7 +21,7 @@ interface DashboardMetrics {
 
 const DashboardScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, userProfile } = useAuthStore();
   
   // State
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -190,7 +190,7 @@ const DashboardScreen: React.FC = () => {
           <View style={styles.header}>
             <Text style={styles.title}>{t('business.dashboard.title')}</Text>
             <Text style={styles.subtitle}>
-              {t('business.dashboard.welcome', { name: user?.profile?.full_name || 'Business' })}
+              {t('business.dashboard.welcome', { name: userProfile?.full_name || 'Business' })}
             </Text>
           </View>
         </MotiView>

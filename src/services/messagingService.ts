@@ -155,8 +155,10 @@ export class MessagingService {
       return {
         data: (data as Message[]).reverse(), // Reverse to show oldest first
         count: count || 0,
-        hasMore: (count || 0) > from + limit,
-        nextCursor: (count || 0) > from + limit ? (page + 1).toString() : undefined
+        total_count: count || 0,
+        page,
+        limit,
+        has_more: (count || 0) > from + limit,
       };
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch messages');
@@ -247,7 +249,7 @@ export class MessagingService {
         sender_id: senderId,
         content: caption || 'Image',
         message_type: 'image',
-        attachment_url: imageUrl
+        attachments: [imageUrl]
       };
 
       return await this.sendMessage(messageData);
@@ -269,7 +271,7 @@ export class MessagingService {
         sender_id: senderId,
         content: address || `Location: ${latitude}, ${longitude}`,
         message_type: 'location',
-        attachment_url: JSON.stringify({ latitude, longitude, address })
+        attachments: [JSON.stringify({ latitude, longitude, address })]
       };
 
       return await this.sendMessage(messageData);
@@ -294,7 +296,7 @@ export class MessagingService {
         sender_id: senderId,
         content: message,
         message_type: 'order_update',
-        attachment_url: null
+        order_id: orderId
       };
 
       return await this.sendMessage(messageData);
@@ -357,9 +359,9 @@ export class MessagingService {
       const message = await this.sendMessage({
         conversation_id: conversation.id,
         sender_id: customerId,
+        recipient_id: businessId,
         content: `Subject: ${subject}\n\n${initialMessage}`,
-        message_type: 'text',
-        attachment_url: null
+        message_type: 'text'
       });
 
       return { conversation, message };
@@ -524,6 +526,7 @@ export class MessagingService {
   static async sendTemplateMessage(
     conversationId: string,
     senderId: string,
+    recipientId: string,
     templateId: string,
     customContent?: string
   ): Promise<Message> {
@@ -538,9 +541,9 @@ export class MessagingService {
       const messageData: MessageInsert = {
         conversation_id: conversationId,
         sender_id: senderId,
+        recipient_id: recipientId,
         content: customContent || template.content,
-        message_type: 'text',
-        attachment_url: null
+        message_type: 'text'
       };
 
       return await this.sendMessage(messageData);

@@ -55,6 +55,8 @@ export const useCartStore = create<CartStore>()(
               name: product.name,
               price: product.price,
               quantity,
+              unit: product.unit || 'pcs',
+              addedAt: new Date(),
             };
             
             set({ 
@@ -73,6 +75,8 @@ export const useCartStore = create<CartStore>()(
             name: product.name,
             price: product.price,
             quantity,
+            unit: product.unit || 'pcs',
+            addedAt: new Date(),
           };
           
           set({

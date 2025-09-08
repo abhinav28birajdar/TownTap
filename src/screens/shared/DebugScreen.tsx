@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ModernThemeContext';
@@ -13,7 +13,7 @@ import { useAuthStore } from '../../stores/authStore';
 
 const DebugScreen: React.FC = () => {
   const { theme } = useTheme();
-  const { user, loading, error } = useAuthStore();
+  const { user, userProfile, loading, error } = useAuthStore();
   const [connectionStatus, setConnectionStatus] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
 
@@ -94,7 +94,7 @@ const DebugScreen: React.FC = () => {
             Loading: {loading ? 'Yes' : 'No'}
           </Text>
           <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
-            User: {user ? `${user.email} (${user.profile?.user_type})` : 'None'}
+            User: {user ? `${user.email} (${userProfile?.user_type})` : 'None'}
           </Text>
           {error && (
             <Text style={[styles.error, { color: theme.colors.error }]}>
