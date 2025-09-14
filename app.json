@@ -1,7 +1,6 @@
 {
   "expo": {
     "name": "TownTap",
-    "entryPoint": "./index.tsx",
     "slug": "TownTap",
     "version": "1.0.0",
     "orientation": "portrait",

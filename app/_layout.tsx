@@ -13,7 +13,7 @@ import '../src/i18n';
 import { initializeApp } from '../src/config/app';
 
 // Import stores to initialize
-import { useAuthStore } from '../src/stores/authStore';
+import { useAuthActions } from '../src/stores/authStore';
 import { useLocationStore } from '../src/stores/locationStore';
 
 // Import theme provider
@@ -41,7 +41,7 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const { checkAuth } = useAuthStore();
+  const { initialize } = useAuthActions();
   const { requestLocationPermission } = useLocationStore();
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function RootLayout() {
         }
         
         // Check authentication status
-        await checkAuth();
+        await initialize();
         
         // Request location permission (optional, don't block app)
         try {
@@ -74,7 +74,7 @@ export default function RootLayout() {
     if (loaded) {
       initializeApplication();
     }
-  }, [loaded, checkAuth, requestLocationPermission]);
+  }, [loaded, initialize, requestLocationPermission]);
 
   if (!loaded) {
     return null;

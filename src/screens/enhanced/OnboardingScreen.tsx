@@ -20,7 +20,7 @@ import {
 import { Colors, LightTheme } from '../../constants/YYY.01_colors';
 import { FontSizes, FontWeights } from '../../constants/YYY.02_typography';
 import { BorderRadius, Spacing } from '../../constants/YYY.03_dimensions';
-import { useAuthActions, useAuthStore } from '../../stores/auth-store';
+import { useAuthActions, useAuthStore } from '../../stores/authStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 

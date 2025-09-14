@@ -1,268 +1,612 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthError, Session, User } from '@supabase/supabase-js';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { supabase } from '../lib/supabase';
-import { UserProfile } from '../types';
+// =====================================================
+// ENHANCED TOWNTAP - AUTH STORE
+// Comprehensive authentication state management with AI
+// =====================================================
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import {
+    resetPassword,
+    sendOTP,
+    signInWithEmail,
+    signInWithPhone,
+    signInWithProvider,
+    signUpWithEmail,
+    supabase,
+    signOut as supabaseSignOut,
+    verifyOTP
+} from '../lib/supabase-enhanced';
+import { UserProfile } from '../types/enhanced';
+
+// Auth state interface
 interface AuthState {
-  session: Session | null;
-  user: User | null;
-  userProfile: UserProfile | null;
-  isLoading: boolean;
-  loading: boolean; // alias for isLoading for compatibility
+  // User data
+  user: UserProfile | null;
+  userProfile: UserProfile | null; // Alias for compatibility
+  session: any;
   isAuthenticated: boolean;
+  loading: boolean;
+  
+  // Onboarding state
+  onboardingCompleted: boolean;
+  userType: 'customer' | 'business_owner' | null;
+  
+  // Error handling
   error: string | null;
   
-  // Actions
-  setSession: (session: Session | null) => void;
-  setUserProfile: (profile: UserProfile | null) => void;
-  setLoading: (loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ error?: AuthError | null }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error?: AuthError | null }>;
+  // Authentication methods
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string, userData?: Partial<UserProfile>) => Promise<boolean>;
+  signInWithPhone: (phone: string, password: string) => Promise<boolean>;
+  sendOTP: (phone: string) => Promise<boolean>;
+  verifyOTP: (phone: string, token: string) => Promise<boolean>;
+  signInWithProvider: (provider: 'google' | 'facebook' | 'apple') => Promise<boolean>;
   signOut: () => Promise<void>;
-  logout: () => Promise<void>; // alias for signOut
-  login: (email: string, password: string) => Promise<{ error?: AuthError | null }>; // alias for signIn
-  updateProfile: (updates: any) => Promise<{ error?: any }>;
-  resetPassword: (email: string) => Promise<{ error?: AuthError | null }>;
+  logout: () => Promise<void>; // Alias for signOut
+  resetPassword: (email: string) => Promise<boolean>;
+  
+  // Profile management
+  updateProfile: (updates: Partial<UserProfile>) => Promise<boolean>;
+  refreshProfile: () => Promise<void>;
+  checkAuth: () => Promise<void>; // Alias for initialize
+  
+  // Onboarding
+  completeOnboarding: (userType: 'customer' | 'business_owner', preferences?: any) => Promise<boolean>;
+  setUserType: (userType: 'customer' | 'business_owner') => void;
+  
+  // Utility methods
+  clearError: () => void;
+  setLoading: (loading: boolean) => void;
   initialize: () => Promise<void>;
-  checkAuth: () => Promise<void>; // alias for initialize
-  fetchUserProfile: (userId: string) => Promise<void>;
-  createOrUpdateProfile: (user: User) => Promise<void>;
 }
 
+// Create the auth store
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      session: null,
+      // Initial state
       user: null,
-      userProfile: null,
-      isLoading: true,
-      loading: true, // alias for isLoading
+      get userProfile() { return get().user; }, // Computed property that syncs with user
+      session: null,
       isAuthenticated: false,
+      loading: false,
+      onboardingCompleted: false,
+      userType: null,
       error: null,
 
-      setSession: (session) => {
-        set({ 
-          session, 
-          user: session?.user || null,
-          isAuthenticated: !!session 
-        });
-      },
-
-      setUserProfile: (userProfile) => {
-        set({ userProfile });
-      },
-
-      setLoading: (isLoading) => {
-        set({ isLoading, loading: isLoading });
-      },
-
-      signIn: async (email: string, password: string) => {
-        set({ isLoading: true, loading: true });
+      // Sign in with email
+      signInWithEmail: async (email: string, password: string) => {
         try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          set({ loading: true, error: null });
           
-          if (!error && data.session) {
-            get().setSession(data.session);
-            await get().fetchUserProfile(data.session.user.id);
-          }
+          const { user, session } = await signInWithEmail(email, password);
           
-          return { error };
-        } catch (error) {
-          return { error: error as AuthError };
-        } finally {
-          set({ isLoading: false, loading: false });
-        }
-      },
-
-      signUp: async (email: string, password: string, fullName?: string) => {
-        set({ isLoading: true, loading: true });
-        try {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: fullName || email.split('@')[0],
-              },
-            },
-          });
-          return { error };
-        } catch (error) {
-          return { error: error as AuthError };
-        } finally {
-          set({ isLoading: false, loading: false });
-        }
-      },
-
-      signOut: async () => {
-        set({ isLoading: true, loading: true });
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (!error) {
-            set({ 
-              session: null, 
-              user: null, 
-              userProfile: null, 
-              isAuthenticated: false 
+          if (user && session) {
+            // Fetch full profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            
+            set({
+              user: profile,
+              session,
+              isAuthenticated: true,
+              onboardingCompleted: profile?.onboarding_completed || false,
+              userType: profile?.user_type || null,
+              loading: false,
             });
-            // Clear any cached data
-            await AsyncStorage.multiRemove(['user_preferences', 'cart_items']);
+            
+            return true;
           }
-        } catch (error) {
-          console.error('Error in signOut:', error);
-        } finally {
-          set({ isLoading: false, loading: false });
+          
+          set({ loading: false, error: 'Invalid credentials' });
+          return false;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Sign in failed' 
+          });
+          return false;
         }
       },
 
-      updateProfile: async (updates: any) => {
-        const { session } = get();
-        if (!session?.user) {
-          return { error: 'No user session' };
-        }
-
+      // Sign up with email
+      signUpWithEmail: async (email: string, password: string, userData = {}) => {
         try {
-          const { error } = await supabase
+          set({ loading: true, error: null });
+          
+          const { user, session } = await signUpWithEmail(email, password, {
+            email,
+            full_name: userData.full_name,
+            phone: userData.phone,
+          });
+          
+          if (user) {
+            // Create profile in database
+            const profileData = {
+              id: user.id,
+              email: user.email!,
+              full_name: userData.full_name || '',
+              phone: userData.phone || '',
+              user_type: userData.user_type || 'customer',
+              language_preference: 'en',
+              ai_preferences: {},
+              personality_insights: {},
+              spending_habits: {},
+              is_verified: false,
+              is_active: true,
+              onboarding_completed: false,
+              loyalty_tier: 'bronze',
+              total_loyalty_points: 0,
+              wallet_balance: 0,
+              ...userData,
+            };
+            
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .insert(profileData)
+              .select()
+              .single();
+            
+            if (profileError) {
+              console.error('Profile creation error:', profileError);
+            }
+            
+            set({
+              user: profile || profileData,
+              session,
+              isAuthenticated: true,
+              onboardingCompleted: false,
+              userType: (profileData.user_type === 'customer' || profileData.user_type === 'business_owner') 
+                ? profileData.user_type : 'customer',
+              loading: false,
+            });
+            
+            return true;
+          }
+          
+          set({ loading: false, error: 'Sign up failed' });
+          return false;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Sign up failed' 
+          });
+          return false;
+        }
+      },
+
+      // Sign in with phone
+      signInWithPhone: async (phone: string, password: string) => {
+        try {
+          set({ loading: true, error: null });
+          
+          const { user, session } = await signInWithPhone(phone, password);
+          
+          if (user && session) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            
+            set({
+              user: profile,
+              session,
+              isAuthenticated: true,
+              onboardingCompleted: profile?.onboarding_completed || false,
+              userType: profile?.user_type || null,
+              loading: false,
+            });
+            
+            return true;
+          }
+          
+          set({ loading: false, error: 'Invalid credentials' });
+          return false;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Sign in failed' 
+          });
+          return false;
+        }
+      },
+
+      // Send OTP
+      sendOTP: async (phone: string) => {
+        try {
+          set({ loading: true, error: null });
+          
+          await sendOTP(phone);
+          
+          set({ loading: false });
+          return true;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Failed to send OTP' 
+          });
+          return false;
+        }
+      },
+
+      // Verify OTP
+      verifyOTP: async (phone: string, token: string) => {
+        try {
+          set({ loading: true, error: null });
+          
+          const { user, session } = await verifyOTP(phone, token);
+          
+          if (user && session) {
+            // Check if profile exists
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            
+            if (!profile) {
+              // Create new profile
+              const newProfile: Partial<UserProfile> = {
+                id: user.id,
+                email: user.email || '',
+                phone: user.phone || phone,
+                user_type: 'customer',
+                language_preference: 'en',
+                ai_preferences: {},
+                personality_insights: {},
+                spending_habits: {},
+                is_verified: true,
+                is_active: true,
+                onboarding_completed: false,
+                loyalty_tier: 'bronze',
+                total_loyalty_points: 0,
+                wallet_balance: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+              
+              await supabase
+                .from('profiles')
+                .insert(newProfile);
+                
+              set({
+                user: newProfile as UserProfile,
+                session,
+                isAuthenticated: true,
+                onboardingCompleted: false,
+                userType: 'customer',
+                loading: false,
+              });
+            } else {
+              set({
+                user: profile,
+                session,
+                isAuthenticated: true,
+                onboardingCompleted: profile.onboarding_completed,
+                userType: profile.user_type,
+                loading: false,
+              });
+            }
+            
+            return true;
+          }
+          
+          set({ loading: false, error: 'Invalid OTP' });
+          return false;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'OTP verification failed' 
+          });
+          return false;
+        }
+      },
+
+      // Sign in with provider
+      signInWithProvider: async (provider: 'google' | 'facebook' | 'apple') => {
+        try {
+          set({ loading: true, error: null });
+          
+          const { url } = await signInWithProvider(provider);
+          
+          // Note: In a real app, you'd handle the OAuth flow here
+          // For now, we'll just return false as this requires additional setup
+          
+          set({ loading: false, error: 'OAuth not configured' });
+          return false;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || `${provider} sign in failed` 
+          });
+          return false;
+        }
+      },
+
+      // Sign out
+      signOut: async () => {
+        try {
+          set({ loading: true });
+          
+          await supabaseSignOut();
+          
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            onboardingCompleted: false,
+            userType: null,
+            loading: false,
+            error: null,
+          });
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Sign out failed' 
+          });
+        }
+      },
+
+      // Reset password
+      resetPassword: async (email: string) => {
+        try {
+          set({ loading: true, error: null });
+          
+          await resetPassword(email);
+          
+          set({ loading: false });
+          return true;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Password reset failed' 
+          });
+          return false;
+        }
+      },
+
+      // Update profile
+      updateProfile: async (updates: Partial<UserProfile>) => {
+        try {
+          const { user } = get();
+          if (!user) return false;
+          
+          set({ loading: true, error: null });
+          
+          const { data: updatedProfile, error } = await supabase
             .from('profiles')
             .update({
               ...updates,
               updated_at: new Date().toISOString(),
             })
-            .eq('id', session.user.id);
-
-          if (!error) {
-            // Refresh profile data
-            await get().fetchUserProfile(session.user.id);
-          }
-
-          return { error };
-        } catch (error) {
-          return { error };
-        }
-      },
-
-      resetPassword: async (email: string) => {
-        try {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'towntap://reset-password',
-          });
-          return { error };
-        } catch (error) {
-          return { error: error as AuthError };
-        }
-      },
-
-      fetchUserProfile: async (userId: string) => {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
+            .eq('id', user.id)
+            .select()
             .single();
-
-          if (!error && data) {
-            set({ userProfile: data });
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      },
-
-      initialize: async () => {
-        set({ isLoading: true, loading: true });
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
           
-          if (!error && session) {
-            get().setSession(session);
-            await get().fetchUserProfile(session.user.id);
-          }
-
-          // Listen for auth changes
-          supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state changed:', event);
-            get().setSession(session);
-            
-            if (event === 'SIGNED_IN' && session?.user) {
-              await get().createOrUpdateProfile(session.user);
-              await get().fetchUserProfile(session.user.id);
-            }
-            
-            if (event === 'SIGNED_OUT') {
-              await AsyncStorage.multiRemove(['user_preferences', 'cart_items']);
-            }
+          if (error) throw error;
+          
+          set({
+            user: updatedProfile,
+            loading: false,
           });
-        } catch (error) {
-          console.error('Error initializing auth:', error);
-        } finally {
-          set({ isLoading: false, loading: false });
+          
+          return true;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Profile update failed' 
+          });
+          return false;
         }
       },
 
-      createOrUpdateProfile: async (user: User) => {
+      // Refresh profile
+      refreshProfile: async () => {
         try {
-          const { data: existingProfile } = await supabase
+          const { user } = get();
+          if (!user) return;
+          
+          const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
-
-          if (!existingProfile) {
-            const { error } = await supabase
-              .from('profiles')
-              .insert({
-                id: user.id,
-                full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
-                email_verified: user.email_confirmed_at ? true : false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-            if (error) {
-              console.error('Error creating profile:', error);
-            }
+          
+          if (profile) {
+            set({
+              user: profile,
+              onboardingCompleted: profile.onboarding_completed,
+              userType: profile.user_type,
+            });
           }
         } catch (error) {
-          console.error('Error in createOrUpdateProfile:', error);
+          console.error('Failed to refresh profile:', error);
         }
       },
 
-      // Alias methods for compatibility
+      // Complete onboarding
+      completeOnboarding: async (userType: 'customer' | 'business_owner', preferences = {}) => {
+        try {
+          const { user } = get();
+          if (!user) return false;
+          
+          set({ loading: true, error: null });
+          
+          const updates = {
+            user_type: userType,
+            onboarding_completed: true,
+            ai_preferences: preferences,
+            updated_at: new Date().toISOString(),
+          };
+          
+          const { data: updatedProfile, error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', user.id)
+            .select()
+            .single();
+          
+          if (error) throw error;
+          
+          set({
+            user: updatedProfile,
+            onboardingCompleted: true,
+            userType,
+            loading: false,
+          });
+          
+          return true;
+        } catch (error: any) {
+          set({ 
+            loading: false, 
+            error: error.message || 'Onboarding completion failed' 
+          });
+          return false;
+        }
+      },
+
+      // Set user type
+      setUserType: (userType: 'customer' | 'business_owner') => {
+        set({ userType });
+      },
+
+      // Clear error
+      clearError: () => {
+        set({ error: null });
+      },
+
+      // Set loading
+      setLoading: (loading: boolean) => {
+        set({ loading });
+      },
+
+      // Initialize auth state
+      initialize: async () => {
+        try {
+          set({ loading: true });
+          
+          // Get current session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            // Fetch profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            set({
+              user: profile,
+              session,
+              isAuthenticated: true,
+              onboardingCompleted: profile?.onboarding_completed || false,
+              userType: profile?.user_type || null,
+              loading: false,
+            });
+          } else {
+            set({
+              user: null,
+              session: null,
+              isAuthenticated: false,
+              onboardingCompleted: false,
+              userType: null,
+              loading: false,
+            });
+          }
+          
+          // Set up auth state change listener
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state changed:', event);
+            
+            if (session?.user) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              set({
+                user: profile,
+                session,
+                isAuthenticated: true,
+                onboardingCompleted: profile?.onboarding_completed || false,
+                userType: profile?.user_type || null,
+              });
+            } else {
+              set({
+                user: null,
+                session: null,
+                isAuthenticated: false,
+                onboardingCompleted: false,
+                userType: null,
+              });
+            }
+          });
+        } catch (error) {
+          console.error('Auth initialization error:', error);
+          set({ loading: false });
+        }
+      },
+
+      // Aliases for compatibility
       logout: async () => {
         return get().signOut();
       },
-
-      login: async (email: string, password: string) => {
-        return get().signIn(email, password);
-      },
-
+      
       checkAuth: async () => {
         return get().initialize();
       },
     }),
     {
-      name: 'auth-storage',
-      storage: {
-        getItem: async (name) => {
-          const value = await AsyncStorage.getItem(name);
-          return value ? JSON.parse(value) : null;
-        },
-        setItem: async (name, value) => {
-          await AsyncStorage.setItem(name, JSON.stringify(value));
-        },
-        removeItem: async (name) => {
-          await AsyncStorage.removeItem(name);
-        },
-      },
+      name: 'enhanced-towntap-auth',
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        session: state.session,
-        userProfile: state.userProfile,
+        user: state.user,
+        onboardingCompleted: state.onboardingCompleted,
+        userType: state.userType,
       }),
     }
   )
 );
+
+// Selectors for easier access
+export const useAuth = () => {
+  const store = useAuthStore();
+  return {
+    user: store.user,
+    isAuthenticated: store.isAuthenticated,
+    loading: store.loading,
+    error: store.error,
+    onboardingCompleted: store.onboardingCompleted,
+    userType: store.userType,
+  };
+};
+
+export const useAuthActions = () => {
+  const store = useAuthStore();
+  return {
+    signInWithEmail: store.signInWithEmail,
+    signUpWithEmail: store.signUpWithEmail,
+    signInWithPhone: store.signInWithPhone,
+    sendOTP: store.sendOTP,
+    verifyOTP: store.verifyOTP,
+    signInWithProvider: store.signInWithProvider,
+    signOut: store.signOut,
+    resetPassword: store.resetPassword,
+    updateProfile: store.updateProfile,
+    refreshProfile: store.refreshProfile,
+    completeOnboarding: store.completeOnboarding,
+    setUserType: store.setUserType,
+    clearError: store.clearError,
+    setLoading: store.setLoading,
+    initialize: store.initialize,
+  };
+};
+
+export default useAuthStore;

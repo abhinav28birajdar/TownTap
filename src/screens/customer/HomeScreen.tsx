@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useModernTheme } from '../../context/ModernThemeContext';
 import { useAIRecommendations } from '../../hooks/useAIRecommendations';
 import { useLocationBasedRealtime } from '../../hooks/useLocationBasedRealtime';
-import { useAuthStore } from '../../stores/auth-store';
+import { useAuthStore } from '../../stores/authStore';
 import { Business } from '../../types';
 import { AIRecommendation } from '../../types/ai';
 
