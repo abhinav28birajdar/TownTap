@@ -9,13 +9,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MotiText, MotiView } from 'moti';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { Colors, LightTheme } from '../../constants/YYY.01_colors';
 import { FontSizes, FontWeights } from '../../constants/YYY.02_typography';

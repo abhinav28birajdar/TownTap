@@ -19,6 +19,7 @@ export interface UserProfile {
   full_name?: string;
   phone?: string;
   avatar_url?: string;
+  profile_picture_url?: string; // Alternative field name for compatibility
   user_type: 'customer' | 'business_owner' | 'staff' | 'admin';
   location?: Location;
   date_of_birth?: string;

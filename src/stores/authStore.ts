@@ -17,6 +17,7 @@ import {
     signOut as supabaseSignOut,
     verifyOTP
 } from '../lib/supabase-enhanced';
+import { RealtimeService } from '../services/realtimeService';
 import { UserProfile } from '../types/enhanced';
 
 // Auth state interface
@@ -59,6 +60,8 @@ interface AuthState {
   clearError: () => void;
   setLoading: (loading: boolean) => void;
   initialize: () => Promise<void>;
+  setupRealtimeSubscriptions: () => void;
+  cleanupRealtimeSubscriptions: () => void;
 }
 
 // Create the auth store
@@ -98,6 +101,9 @@ export const useAuthStore = create<AuthState>()(
               userType: profile?.user_type || null,
               loading: false,
             });
+            
+            // Initialize real-time subscriptions after successful login
+            get().setupRealtimeSubscriptions();
             
             return true;
           }
@@ -164,6 +170,9 @@ export const useAuthStore = create<AuthState>()(
                 ? profileData.user_type : 'customer',
               loading: false,
             });
+            
+            // Initialize real-time subscriptions after successful sign-up
+            get().setupRealtimeSubscriptions();
             
             return true;
           }
@@ -282,6 +291,9 @@ export const useAuthStore = create<AuthState>()(
                 userType: 'customer',
                 loading: false,
               });
+              
+              // Initialize real-time subscriptions after successful login
+              get().setupRealtimeSubscriptions();
             } else {
               set({
                 user: profile,
@@ -291,6 +303,9 @@ export const useAuthStore = create<AuthState>()(
                 userType: profile.user_type,
                 loading: false,
               });
+              
+              // Initialize real-time subscriptions after successful login
+              get().setupRealtimeSubscriptions();
             }
             
             return true;
@@ -332,6 +347,9 @@ export const useAuthStore = create<AuthState>()(
       signOut: async () => {
         try {
           set({ loading: true });
+          
+          // Clean up real-time subscriptions before signing out
+          get().cleanupRealtimeSubscriptions();
           
           await supabaseSignOut();
           
@@ -509,6 +527,9 @@ export const useAuthStore = create<AuthState>()(
               userType: profile?.user_type || null,
               loading: false,
             });
+            
+            // Initialize real-time subscriptions for restored session
+            get().setupRealtimeSubscriptions();
           } else {
             set({
               user: null,
@@ -538,7 +559,13 @@ export const useAuthStore = create<AuthState>()(
                 onboardingCompleted: profile?.onboarding_completed || false,
                 userType: profile?.user_type || null,
               });
+              
+              // Initialize real-time subscriptions on auth state change
+              get().setupRealtimeSubscriptions();
             } else {
+              // Clean up real-time subscriptions when user signs out
+              get().cleanupRealtimeSubscriptions();
+              
               set({
                 user: null,
                 session: null,
@@ -561,6 +588,52 @@ export const useAuthStore = create<AuthState>()(
       
       checkAuth: async () => {
         return get().initialize();
+      },
+
+      // Real-time subscription management
+      setupRealtimeSubscriptions: () => {
+        const user = get().user;
+        if (!user?.id) return;
+
+        // Subscribe to user notifications
+        RealtimeService.subscribeToNotifications(user.id, (payload) => {
+          console.log('New notification:', payload);
+          // Handle notification updates
+        });
+
+        // Subscribe to order updates
+        RealtimeService.subscribeToOrderUpdates(user.id, (payload) => {
+          console.log('Order update:', payload);
+          // Handle order updates
+        });
+
+        // Subscribe to messages
+        RealtimeService.subscribeToUserMessages(user.id, (payload) => {
+          console.log('New message:', payload);
+          // Handle message updates
+        });
+
+        // Subscribe to payment updates
+        RealtimeService.subscribeToPaymentUpdates(user.id, (payload) => {
+          console.log('Payment update:', payload);
+          // Handle payment updates
+        });
+
+        // If business owner, subscribe to business updates
+        if (user.user_type === 'business_owner') {
+          // Subscribe to service request updates
+          RealtimeService.subscribeToServiceRequestUpdates(user.id, (payload) => {
+            console.log('Service request update:', payload);
+            // Handle service request updates
+          });
+        }
+
+        console.log('✅ Real-time subscriptions initialized for user:', user.id);
+      },
+
+      cleanupRealtimeSubscriptions: () => {
+        RealtimeService.unsubscribeAll();
+        console.log('🧹 All real-time subscriptions cleaned up');
       },
     }),
     {

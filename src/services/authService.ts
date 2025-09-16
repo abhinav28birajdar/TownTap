@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase';
 import {
-  LoginForm,
-  OnboardingData,
-  Profile,
-  ProfileInsert,
-  ProfileUpdate,
-  SignUpForm,
-  User
+    LoginForm,
+    OnboardingData,
+    Profile,
+    ProfileInsert,
+    ProfileUpdate,
+    SignUpForm,
+    User
 } from '../types';
 
 export class AuthService {

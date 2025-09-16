@@ -3,5 +3,20 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.validate.enable": true,
+  "typescript.format.enable": true,
+  "files.exclude": {
+    "supabase/functions/**": true
+  },
+  "search.exclude": {
+    "supabase/functions/**": true
+  },
+  "typescript.preferences.exclude": [
+    "supabase/functions/**/*"
+  ]
 }

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name TEXT,
     phone TEXT UNIQUE,
     avatar_url TEXT,
+    profile_picture_url TEXT, -- Alternative field for compatibility
     user_type TEXT CHECK (user_type IN ('customer', 'business_owner', 'staff', 'admin')) DEFAULT 'customer',
     location GEOGRAPHY(POINT),
     address TEXT,
@@ -1049,3 +1050,124 @@ BEGIN
     RAISE NOTICE '📦 Sample data added for testing';
     RAISE NOTICE '💾 Database ready for production use!';
 END $$;
+
+-- =====================================================
+-- REAL-TIME CONFIGURATION FOR SUPABASE
+-- =====================================================
+
+-- Enable real-time for critical tables
+ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.order_history;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.service_requests;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.businesses;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.products;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.services;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.reviews;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wallet_transactions;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
+
+-- Real-time triggers for order status updates
+CREATE OR REPLACE FUNCTION notify_order_status_change()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.notifications (user_id, title, message, type, data)
+    VALUES (
+        NEW.customer_id,
+        'Order Status Updated',
+        'Your order #' || NEW.id || ' status changed to ' || NEW.status,
+        'order_update',
+        jsonb_build_object('order_id', NEW.id, 'status', NEW.status)
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER order_status_change_trigger
+    AFTER UPDATE OF status ON public.orders
+    FOR EACH ROW
+    WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION notify_order_status_change();
+
+-- Real-time triggers for new messages
+CREATE OR REPLACE FUNCTION notify_new_message()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.notifications (user_id, title, message, type, data)
+    VALUES (
+        NEW.recipient_id,
+        'New Message',
+        'You have a new message',
+        'message',
+        jsonb_build_object('message_id', NEW.id, 'sender_id', NEW.sender_id, 'order_id', NEW.order_id)
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER new_message_trigger
+    AFTER INSERT ON public.chat_messages
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_new_message();
+
+-- Real-time triggers for service request updates
+CREATE OR REPLACE FUNCTION notify_service_request_update()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.notifications (user_id, title, message, type, data)
+    VALUES (
+        NEW.customer_id,
+        'Service Request Updated',
+        'Your service request #' || NEW.id || ' status changed to ' || NEW.status,
+        'service_update',
+        jsonb_build_object('service_request_id', NEW.id, 'status', NEW.status)
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER service_request_update_trigger
+    AFTER UPDATE OF status ON public.service_requests
+    FOR EACH ROW
+    WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION notify_service_request_update();
+
+-- Real-time triggers for payment updates
+CREATE OR REPLACE FUNCTION notify_payment_update()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_user_id UUID;
+BEGIN
+    -- Get the customer_id from the related order
+    SELECT customer_id INTO target_user_id 
+    FROM public.orders 
+    WHERE id = NEW.order_id;
+    
+    IF target_user_id IS NOT NULL THEN
+        INSERT INTO public.notifications (user_id, title, message, type, data)
+        VALUES (
+            target_user_id,
+            'Payment Status Updated',
+            'Your payment status changed to ' || NEW.status,
+            'payment_update',
+            jsonb_build_object('payment_id', NEW.id, 'status', NEW.status, 'amount', NEW.amount)
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER payment_update_trigger
+    AFTER UPDATE OF status ON public.payments
+    FOR EACH ROW
+    WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION notify_payment_update();
+
+-- Function to enable real-time for all tables (run this in Supabase dashboard)
+CREATE OR REPLACE FUNCTION enable_realtime_for_all_tables()
+RETURNS TEXT AS $$
+BEGIN
+    RETURN 'Real-time enabled for all critical tables. Configure in Supabase Dashboard: Settings > API > Realtime';
+END;
+$$ LANGUAGE plpgsql;
