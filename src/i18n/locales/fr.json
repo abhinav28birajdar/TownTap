@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "refresh": "Actualiser",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "continue": "Continuer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "app": {
+    "name": "TownTap",
+    "tagline": "Découvrez les Entreprises Locales"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "explore": "Explorer",
+    "profile": "Profil",
+    "dashboard": "Tableau de Bord",
+    "settings": "Paramètres"
+  },
+  "business": {
+    "title": "Entreprise",
+    "dashboard": "Tableau de Bord",
+    "profile": "Profil d'Entreprise",
+    "analytics": "Analyses",
+    "customers": "Clients",
+    "orders": "Commandes",
+    "settings": "Paramètres d'Entreprise",
+    "aiContent": "Générateur de Contenu IA",
+    "generateContent": "Générer du Contenu",
+    "contentGenerated": "Contenu généré avec succès !"
+  },
+  "auth": {
+    "login": "Se Connecter",
+    "logout": "Se Déconnecter",
+    "signup": "S'inscrire",
+    "forgotPassword": "Mot de passe oublié ?",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "loginSuccess": "Connexion réussie",
+    "logoutSuccess": "Déconnexion réussie"
+  },
+  "location": {
+    "requestPermission": "Autorisation de localisation requise",
+    "permissionDenied": "Autorisation de localisation refusée",
+    "currentLocation": "Position Actuelle",
+    "searchLocation": "Rechercher un Lieu"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markAllRead": "Tout marquer comme lu"
+  }
+}

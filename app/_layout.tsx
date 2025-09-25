@@ -1,59 +1,99 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+// Import i18n configuration
+import '../src/i18n';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+// Import configuration
+import { initializeApp } from '../src/config/app';
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
+// Import stores to initialize
+import { useAuthActions } from '../src/stores/authStore';
+import { useLocationStore } from '../src/stores/locationStore';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Import theme provider
+import { ThemeProvider, useTheme } from '../src/context/ModernThemeContext';
+
+// Import push notifications
+import { setupNotificationListeners } from '../src/utils/pushNotifications';
+
+// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
+function RootLayoutContent() {
+  const { theme, isDark } = useTheme();
+  
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+    </GestureHandlerRootView>
+  );
+}
+
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  const { initialize } = useAuthActions();
+  const { requestLocationPermission } = useLocationStore();
 
   useEffect(() => {
+    const initializeApplication = async () => {
+      try {
+        // Initialize app configuration
+        const initResult = await initializeApp();
+        if (!initResult.success) {
+          console.warn('App initialization had issues:', initResult.error);
+        }
+        
+        // Check authentication status
+        await initialize();
+        
+        // Setup push notification listeners
+        const unsubscribeNotifications = setupNotificationListeners();
+        
+        // Request location permission (optional, don't block app)
+        try {
+          await requestLocationPermission();
+        } catch (error) {
+          console.log('Location permission not granted, continuing without location');
+        }
+
+        // Cleanup function for notifications
+        return () => {
+          unsubscribeNotifications();
+        };
+      } catch (error) {
+        console.error('App initialization error:', error);
+      } finally {
+        if (loaded) {
+          SplashScreen.hideAsync();
+        }
+      }
+    };
+
     if (loaded) {
-      SplashScreen.hideAsync();
+      initializeApplication();
     }
-  }, [loaded]);
+  }, [loaded, initialize, requestLocationPermission]);
 
   if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+    <ThemeProvider>
+      <RootLayoutContent />
     </ThemeProvider>
   );
 }

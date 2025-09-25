@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "refresh": "Actualizar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "continue": "Continuar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "app": {
+    "name": "TownTap",
+    "tagline": "Descubre Negocios Locales"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "profile": "Perfil",
+    "dashboard": "Panel",
+    "settings": "Configuración"
+  },
+  "business": {
+    "title": "Negocio",
+    "dashboard": "Panel de Control",
+    "profile": "Perfil del Negocio",
+    "analytics": "Analíticas",
+    "customers": "Clientes",
+    "orders": "Pedidos",
+    "settings": "Configuración del Negocio",
+    "aiContent": "Generador de Contenido IA",
+    "generateContent": "Generar Contenido",
+    "contentGenerated": "¡Contenido generado exitosamente!"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "signup": "Registrarse",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "loginSuccess": "Inicio de sesión exitoso",
+    "logoutSuccess": "Cierre de sesión exitoso"
+  },
+  "location": {
+    "requestPermission": "Se requiere permiso de ubicación",
+    "permissionDenied": "Permiso de ubicación denegado",
+    "currentLocation": "Ubicación Actual",
+    "searchLocation": "Buscar Ubicación"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "Sin notificaciones",
+    "markAllRead": "Marcar todas como leídas"
+  }
+}

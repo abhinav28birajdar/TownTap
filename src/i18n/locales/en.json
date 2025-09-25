@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "app": {
+    "name": "TownTap",
+    "tagline": "Discover Local Businesses"
+  },
+  "navigation": {
+    "home": "Home",
+    "explore": "Explore",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "business": {
+    "title": "Business",
+    "dashboard": "Dashboard",
+    "profile": "Business Profile",
+    "analytics": "Analytics",
+    "customers": "Customers",
+    "orders": "Orders",
+    "settings": "Business Settings",
+    "aiContent": "AI Content Generator",
+    "generateContent": "Generate Content",
+    "contentGenerated": "Content generated successfully!"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "forgotPassword": "Forgot Password?",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "loginSuccess": "Login successful",
+    "logoutSuccess": "Logout successful"
+  },
+  "location": {
+    "requestPermission": "Location permission required",
+    "permissionDenied": "Location permission denied",
+    "currentLocation": "Current Location",
+    "searchLocation": "Search Location"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read"
+  }
+}
