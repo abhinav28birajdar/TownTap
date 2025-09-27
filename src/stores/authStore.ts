@@ -57,80 +57,94 @@ export const useAuthStore = create<AuthState>()(
         set({ error: null });
       },
 
-      signOut: async () => {
+  signOut: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      // Clean up notification subscriptions
+      try {
+        const { NotificationService } = require('../services/notificationService');
+        NotificationService.cleanup();
+      } catch (notificationError) {
+        console.error('Error cleaning up notifications:', notificationError);
+        // Non-fatal error, continue with sign out
+      }
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      set({
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Sign out failed';
+      set({ 
+        error: errorMessage,
+        isLoading: false 
+      });
+      throw error;
+    }
+  },  initialize: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      // Get current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        set({ 
+          user: null, 
+          profile: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: sessionError.message 
+        });
+        return;
+      }
+
+      if (session?.user) {
+        set({
+          user: session.user,
+          isAuthenticated: true,
+        });
+
+        // Fetch user profile
+        await get().refreshProfile();
+        
+        // Initialize notification system
         try {
-          set({ isLoading: true, error: null });
-          
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          
-          set({
-            user: null,
-            profile: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null,
-          });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Sign out failed';
-          set({ 
-            error: errorMessage,
-            isLoading: false 
-          });
-          throw error;
+          const { NotificationService } = require('../services/notificationService');
+          await NotificationService.initialize(session.user.id);
+        } catch (notificationError) {
+          console.error('Error initializing notifications:', notificationError);
+          // Non-fatal error, continue with auth initialization
         }
-      },
-
-      initialize: async () => {
-        try {
-          set({ isLoading: true, error: null });
-          
-          // Get current session
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            console.error('Session error:', sessionError);
-            set({ 
-              user: null, 
-              profile: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: sessionError.message 
-            });
-            return;
-          }
-
-          if (session?.user) {
-            set({
-              user: session.user,
-              isAuthenticated: true,
-            });
-
-            // Fetch user profile
-            await get().refreshProfile();
-          } else {
-            set({
-              user: null,
-              profile: null,
-              isAuthenticated: false,
-            });
-          }
-          
-          set({ isLoading: false });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Initialization failed';
-          console.error('Auth initialization error:', error);
-          set({ 
-            error: errorMessage,
-            isLoading: false,
-            user: null,
-            profile: null,
-            isAuthenticated: false,
-          });
-        }
-      },
-
-      refreshProfile: async () => {
+      } else {
+        set({
+          user: null,
+          profile: null,
+          isAuthenticated: false,
+        });
+      }
+      
+      set({ isLoading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Initialization failed';
+      console.error('Auth initialization error:', error);
+      set({ 
+        error: errorMessage,
+        isLoading: false,
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+      });
+    }
+  },      refreshProfile: async () => {
         const { user } = get();
         if (!user) return;
 

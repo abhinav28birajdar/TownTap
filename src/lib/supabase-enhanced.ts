@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, getSupabaseConfig } from './supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { UserProfile } from '../types';
 
@@ -15,6 +15,11 @@ export interface AuthResponse {
 
 // Enhanced authentication functions
 export const signInWithEmail = async (email: string, password: string): Promise<AuthResponse> => {
+  const config = getSupabaseConfig();
+  if (!config.isConfigured) {
+    return { error: { message: 'Supabase not configured. Please add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to your .env file.' } };
+  }
+  
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,

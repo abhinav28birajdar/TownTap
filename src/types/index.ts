@@ -10,9 +10,76 @@ export type PaymentStatus = 'pending' | 'successful' | 'failed' | 'refunded' | '
 export type OrderStatus = 'pending' | 'accepted' | 'preparing' | 'ready_for_pickup' | 'out_for_delivery' | 'delivered' | 'completed' | 'cancelled_by_customer' | 'cancelled_by_business' | 'payment_failed' | 'refunded' | 'disputed';
 export type ServiceRequestStatus = 'pending' | 'accepted' | 'rejected_by_business' | 'quoted' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled_by_customer' | 'cancelled_by_business' | 'disputed';
 export type InquiryStatus = 'new' | 'reviewed' | 'contacted_by_business' | 'proposal_sent' | 'closed_success' | 'closed_fail' | 'archived';
-export type AppLanguage = 'en' | 'hi';
-export type NotificationType = 'order_status' | 'new_message' | 'promo' | 'system_alert' | 'low_stock' | 'payout_status' | 'new_review';
+export type AppLanguage = 'en' | 'hi' | 'mr' | 'ta' | 'te' | 'kn' | 'ml' | 'pa' | 'bn';
+export type NotificationType = 
+  // Customer notifications
+  | 'service_request_status'  // Updates on service request status changes
+  | 'booking_confirmation'    // Booking confirmed by service provider
+  | 'service_reminder'        // Reminder about upcoming service
+  | 'payment_status'          // Payment success/failure notifications
+  | 'service_provider_arrival' // Service provider is arriving soon
+  | 'new_message'             // New chat message
+  | 'promo'                   // Promotional offers
+  | 'system_alert'            // System-level alerts
+  | 'new_review_response'     // Business responded to user's review
+  
+  // Business owner notifications
+  | 'new_service_request'     // New service booking request 
+  | 'booking_cancelled'       // Customer cancelled booking
+  | 'low_stock'               // Inventory alerts for businesses
+  | 'payout_status'           // Payment settlement status
+  | 'new_review'              // Customer left a new review
+  | 'business_verification'   // Account verification status updates
+  | 'business_analytics'      // Weekly/monthly business analytics alerts
+  | 'area_demand'             // High demand alerts for certain services in an area
+;
 export type StaffRole = 'manager' | 'delivery_driver' | 'service_technician' | 'cashier';
+
+// --- Notification System Types ---
+export interface NotificationPreferences {
+  service_updates: boolean;
+  chat_messages: boolean;
+  promotional: boolean;
+  payments: boolean;
+  reminders: boolean;
+  email_notifications: boolean;
+  push_notifications: boolean;
+  sms_notifications: boolean;
+  whatsapp_notifications: boolean;
+  do_not_disturb: {
+    enabled: boolean;
+    start_time?: string; // HH:MM format
+    end_time?: string;   // HH:MM format
+  };
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  is_read: boolean;
+  action_data?: {
+    screen?: string;
+    params?: Record<string, any>;
+    deeplink?: string;
+  };
+  reference_id?: string; // ID of the related entity (order_id, message_id, etc.)
+  reference_type?: 'order' | 'service_request' | 'message' | 'review' | 'payment' | 'system';
+  image_url?: string;
+  created_at: string;
+  expires_at?: string;
+}
+
+// Extend UserProfile to include notification preferences
+export interface NotificationSettingsUpdate {
+  notification_preferences?: NotificationPreferences;
+  fcm_token?: string;
+  whatsapp_notifications_enabled?: boolean;
+  phone_number_verified?: boolean;
+  email_verified?: boolean;
+}
 
 // --- Authentication & User Profiles ---
 export interface SignInCredentials {
@@ -32,6 +99,9 @@ export interface SignUpCredentials {
 export interface UserProfile {
   id: string;
   full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  display_name?: string | null;
   email: string;
   phone_number?: string | null;
   user_type: UserType;
@@ -148,7 +218,12 @@ export interface OperatingHours {
 
 export interface BusinessRegistrationData {
   businessName: string;
+  business_name: string;
   description: string;
+  phone: string;
+  email: string;
+  website?: string;
+  category: string;
   addressLine1: string;
   addressLine2?: string;
   city: string;
@@ -160,8 +235,23 @@ export interface BusinessRegistrationData {
   businessType: BusinessInteractionType;
   specializedCategories: string[];
   operatingHours: OperatingHours;
+  hours: OperatingHours;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip_code: string;
+    country: string;
+  };
+  social_media: {
+    facebook?: string;
+    instagram?: string;
+  };
   logoFile?: ImagePickerAsset;
+  logo_file?: ImagePickerAsset;
   bannerFile?: ImagePickerAsset;
+  banner_file?: ImagePickerAsset;
+  gallery_files?: ImagePickerAsset[];
   gstin?: string;
   businessLicenseUrl?: string;
 }
@@ -182,6 +272,69 @@ export interface BusinessProfileDetail extends Omit<BusinessRegistrationData, 'l
   delivery_charge?: number | null;
   created_at: string;
   updated_at: string;
+}
+
+// Additional business types needed by components
+export interface BusinessProfile {
+  id: string;
+  name: string;
+  business_name?: string;
+  description?: string;
+  category: string;
+  subcategory?: string;
+  phone: string;
+  phone_number?: string;
+  email?: string;
+  address: string;
+  city?: string;
+  latitude: number;
+  longitude: number;
+  distance_km?: number;
+  distance?: number;
+  image_url?: string;
+  logo_url?: string;
+  rating?: number;
+  total_reviews?: number;
+  is_verified: boolean;
+  is_active: boolean;
+  is_open?: boolean;
+  delivery_available?: boolean;
+  landmark?: string;
+  website_url?: string;
+  pincode?: string;
+  whatsapp_number?: string;
+  services?: string;
+  operating_hours?: any;
+  created_at?: string;
+  updated_at?: string;
+  gallery_images?: string[];
+  owner_id?: string;
+  banner_url?: string;
+}
+
+export interface BusinessCategory {
+  id: string;
+  name: string;
+  value: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface BusinessStats {
+  total_orders: number;
+  monthlyOrders: number;
+  totalOrders: number;
+  pending_orders: number;
+  total_revenue: number;
+  avg_rating: number;
+  total_reviews: number;
+  active_products: number;
+  totalViews?: number;
+  monthlyViews?: number;
+  rating?: number;
+  reviewCount?: number;
+  favoriteCount?: number;
+  shareCount?: number;
 }
 
 // --- Business Types ---
