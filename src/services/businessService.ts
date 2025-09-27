@@ -71,7 +71,7 @@ export class BusinessService {
       }
 
       const { data: business, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .insert({
           ...data,
           owner_id: ownerId,
@@ -113,7 +113,7 @@ export class BusinessService {
   static async getBusinessByOwner(ownerId: string): Promise<BusinessProfile | null> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('owner_id', ownerId)
         .single();
@@ -132,7 +132,7 @@ export class BusinessService {
   static async getBusinessById(id: string): Promise<BusinessProfile | null> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('id', id)
         .single();
@@ -154,7 +154,7 @@ export class BusinessService {
   ): Promise<ApiResponse<BusinessProfile>> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .update({
           ...updates,
           updated_at: new Date().toISOString(),
@@ -191,7 +191,7 @@ export class BusinessService {
   static async deleteBusiness(id: string): Promise<ApiResponse<void>> {
     try {
       const { error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .delete()
         .eq('id', id);
 
@@ -237,7 +237,7 @@ export class BusinessService {
   }): Promise<BusinessProfile[]> {
     try {
       let query = supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('is_active', true);
 
@@ -311,7 +311,7 @@ export class BusinessService {
   ): Promise<BusinessProfile[]> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('category', category)
         .eq('is_active', true)
@@ -332,7 +332,7 @@ export class BusinessService {
   static async getFeaturedBusinesses(limit = 10): Promise<BusinessProfile[]> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('is_active', true)
         .eq('is_featured', true)
@@ -363,7 +363,7 @@ export class BusinessService {
       // For now, simulate with a function call or direct query
       // This is a placeholder for actual implementation
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('is_active', true)
         .limit(limit);
@@ -373,7 +373,7 @@ export class BusinessService {
       // Filter and calculate distances client-side (not efficient but works for demo)
       const businesses = data || [];
       return businesses
-        .filter(business => {
+        .filter((business: any) => {
           if (!business.latitude || !business.longitude) return false;
           
           // Calculate rough distance using Haversine formula
@@ -390,7 +390,7 @@ export class BusinessService {
           // Only include businesses within radius
           return distance <= radius / 1000; // convert meters to km
         })
-        .sort((a, b) => (a.distance || 0) - (b.distance || 0));
+        .sort((a: any, b: any) => (a.distance || 0) - (b.distance || 0));
     } catch (err) {
       console.error('Get nearby businesses error:', err);
       throw err;
@@ -403,7 +403,7 @@ export class BusinessService {
   static async getRecentBusinesses(limit = 20): Promise<BusinessProfile[]> {
     try {
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
@@ -450,7 +450,7 @@ export class BusinessService {
     isActive: boolean
   ): Promise<BusinessProfile> {
     const { data, error } = await supabase
-      .from('business_profiles')
+      .from('businesses')
       .update({
         is_active: isActive,
         updated_at: new Date().toISOString(),
@@ -605,10 +605,10 @@ export class BusinessService {
       if (!favorites || favorites.length === 0) return [];
       
       // Then get the actual business profiles using the IDs
-      const businessIds = favorites.map(fav => fav.business_id);
+      const businessIds = favorites.map((fav: any) => fav.business_id);
       
       const { data: businesses, error: bizError } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .in('id', businessIds);
         
@@ -671,7 +671,7 @@ export class BusinessService {
       
       // Get total count for pagination
       const { count, error: countError } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true)
         .or(`name.ilike.%${query}%, description.ilike.%${query}%, tags.cs.{${query}}`);
@@ -680,7 +680,7 @@ export class BusinessService {
 
       // Get the actual data
       const { data, error } = await supabase
-        .from('business_profiles')
+        .from('businesses')
         .select('*')
         .eq('is_active', true)
         .or(`name.ilike.%${query}%, description.ilike.%${query}%, tags.cs.{${query}}`)

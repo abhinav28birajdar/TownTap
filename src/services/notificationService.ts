@@ -65,13 +65,12 @@ export class NotificationService {
       
       // Save token to database for the user
       await supabase
-        .from('user_devices')
-        .upsert({
-          user_id: userId,
-          device_token: expoPushToken,
-          device_type: Platform.OS,
-          last_active: new Date().toISOString(),
-        });
+        .from('profiles')
+        .update({
+          fcm_token: expoPushToken,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
 
       // Configure notification handler
       Notifications.setNotificationHandler({
@@ -105,7 +104,7 @@ export class NotificationService {
             event: 'INSERT',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${userId}`,
+            filter: `recipient_id=eq.${userId}`,
           },
           (payload) => {
             const notification = payload.new as Notification;
@@ -150,18 +149,16 @@ export class NotificationService {
   static async fetchNotificationPreferences(userId: string): Promise<NotificationPreferences | null> {
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
-        .select('notification_preferences')
-        .eq('id', userId)
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       
-      const preferences = data?.notification_preferences as NotificationPreferences;
-      
-      if (preferences) {
-        await AsyncStorage.setItem('notification_preferences', JSON.stringify(preferences));
-        return preferences;
+      if (data) {
+        await AsyncStorage.setItem('notification_preferences', JSON.stringify(data));
+        return data as NotificationPreferences;
       }
       
       return null;
@@ -179,29 +176,19 @@ export class NotificationService {
     preferences: Partial<NotificationPreferences>
   ): Promise<boolean> {
     try {
-      // First get current preferences
-      const { data: userData, error: fetchError } = await supabase
-        .from('user_profiles')
-        .select('notification_preferences')
-        .eq('id', userId)
-        .single();
+      // Update in database (upsert)
+      const { error } = await supabase
+        .from('notification_preferences')
+        .upsert({
+          user_id: userId,
+          ...preferences,
+          updated_at: new Date().toISOString(),
+        });
       
-      if (fetchError) throw fetchError;
-      
-      // Merge with new preferences
-      const currentPreferences = userData?.notification_preferences as NotificationPreferences || {};
-      const updatedPreferences = { ...currentPreferences, ...preferences };
-      
-      // Update in database
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ notification_preferences: updatedPreferences })
-        .eq('id', userId);
-      
-      if (updateError) throw updateError;
+      if (error) throw error;
       
       // Update local storage
-      await AsyncStorage.setItem('notification_preferences', JSON.stringify(updatedPreferences));
+      await AsyncStorage.setItem('notification_preferences', JSON.stringify(preferences));
       
       return true;
     } catch (error) {
@@ -218,7 +205,7 @@ export class NotificationService {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userId)
+        .eq('recipient_id', userId)
         .eq('is_read', false)
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -247,7 +234,7 @@ export class NotificationService {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userId)
+        .eq('recipient_id', userId)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
       
@@ -289,7 +276,7 @@ export class NotificationService {
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', userId)
+        .eq('recipient_id', userId)
         .eq('is_read', false);
       
       if (error) throw error;
@@ -343,14 +330,12 @@ export class NotificationService {
       const { error } = await supabase
         .from('notifications')
         .insert({
-          user_id: userId,
+          recipient_id: userId,
           title,
           message,
           type,
-          action_data: actionData,
-          reference_id: referenceId,
-          reference_type: referenceType,
-          image_url: imageUrl,
+          data: actionData || {},
+          action_url: referenceId ? `/${referenceType}/${referenceId}` : undefined,
           is_read: false,
           created_at: new Date().toISOString(),
         });
@@ -371,7 +356,7 @@ export class NotificationService {
       const { count, error } = await supabase
         .from('notifications')
         .select('id', { count: 'exact' })
-        .eq('user_id', userId)
+        .eq('recipient_id', userId)
         .eq('is_read', false);
       
       if (error) throw error;

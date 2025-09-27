@@ -3,7 +3,7 @@
 
 // --- Global Enums & Core Types ---
 export type UserType = 'customer' | 'business' | 'business_owner' | 'business_staff' | 'admin' | 'staff';
-export type BusinessInteractionType = 'type_a' | 'type_b' | 'type_c';
+export type BusinessInteractionType = 'type_a' | 'type_b' | 'type_c' | 'type_d';
 export type BusinessStatus = 'pending_approval' | 'active' | 'inactive' | 'suspended';
 export type PaymentMethod = 'CARD' | 'NETBANKING' | 'UPI_COLLECT' | 'UPI_INTENT' | 'WALLET' | 'COD' | 'CASH_ON_SITE';
 export type PaymentStatus = 'pending' | 'successful' | 'failed' | 'refunded' | 'authorized' | 'captured';

@@ -26,14 +26,14 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set: any, get: any) => ({
       user: null,
       profile: null,
       isLoading: true,
       isAuthenticated: false,
       error: null,
 
-      setUser: (user) => {
+      setUser: (user: User | null) => {
         set({ 
           user, 
           isAuthenticated: !!user,
@@ -41,15 +41,15 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      setProfile: (profile) => {
+      setProfile: (profile: UserProfile | null) => {
         set({ profile });
       },
 
-      setLoading: (isLoading) => {
+      setLoading: (isLoading: boolean) => {
         set({ isLoading });
       },
 
-      setError: (error) => {
+      setError: (error: string | null) => {
         set({ error });
       },
 
@@ -150,7 +150,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const { data: profile, error } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
@@ -167,7 +167,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      updateProfile: async (updates) => {
+      updateProfile: async (updates: Partial<UserProfile>) => {
         const { user, profile } = get();
         if (!user) throw new Error('User not authenticated');
 
@@ -177,7 +177,7 @@ export const useAuthStore = create<AuthState>()(
           const updatedProfile = { ...profile, ...updates };
           
           const { data, error } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .upsert({
               id: user.id,
               ...updatedProfile,
@@ -205,7 +205,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
+      partialize: (state: AuthState) => ({
         user: state.user,
         profile: state.profile,
         isAuthenticated: state.isAuthenticated,
@@ -215,7 +215,7 @@ export const useAuthStore = create<AuthState>()(
 );
 
 // Set up auth state listener
-supabase.auth.onAuthStateChange(async (event, session) => {
+supabase.auth.onAuthStateChange(async (event: any, session: any) => {
   const { setUser, refreshProfile, setLoading } = useAuthStore.getState();
   
   console.log('Auth state changed:', event, session?.user?.id);

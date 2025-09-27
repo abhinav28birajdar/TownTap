@@ -14,7 +14,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../src/context/ModernThemeContext';
 import { useAuthStore } from '../src/stores/authStore';
-import { BusinessProfile } from '../src/types';
+import { supabase } from '../src/lib/supabase';
+
+interface BusinessProfile {
+  id: string;
+  business_name: string;
+  specialized_categories: string[];
+  avg_rating: number;
+  total_reviews: number;
+  delivery_radius_km: number;
+}
 
 export default function Favorites() {
   const { theme } = useTheme();
@@ -27,12 +36,28 @@ export default function Favorites() {
   }, []);
 
   const loadFavorites = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
-      // TODO: Implement favorite businesses loading from Firebase
-      // For now, using placeholder data
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
-      setFavorites([]); // Empty for now
+      const { data, error } = await supabase
+        .from('user_favorites')
+        .select(`
+          business_id,
+          businesses (
+            id,
+            business_name,
+            specialized_categories,
+            avg_rating,
+            total_reviews,
+            delivery_radius_km
+          )
+        `)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      const favoriteBusinesses = data?.map(item => item.businesses).filter(Boolean).flat() as BusinessProfile[] || [];
+      setFavorites(favoriteBusinesses);
     } catch (error) {
       console.error('Error loading favorites:', error);
     } finally {
@@ -41,8 +66,16 @@ export default function Favorites() {
   };
 
   const handleRemoveFavorite = async (businessId: string) => {
+    if (!user) return;
+    
     try {
-      // TODO: Implement remove from favorites in Firebase
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('business_id', businessId);
+      
+      if (error) throw error;
       setFavorites(prev => prev.filter(business => business.id !== businessId));
     } catch (error) {
       console.error('Error removing favorite:', error);
@@ -62,25 +95,25 @@ export default function Favorites() {
       onPress={() => handleBusinessPress(business)}
     >
       <Image
-        source={{ uri: business.image_url || business.logo_url || 'https://via.placeholder.com/60' }}
+        source={{ uri: 'https://via.placeholder.com/60' }}
         style={styles.businessImage}
       />
       <View style={styles.businessInfo}>
         <Text style={[styles.businessName, { color: theme.colors.text }]} numberOfLines={1}>
-          {business.business_name || business.name}
+          {business.business_name}
         </Text>
         <Text style={[styles.businessCategory, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-          {business.category || 'Local Business'}
+          {business.specialized_categories?.[0] || 'Local Business'}
         </Text>
         <View style={styles.businessMeta}>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={14} color="#FFD700" />
             <Text style={[styles.rating, { color: theme.colors.textSecondary }]}>
-              {(business.rating || 0).toFixed(1)} ({business.total_reviews || 0})
+              {(business.avg_rating || 0).toFixed(1)} ({business.total_reviews || 0})
             </Text>
           </View>
           <Text style={[styles.distance, { color: theme.colors.textSecondary }]}>
-            {business.distance_km ? `${business.distance_km.toFixed(1)} km` : ''}
+            {business.delivery_radius_km ? `${business.delivery_radius_km.toFixed(1)} km` : ''}
           </Text>
         </View>
       </View>

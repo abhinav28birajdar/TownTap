@@ -62,7 +62,7 @@ export const subscribeToMessages = (userId: string, callback: (payload: any) => 
         event: 'INSERT', 
         schema: 'public', 
         table: 'messages',
-        filter: `recipient_id=eq.${userId}`
+        filter: `sender_id=neq.${userId}`
       }, 
       callback
     )
@@ -81,7 +81,67 @@ export const subscribeToNotifications = (userId: string, callback: (payload: any
         event: 'INSERT', 
         schema: 'public', 
         table: 'notifications',
-        filter: `recipient_profile_id=eq.${userId}`
+        filter: `recipient_id=eq.${userId}`
+      }, 
+      callback
+    )
+    .subscribe();
+};
+
+// Service requests real-time subscription
+export const subscribeToServiceRequestUpdates = (requestId: string, callback: (payload: any) => void) => {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured. Real-time subscriptions disabled.');
+    return { unsubscribe: () => {} };
+  }
+  return supabase
+    .channel('service-request-updates')
+    .on('postgres_changes', 
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'service_requests',
+        filter: `id=eq.${requestId}`
+      }, 
+      callback
+    )
+    .subscribe();
+};
+
+// Live location tracking subscription
+export const subscribeToLiveLocation = (servicePersonId: string, callback: (payload: any) => void) => {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured. Real-time subscriptions disabled.');
+    return { unsubscribe: () => {} };
+  }
+  return supabase
+    .channel('live-location')
+    .on('postgres_changes', 
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'live_locations',
+        filter: `service_person_id=eq.${servicePersonId}`
+      }, 
+      callback
+    )
+    .subscribe();
+};
+
+// Chat subscription for a specific chat
+export const subscribeToChatMessages = (chatId: string, callback: (payload: any) => void) => {
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured. Real-time subscriptions disabled.');
+    return { unsubscribe: () => {} };
+  }
+  return supabase
+    .channel(`chat-${chatId}`)
+    .on('postgres_changes', 
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `chat_id=eq.${chatId}`
       }, 
       callback
     )

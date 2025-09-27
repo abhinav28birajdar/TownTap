@@ -254,19 +254,19 @@ export default function Profile() {
       title: 'Order History',
       icon: 'receipt-outline',
       description: `${orderCount} orders placed`,
-      onPress: () => router.push('/orders'),
+      onPress: () => Alert.alert('Coming Soon', 'Order history feature is coming soon!'),
     },
     {
       title: 'Saved Addresses',
       icon: 'location-outline',
       description: 'Manage your addresses',
-      onPress: () => router.push('/addresses'),
+      onPress: () => Alert.alert('Coming Soon', 'Address management is coming soon!'),
     },
     {
       title: 'Payment Methods',
       icon: 'card-outline',
       description: 'Add or remove payment options',
-      onPress: () => router.push('/payment-methods'),
+      onPress: () => Alert.alert('Coming Soon', 'Payment methods feature is coming soon!'),
     },
     {
       title: 'Favorites',
@@ -278,7 +278,7 @@ export default function Profile() {
       title: 'Help & Support',
       icon: 'help-circle-outline',
       description: 'Get help with your account',
-      onPress: () => router.push('/support'),
+      onPress: () => Alert.alert('Coming Soon', 'Help & support is coming soon!'),
     },
     {
       title: 'Notification Settings',
@@ -290,7 +290,7 @@ export default function Profile() {
       title: 'About',
       icon: 'information-circle-outline',
       description: 'App version and information',
-      onPress: () => router.push('/about'),
+      onPress: () => Alert.alert('About TownTap', 'TownTap - Your local services marketplace\nVersion 1.0.0'),
     },
   ];
 
@@ -338,7 +338,7 @@ export default function Profile() {
                   placeholder="Full Name"
                   placeholderTextColor={theme.colors.textSecondary}
                   value={profileData.full_name}
-                  onChangeText={(text) => setProfileData({ ...profileData, full_name: text })}
+                  onChangeText={(text: string) => setProfileData({ ...profileData, full_name: text })}
                 />
               </View>
               
@@ -349,7 +349,7 @@ export default function Profile() {
                   placeholder="Phone Number"
                   placeholderTextColor={theme.colors.textSecondary}
                   value={profileData.phone_number}
-                  onChangeText={(text) => setProfileData({ ...profileData, phone_number: text })}
+                  onChangeText={(text: string) => setProfileData({ ...profileData, phone_number: text })}
                   keyboardType="phone-pad"
                 />
               </View>
@@ -427,7 +427,7 @@ export default function Profile() {
               onPress={item.onPress}
             >
               <View style={styles.menuItemContent}>
-                <View style={[styles.menuItemIconContainer, { backgroundColor: theme.colors.primaryLight }]}>
+                <View style={[styles.menuItemIconContainer, { backgroundColor: theme.colors.primary + '20' }]}>
                   <Ionicons name={item.icon as any} size={22} color={theme.colors.primary} />
                 </View>
                 <View style={styles.menuItemTextContainer}>
@@ -520,8 +520,8 @@ export default function Profile() {
             style={[styles.accountActionButton, { borderColor: theme.colors.border }]}
             onPress={handleSignOut}
           >
-            <Ionicons name="log-out-outline" size={20} color={theme.colors.danger} />
-            <Text style={[styles.accountActionText, { color: theme.colors.danger }]}>
+            <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
+            <Text style={[styles.accountActionText, { color: theme.colors.error }]}>
               Sign Out
             </Text>
           </TouchableOpacity>
@@ -530,8 +530,8 @@ export default function Profile() {
             style={[styles.accountActionButton, { borderColor: theme.colors.border }]}
             onPress={handleDeleteAccount}
           >
-            <Ionicons name="trash-outline" size={20} color={theme.colors.danger} />
-            <Text style={[styles.accountActionText, { color: theme.colors.danger }]}>
+            <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
+            <Text style={[styles.accountActionText, { color: theme.colors.error }]}>
               Delete Account
             </Text>
           </TouchableOpacity>
@@ -547,7 +547,7 @@ export default function Profile() {
   );
 }
 
-const TextInput = (props) => {
+const TextInput = (props: any) => {
   const { theme } = useTheme();
   return (
     <View style={{ flex: 1 }}>

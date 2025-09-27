@@ -15,8 +15,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../src/context/ModernThemeContext';
 import { ALL_BUSINESS_CATEGORIES, BUSINESS_CATEGORIES } from '../src/config/config';
-import { firestoreService } from '../firebase/firestore';
-import { BusinessProfile } from '../src/types';
+import { supabase } from '../src/lib/supabase';
+
+interface BusinessProfile {
+  id: string;
+  business_name: string;
+  specialized_categories: string[];
+  avg_rating: number;
+  total_reviews: number;
+  delivery_radius_km: number;
+}
 
 interface CategoryTab {
   id: string;
@@ -55,8 +63,15 @@ export default function Explore() {
   const loadFeaturedBusinesses = async () => {
     try {
       setLoading(true);
-      const featured = await firestoreService.getFeaturedBusinesses(10);
-      setFeaturedBusinesses(featured);
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('is_featured', true)
+        .eq('is_active', true)
+        .limit(10);
+      
+      if (error) throw error;
+      setFeaturedBusinesses(data || []);
     } catch (error) {
       console.error('Error loading featured businesses:', error);
     } finally {
@@ -67,8 +82,15 @@ export default function Explore() {
   const searchBusinesses = async () => {
     try {
       setSearchLoading(true);
-      const results = await firestoreService.searchBusinesses(searchQuery);
-      setBusinesses(results);
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .or(`business_name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+        .eq('is_active', true)
+        .limit(20);
+      
+      if (error) throw error;
+      setBusinesses(data || []);
     } catch (error) {
       console.error('Error searching businesses:', error);
     } finally {
@@ -92,8 +114,15 @@ export default function Explore() {
   const handleCategoryPress = async (categoryValue: string) => {
     try {
       setLoading(true);
-      const categoryBusinesses = await firestoreService.getBusinessesByCategory(categoryValue, 20);
-      setBusinesses(categoryBusinesses);
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .contains('specialized_categories', [categoryValue])
+        .eq('is_active', true)
+        .limit(20);
+      
+      if (error) throw error;
+      setBusinesses(data || []);
       setSearchQuery(''); // Clear search when selecting category
     } catch (error) {
       console.error('Error loading category businesses:', error);
@@ -115,24 +144,24 @@ export default function Explore() {
       onPress={() => handleBusinessPress(business)}
     >
       <Image
-        source={{ uri: business.image_url || business.logo_url || 'https://via.placeholder.com/60' }}
+        source={{ uri: 'https://via.placeholder.com/60' }}
         style={styles.businessLogo}
       />
       <View style={styles.businessInfo}>
         <Text style={[styles.businessName, { color: theme.colors.text }]} numberOfLines={1}>
-          {business.business_name || business.name}
+          {business.business_name}
         </Text>
         <Text style={[styles.businessCategory, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-          {business.category || 'Local Business'}
+          {business.specialized_categories?.[0] || 'Local Business'}
         </Text>
         <View style={styles.businessMeta}>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={14} color="#FFD700" />
             <Text style={[styles.rating, { color: theme.colors.textSecondary }]}>
-              {(business.rating || 0).toFixed(1)} ({business.total_reviews || 0})
+              {(business.avg_rating || 0).toFixed(1)} ({business.total_reviews || 0})
             </Text>
           </View>
-          {business.delivery_available && (
+          {business.delivery_radius_km && business.delivery_radius_km > 0 && (
             <View style={[styles.deliveryBadge, { backgroundColor: theme.colors.success }]}>
               <Text style={styles.deliveryText}>Delivery</Text>
             </View>
@@ -161,7 +190,7 @@ export default function Explore() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Discover LocalMart
+          Discover TownTap
         </Text>
         <TouchableOpacity style={styles.headerAction}>
           <Ionicons name="notifications-outline" size={24} color={theme.colors.text} />
