@@ -3,20 +3,23 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { UserProfile } from '../types';
+import { UserProfile, ExtendedUser } from '../types';
 
 interface AuthState {
-  user: User | null;
+  user: ExtendedUser | null;
   profile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
   
   // Actions
-  setUser: (user: User | null) => void;
+  setUser: (user: ExtendedUser | null) => void;
   setProfile: (profile: UserProfile | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, userData?: any) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -26,14 +29,14 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set: any, get: any) => ({
+    (set, get) => ({
       user: null,
       profile: null,
       isLoading: true,
       isAuthenticated: false,
       error: null,
 
-      setUser: (user: User | null) => {
+      setUser: (user: ExtendedUser | null) => {
         set({ 
           user, 
           isAuthenticated: !!user,
@@ -55,6 +58,89 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => {
         set({ error: null });
+      },
+
+      signIn: async (email: string, password: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (error) throw error;
+
+          if (data.user) {
+            set({
+              user: data.user,
+              isAuthenticated: true,
+            });
+            await get().refreshProfile();
+          }
+          
+          set({ isLoading: false });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Sign in failed';
+          set({ 
+            error: errorMessage,
+            isLoading: false 
+          });
+          throw error;
+        }
+      },
+
+      signUp: async (email: string, password: string, userData?: any) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: userData || {},
+            },
+          });
+
+          if (error) throw error;
+
+          if (data.user) {
+            set({
+              user: data.user,
+              isAuthenticated: true,
+            });
+          }
+          
+          set({ isLoading: false });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Sign up failed';
+          set({ 
+            error: errorMessage,
+            isLoading: false 
+          });
+          throw error;
+        }
+      },
+
+      resetPassword: async (email: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'towntap://auth/reset-password',
+          });
+
+          if (error) throw error;
+          
+          set({ isLoading: false });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Password reset failed';
+          set({ 
+            error: errorMessage,
+            isLoading: false 
+          });
+          throw error;
+        }
       },
 
   signOut: async () => {
@@ -159,7 +245,20 @@ export const useAuthStore = create<AuthState>()(
             throw error;
           }
 
-          set({ profile: profile || null });
+          // Extend user object with profile data
+          const extendedUser: ExtendedUser = {
+            ...user,
+            user_type: profile?.user_type,
+            name: profile?.full_name || profile?.display_name,
+            full_name: profile?.full_name,
+            business_name: profile?.business_name,
+            business_id: profile?.business_id,
+          };
+
+          set({ 
+            profile: profile || null,
+            user: extendedUser,
+          });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
           console.error('Profile fetch error:', error);

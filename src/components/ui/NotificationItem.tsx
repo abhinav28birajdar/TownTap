@@ -1,8 +1,8 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View, Text, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Notification, NotificationType } from '../types';
-import { NotificationService } from '../services/notificationService';
+import { Notification, NotificationType } from '../../types';
+import { NotificationService } from '../../services/notificationService';
 import { Ionicons } from '@expo/vector-icons';
 import { format, formatDistanceToNow } from 'date-fns';
 

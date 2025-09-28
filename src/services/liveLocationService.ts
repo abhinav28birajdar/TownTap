@@ -678,7 +678,7 @@ export class LiveLocationService {
       .subscribe();
 
     return () => {
-      supabase.removeSubscription(subscription);
+      subscription.unsubscribe();
     };
   }
 

@@ -223,7 +223,7 @@ export default function UnifiedBusinessDetailScreen() {
             style={[styles.actionButton, styles.bookButton]}
             onPress={() => {
               // Navigate to booking screen
-              router.push(`/booking/${business.id}`);
+              router.push(`/booking/${business.id}` as any);
             }}
           >
             <Text style={styles.actionButtonText}>Book Service</Text>

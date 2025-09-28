@@ -160,14 +160,18 @@ export default function Profile() {
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `profiles/${fileName}`;
 
+        // Create form data for file upload
+        const formData = new FormData();
+        formData.append('file', {
+          uri: file.uri,
+          name: fileName,
+          type: `image/${fileExt}`,
+        } as any);
+
         // Upload the file to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(filePath, {
-            uri: file.uri,
-            name: fileName,
-            type: `image/${fileExt}`
-          });
+          .upload(filePath, formData);
 
         if (uploadError) {
           throw uploadError;

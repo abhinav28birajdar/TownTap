@@ -92,7 +92,8 @@ export class NotificationService {
     try {
       // Clean up existing subscription if any
       if (NotificationService.realtimeSubscription) {
-        supabase.removeSubscription(NotificationService.realtimeSubscription);
+        await NotificationService.realtimeSubscription.unsubscribe();
+        NotificationService.realtimeSubscription = null;
       }
 
       // Set up new subscription
@@ -376,7 +377,7 @@ export class NotificationService {
    */
   static cleanup(): void {
     if (NotificationService.realtimeSubscription) {
-      supabase.removeSubscription(NotificationService.realtimeSubscription);
+      NotificationService.realtimeSubscription.unsubscribe();
       NotificationService.realtimeSubscription = null;
     }
   }

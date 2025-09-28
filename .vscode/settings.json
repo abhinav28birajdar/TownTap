@@ -1,0 +1,19 @@
+{
+  "typescript.preferences.excludePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": false,
+  "files.exclude": {
+    "supabase/functions/**/*.ts": true
+  },
+  "search.exclude": {
+    "supabase/functions/**": true
+  },
+  "typescript.validate.enable": true,
+  "typescript.exclude": [
+    "supabase/functions/**/*"
+  ],
+  "deno.enable": false,
+  "deno.enablePaths": ["./supabase/functions"],
+  "[typescript]": {
+    "typescript.validate.enable": true
+  }
+}

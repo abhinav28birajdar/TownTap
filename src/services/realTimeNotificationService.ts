@@ -134,7 +134,6 @@ export class RealTimeNotificationService {
           allowDisplayInCarPlay: true,
           allowCriticalAlerts: true,
           allowProvisional: true,
-          allowAnnouncements: true,
         },
         android: {
           allowAlert: true,
@@ -771,7 +770,7 @@ export class RealTimeNotificationService {
    */
   cleanup(): void {
     this.subscriptions.forEach((subscription) => {
-      supabase.removeSubscription(subscription);
+      subscription.unsubscribe();
     });
     this.subscriptions.clear();
   }

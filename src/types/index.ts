@@ -82,6 +82,17 @@ export interface NotificationSettingsUpdate {
 }
 
 // --- Authentication & User Profiles ---
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
+// Extended User type that includes additional properties
+export interface ExtendedUser extends SupabaseUser {
+  user_type?: UserType;
+  name?: string;
+  full_name?: string;
+  business_name?: string;
+  business_id?: string;
+}
+
 export interface SignInCredentials {
   email?: string;
   password?: string;
@@ -102,9 +113,12 @@ export interface UserProfile {
   first_name?: string | null;
   last_name?: string | null;
   display_name?: string | null;
+  name?: string | null;
   email: string;
   phone_number?: string | null;
   user_type: UserType;
+  business_name?: string | null;
+  business_id?: string | null;
   fcm_token?: string | null;
   locale?: AppLanguage;
   profile_picture_url?: string | null;
