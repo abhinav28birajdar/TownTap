@@ -1,4 +1,16 @@
-# TownTap - Community-Centric Local Business Platform 🏘️
+<div align="center">
+  <img src="./assets/images/icon.png" alt="TownTap Logo" width="80" height="80">
+  
+  # **TownTap - Local Business Discovery Platform**
+  
+  [![React Native](https://img.shields.io/badge/React%20Native-0.76.9-61DAFB?style=flat&logo=react)](https://reactnative.dev)
+  [![Expo](https://img.shields.io/badge/Expo%20SDK-53-000020?style=flat&logo=expo)](https://expo.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-3178C6?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
+  [![Supabase](https://img.shields.io/badge/Supabase-2.58.0-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
+  [![Zustand](https://img.shields.io/badge/Zustand-5.0.8-FF6B35?style=flat)](https://zustand-demo.pmnd.rs)
+</div>
+
+---
 
 **Connecting Communities with Local Businesses through Real-Time Technology**
 
@@ -13,14 +25,16 @@ TownTap is a comprehensive mobile application that seamlessly connects customers
 ## 🏗️ Architecture Overview
 
 ### Technology Stack
-- **Frontend**: React Native with Expo Router
-- **Backend**: Supabase (PostgreSQL + PostGIS)
+- **Frontend**: React Native `0.76.9` with Expo Router `4.0.0`
+- **Backend**: Supabase `2.58.0` (PostgreSQL + PostGIS)
 - **Authentication**: Supabase Auth with JWT
 - **Real-time**: Supabase Realtime
 - **Storage**: Supabase Storage
 - **Serverless Logic**: Supabase Edge Functions (Deno)
-- **Maps & Location**: PostGIS + Google Maps
-- **UI Framework**: NativeBase + Custom Theme System
+- **Maps & Location**: PostGIS + Expo Location `18.0.0`
+- **UI Framework**: NativeBase `3.4.28` + Custom Theme System
+- **State Management**: Zustand `5.0.8`
+- **Animations**: React Native Reanimated `3.16.1`
 
 ### Core Principles
 - **Supabase-First**: All backend services exclusively use Supabase

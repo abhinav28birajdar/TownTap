@@ -1,9 +1,23 @@
 -- ==============================================
--- TownTap Database Schema - Comprehensive Setup
+-- TownTap Database Schema - Complete Implementation
 -- ==============================================
--- This schema implements a full-featured local business platform
+-- This schema implements a full-featured local business discovery platform
 -- with support for Type A/B/C/D business interactions, real-time features,
--- and comprehensive security through Row Level Security (RLS)
+-- comprehensive security through Row Level Security (RLS), and all required
+-- tables, functions, and triggers for the TownTap React Native application.
+--
+-- Compatible with:
+-- - React Native 0.76.9
+-- - Expo SDK 53
+-- - Supabase 2.58.0
+-- - TypeScript 5.3.3
+--
+-- Business Types:
+-- Type A: Order & Buy (Grocery, Pharmacy, Bakery)
+-- Type B: Book & Track Service (Plumber, Electrician, Barber)  
+-- Type C: Inquire & Consult (Travel, Real Estate, Legal)
+-- Type D: Rental Services (Costume, Equipment, Vehicle)
+-- ==============================================
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

@@ -9,13 +9,16 @@ import {
   SafeAreaView,
   FlatList,
   Image,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { BusinessCard } from '../../components/business/BusinessCard';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation';
+import { colors, spacing, commonStyles, typography } from '../../styles/shared';
 
 interface Business {
   id: string;
@@ -109,42 +112,23 @@ export default function CustomerHomeScreen() {
   };
 
   const renderBusinessCard = ({ item: business }: { item: Business }) => (
-    <TouchableOpacity
-      style={styles.businessCard}
+    <BusinessCard
+      business={business}
       onPress={() => handleBusinessPress(business)}
-    >
-      {business.logo_url ? (
-        <Image source={{ uri: business.logo_url }} style={styles.businessLogo} />
-      ) : (
-        <View style={styles.logoPlaceholder}>
-          <Text style={styles.logoText}>{business.business_name.charAt(0)}</Text>
-        </View>
-      )}
-      <View style={styles.businessInfo}>
-        <Text style={styles.businessName} numberOfLines={1}>
-          {business.business_name}
-        </Text>
-        <Text style={styles.businessCategory} numberOfLines={1}>
-          {business.category}
-        </Text>
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color="#FFD700" />
-          <Text style={styles.rating}>
-            {business.avg_rating.toFixed(1)} ({business.total_reviews})
-          </Text>
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#666" />
-    </TouchableOpacity>
+      variant="horizontal"
+      showDistance={false}
+      showRating={true}
+    />
   );
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
+        <LoadingSpinner 
+          fullScreen 
+          text="Loading businesses..." 
+          color={colors.primary}
+        />
       </SafeAreaView>
     );
   }

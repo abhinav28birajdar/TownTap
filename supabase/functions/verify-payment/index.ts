@@ -1,6 +1,10 @@
+// @ts-ignore: Import from URL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore: Import from URL
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+// @ts-ignore: Import from URL
 import { createHmac } from "https://deno.land/std@0.168.0/crypto/hmac.ts"
+import "../_shared/types"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +17,7 @@ interface PaymentVerificationRequest {
   signature: string;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -88,12 +92,13 @@ serve(async (req) => {
       },
     )
 
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('Payment verification error:', error)
     return new Response(
       JSON.stringify({ 
         verified: false,
-        error: error.message 
+        error: errorMessage 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

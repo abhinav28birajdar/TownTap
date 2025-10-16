@@ -1,5 +1,8 @@
+// @ts-ignore: Import from URL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore: Import from URL
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import "../_shared/types"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +21,7 @@ interface NotificationPayload {
   send_sms?: boolean;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -194,10 +197,11 @@ serve(async (req) => {
       },
     )
 
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('Notification error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

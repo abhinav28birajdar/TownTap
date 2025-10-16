@@ -8,9 +8,9 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -100,6 +100,7 @@ interface OnboardingTabsProps {
 export default function OnboardingTabs({ userType = 'customer' }: OnboardingTabsProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedTab, setSelectedTab] = useState<'customer' | 'business'>(userType);
+  const navigation = useNavigation();
   
   const steps = selectedTab === 'customer' ? customerSteps : businessSteps;
   const currentStepData = steps[currentStep];
@@ -120,14 +121,14 @@ export default function OnboardingTabs({ userType = 'customer' }: OnboardingTabs
 
   const handleGetStarted = () => {
     if (selectedTab === 'customer') {
-      router.replace('/auth');
+      navigation.navigate('Auth' as never);
     } else {
-      router.replace('/business/registration');
+      navigation.navigate('BusinessRegistration' as never);
     }
   };
 
   const skipOnboarding = () => {
-    router.replace('/auth');
+    navigation.navigate('Auth' as never);
   };
 
   return (
@@ -192,7 +193,7 @@ export default function OnboardingTabs({ userType = 'customer' }: OnboardingTabs
         <View style={styles.stepContainer}>
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <Ionicons
+            <Icon
               name={currentStepData.icon as any}
               size={80}
               color="#ffffff"
@@ -228,7 +229,7 @@ export default function OnboardingTabs({ userType = 'customer' }: OnboardingTabs
             style={[styles.navButton, styles.backButton]}
             onPress={prevStep}
           >
-            <Ionicons name="chevron-back" size={20} color="#ffffff" />
+            <Icon name="chevron-back" size={20} color="#ffffff" />
             <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
         )}
@@ -242,7 +243,7 @@ export default function OnboardingTabs({ userType = 'customer' }: OnboardingTabs
           <Text style={styles.nextButtonText}>
             {currentStep === steps.length - 1 ? 'Get Started' : 'Continue'}
           </Text>
-          <Ionicons name="chevron-forward" size={20} color="#667eea" />
+          <Icon name="chevron-forward" size={20} color="#667eea" />
         </TouchableOpacity>
       </View>
     </LinearGradient>

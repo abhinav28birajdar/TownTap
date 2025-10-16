@@ -4,7 +4,11 @@
  * RESPONSIBILITIES: Define comprehensive types for Type A, B, C business interactions
  */
 
-import { GeoPoint } from 'firebase/firestore';
+// ========== LOCATION TYPES ==========
+export interface GeoPoint {
+  latitude: number;
+  longitude: number;
+}
 
 // ========== CORE ENUMS & CONSTANTS ==========
 export type UserRole = 'customer' | 'business' | 'admin';
