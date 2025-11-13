@@ -70,6 +70,7 @@ export interface Database {
           longitude: number | null
           opening_hours: Json | null
           phone: string | null
+          avatar_url: string | null
           avg_rating: number
           total_reviews: number
           is_verified: boolean
@@ -86,6 +87,7 @@ export interface Database {
           longitude?: number | null
           opening_hours?: Json | null
           phone?: string | null
+          avatar_url?: string | null
           avg_rating?: number
           total_reviews?: number
           is_verified?: boolean
@@ -102,6 +104,7 @@ export interface Database {
           longitude?: number | null
           opening_hours?: Json | null
           phone?: string | null
+          avatar_url?: string | null
           avg_rating?: number
           total_reviews?: number
           is_verified?: boolean
