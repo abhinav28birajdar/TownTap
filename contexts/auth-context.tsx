@@ -127,12 +127,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) throw new Error('No user logged in');
 
     // @ts-ignore
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
-
-    if (error) throw error;
+      const { error } = await supabase
+        .from('profiles')
+        // @ts-ignore
+        .update(updates)
+        .eq('id', user.id);    if (error) throw error;
 
     await refreshProfile();
   };

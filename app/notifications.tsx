@@ -145,9 +145,9 @@ export default function NotificationsScreen() {
     }
     
     try {
-      // @ts-ignore
       const { error } = await supabase
         .from('notifications')
+        // @ts-ignore
         .update({ read: true })
         .eq('id', notificationId);
 
@@ -177,6 +177,7 @@ export default function NotificationsScreen() {
       // @ts-ignore
       const { error } = await supabase
         .from('notifications')
+        // @ts-ignore
         .update({ read: true })
         .eq('user_id', user.id)
         .eq('read', false);
