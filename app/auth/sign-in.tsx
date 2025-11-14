@@ -134,6 +134,33 @@ export default function SignInScreen() {
               style={styles.signInButton}
             />
 
+            <View style={styles.demoSection}>
+              <Text style={styles.demoTitle}>Quick Demo Login:</Text>
+              <View style={styles.demoButtons}>
+                <TouchableOpacity
+                  style={styles.demoButton}
+                  onPress={() => {
+                    setEmail('customer@demo.com');
+                    setPassword('demo123');
+                  }}
+                >
+                  <Ionicons name="person-outline" size={16} color={Colors.primary} />
+                  <Text style={styles.demoButtonText}>Customer Demo</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.demoButton}
+                  onPress={() => {
+                    setEmail('business@demo.com');
+                    setPassword('demo123');
+                  }}
+                >
+                  <Ionicons name="business-outline" size={16} color={Colors.primary} />
+                  <Text style={styles.demoButtonText}>Business Demo</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <View style={styles.signUpContainer}>
               <Text style={styles.signUpText}>Don't have an account? </Text>
               <TouchableOpacity onPress={() => router.push('/auth/role-selection')}>
@@ -212,6 +239,41 @@ const styles = StyleSheet.create({
   },
   signInButton: {
     marginBottom: Spacing.md,
+  },
+  demoSection: {
+    marginBottom: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  demoTitle: {
+    color: Colors.card,
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+    opacity: 0.9,
+  },
+  demoButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
+  },
+  demoButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  demoButtonText: {
+    color: Colors.primary,
+    fontSize: FontSize.xs,
+    fontWeight: '600',
   },
   signUpContainer: {
     flexDirection: 'row',

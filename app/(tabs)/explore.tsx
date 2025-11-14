@@ -1,0 +1,160 @@
+import { Colors } from '@/constants/colors';
+import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import React, { useState } from 'react';
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+
+export default function ExploreScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const categories = [
+    { id: '1', name: 'All', icon: 'apps' },
+    { id: '2', name: 'Carpenter', icon: 'hammer' },
+    { id: '3', name: 'Plumber', icon: 'water' },
+    { id: '4', name: 'Electrician', icon: 'flash' },
+    { id: '5', name: 'Gardener', icon: 'leaf' },
+    { id: '6', name: 'Cleaner', icon: 'sparkles' },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: 'Explore Services',
+        }}
+      />
+
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color={Colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search services, businesses..."
+            placeholderTextColor={Colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      <ScrollView style={styles.content}>
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <View style={styles.categoriesGrid}>
+          {categories.map((category) => (
+            <TouchableOpacity key={category.id} style={styles.categoryCard}>
+              <View style={styles.categoryIcon}>
+                <Ionicons name={category.icon as any} size={32} color={Colors.primary} />
+              </View>
+              <Text style={styles.categoryName}>{category.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.sectionTitle}>Popular Services</Text>
+        <View style={styles.emptyState}>
+          <Ionicons name="construct-outline" size={64} color={Colors.textLight} />
+          <Text style={styles.emptyText}>Coming Soon</Text>
+          <Text style={styles.emptySubtext}>
+            Explore feature will be available in the next update
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  searchSection: {
+    backgroundColor: Colors.card,
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    height: 48,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: Spacing.sm,
+    fontSize: FontSize.md,
+    color: Colors.text,
+  },
+  content: {
+    flex: 1,
+    padding: Spacing.md,
+  },
+  sectionTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: Spacing.md,
+    marginTop: Spacing.md,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  categoryCard: {
+    width: '30%',
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categoryIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  categoryName: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl * 2,
+  },
+  emptyText: {
+    fontSize: FontSize.xl,
+    fontWeight: '600',
+    color: Colors.text,
+    marginTop: Spacing.lg,
+  },
+  emptySubtext: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: Spacing.sm,
+  },
+});
