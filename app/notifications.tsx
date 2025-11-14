@@ -1,18 +1,19 @@
 import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
+import { useDemo } from '@/contexts/demo-context';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface Notification {
@@ -27,11 +28,67 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const { user } = useAuth();
+  const { isDemo } = useDemo();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Demo notifications data
+  const demoNotifications: Notification[] = [
+    {
+      id: '1',
+      title: 'Booking Confirmed',
+      message: 'Your furniture assembly booking has been confirmed for tomorrow at 2:00 PM',
+      type: 'booking',
+      read: false,
+      created_at: new Date().toISOString(),
+      data: { booking_id: '1' }
+    },
+    {
+      id: '2',
+      title: 'Service Provider En Route',
+      message: 'John from Quick Fix Carpentry is on the way to your location',
+      type: 'location',
+      read: false,
+      created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      data: { booking_id: '2' }
+    },
+    {
+      id: '3',
+      title: 'Service Completed',
+      message: 'Your plumbing repair service has been completed. Please rate your experience.',
+      type: 'completion',
+      read: true,
+      created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+      data: { booking_id: '3' }
+    },
+    {
+      id: '4',
+      title: 'New Offer Available',
+      message: '20% off on electrical services this week! Book now and save.',
+      type: 'promotion',
+      read: true,
+      created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+      data: { promotion_id: 'promo1' }
+    },
+    {
+      id: '5',
+      title: 'Payment Received',
+      message: 'Payment of $75 for furniture assembly has been processed successfully',
+      type: 'payment',
+      read: true,
+      created_at: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
+      data: { transaction_id: 'txn1' }
+    }
+  ];
+
   useEffect(() => {
+    if (isDemo) {
+      setNotifications(demoNotifications);
+      setLoading(false);
+      return;
+    }
+    
     loadNotifications();
     
     // Subscribe to real-time updates
@@ -54,7 +111,7 @@ export default function NotificationsScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, isDemo]);
 
   const loadNotifications = async () => {
     try {
@@ -78,7 +135,17 @@ export default function NotificationsScreen() {
   };
 
   const markAsRead = async (notificationId: string) => {
+    if (isDemo) {
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      return;
+    }
+    
     try {
+      // @ts-ignore
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
@@ -97,9 +164,17 @@ export default function NotificationsScreen() {
   };
 
   const markAllAsRead = async () => {
+    if (isDemo) {
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+      return;
+    }
+    
     try {
       if (!user?.id) return;
 
+      // @ts-ignore
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
@@ -118,7 +193,13 @@ export default function NotificationsScreen() {
   };
 
   const deleteNotification = async (notificationId: string) => {
+    if (isDemo) {
+      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+      return;
+    }
+    
     try {
+      // @ts-ignore
       const { error } = await supabase
         .from('notifications')
         .delete()

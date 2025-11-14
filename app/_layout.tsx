@@ -1,11 +1,13 @@
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
+import { DemoProvider, useDemo } from '@/contexts/demo-context';
 import { Stack, router, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import 'react-native-url-polyfill/auto';
 
 function RootLayoutNav() {
   const { session, profile, loading } = useAuth();
+  const { isDemo } = useDemo();
   const segments = useSegments();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
@@ -19,8 +21,14 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
+    // In demo mode, always go to home
+    if (isDemo && isNavigationReady) {
+      router.replace('/(tabs)/home');
+      return;
+    }
+    
     // Only navigate when auth is ready and navigation is ready
-    if (!isNavigationReady || loading) {
+    if (!isNavigationReady || loading || isDemo) {
       return;
     }
 
@@ -34,9 +42,9 @@ function RootLayoutNav() {
     } else if (session && profile && !inTabs && segments[0] !== 'business' && segments[0] !== 'profile' && segments[0] !== 'notifications' && segments[0] !== 'modal') {
       router.replace('/(tabs)/home');
     }
-  }, [session, profile, segments, loading, isNavigationReady]);
+  }, [session, profile, segments, loading, isNavigationReady, isDemo]);
 
-  if (loading || !isNavigationReady) {
+  if ((!isDemo && (loading || !isNavigationReady))) {
     return <LoadingScreen />;
   }
 
@@ -58,8 +66,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <DemoProvider>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </DemoProvider>
   );
 }

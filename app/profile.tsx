@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
+import { useDemo } from '@/contexts/demo-context';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,17 +21,30 @@ import {
 
 export default function ProfileScreen() {
   const { user, profile, signOut, updateProfile } = useAuth();
+  const { isDemo, currentUser, setCurrentUser } = useDemo();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fullName, setFullName] = useState(profile?.full_name || '');
-  const [phone, setPhone] = useState(profile?.phone || '');
+  const [fullName, setFullName] = useState((isDemo ? currentUser?.full_name : profile?.full_name) || '');
+  const [phone, setPhone] = useState((isDemo ? currentUser?.phone : profile?.phone) || '');
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      await updateProfile({ full_name: fullName, phone });
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully');
+      
+      if (isDemo) {
+        // Update demo user
+        setCurrentUser({
+          ...currentUser,
+          full_name: fullName,
+          phone: phone
+        });
+        setIsEditing(false);
+        Alert.alert('Success', 'Demo profile updated successfully');
+      } else {
+        await updateProfile({ full_name: fullName, phone });
+        setIsEditing(false);
+        Alert.alert('Success', 'Profile updated successfully');
+      }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update profile');
     } finally {
@@ -128,8 +142,8 @@ export default function ProfileScreen() {
           onPress={pickImage}
           disabled={!isEditing}
         >
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+          {((isDemo ? currentUser?.avatar_url : profile?.avatar_url)) ? (
+            <Image source={{ uri: (isDemo ? currentUser?.avatar_url : profile?.avatar_url) || '' }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Ionicons name="person" size={48} color={Colors.textLight} />

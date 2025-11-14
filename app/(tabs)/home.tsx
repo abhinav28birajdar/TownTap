@@ -2,12 +2,13 @@ import { BusinessCard } from '@/components/ui/business-card';
 import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
+import { useDemo } from '@/contexts/demo-context';
 import { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
@@ -25,9 +26,11 @@ type Category = Database['public']['Tables']['categories']['Row'];
 
 export default function HomeScreen() {
   const { user, profile } = useAuth();
+  const { isDemo, demoCategories, demoBusinesses, currentUser } = useDemo();
+  const { selectedCategory: paramCategory } = useLocalSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(paramCategory as string || null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userLocation, setUserLocation] = useState<{
@@ -36,9 +39,16 @@ export default function HomeScreen() {
   } | null>(null);
 
   useEffect(() => {
+    if (isDemo) {
+      setCategories(demoCategories);
+      setBusinesses(demoBusinesses);
+      setLoading(false);
+      return;
+    }
+    
     requestLocationPermission();
     loadData();
-  }, []);
+  }, [isDemo]);
 
   const requestLocationPermission = async () => {
     try {
@@ -56,6 +66,14 @@ export default function HomeScreen() {
   };
 
   const loadData = async () => {
+    if (isDemo) {
+      setCategories(demoCategories);
+      setBusinesses(demoBusinesses);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+    
     try {
       await Promise.all([loadCategories(), loadBusinesses()]);
     } catch (error) {
@@ -78,6 +96,14 @@ export default function HomeScreen() {
   };
 
   const loadBusinesses = async () => {
+    if (isDemo) {
+      const filteredBusinesses = selectedCategory 
+        ? demoBusinesses.filter(b => b.category_id === selectedCategory)
+        : demoBusinesses;
+      setBusinesses(filteredBusinesses);
+      return;
+    }
+
     let query = supabase.from('businesses').select('*').eq('is_verified', true);
 
     if (selectedCategory) {
@@ -91,10 +117,12 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !isDemo) {
+      loadBusinesses();
+    } else if (isDemo) {
       loadBusinesses();
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, isDemo, loading]);
 
   const getBusinessDistance = (business: Business) => {
     if (!userLocation || !business.latitude || !business.longitude) {
@@ -147,8 +175,8 @@ export default function HomeScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <TouchableOpacity onPress={() => router.push('/profile')}>
-              {profile?.avatar_url ? (
-                <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+              {((isDemo ? currentUser?.avatar_url : profile?.avatar_url)) ? (
+                <Image source={{ uri: (isDemo ? currentUser?.avatar_url : profile?.avatar_url) || '' }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <Ionicons name="person" size={20} color={Colors.primary} />
@@ -157,7 +185,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View>
               <Text style={styles.greeting}>Hello,</Text>
-              <Text style={styles.userName}>{profile?.full_name || 'User'}</Text>
+              <Text style={styles.userName}>{isDemo ? currentUser?.full_name || 'Demo User' : profile?.full_name || 'User'}</Text>
             </View>
           </View>
           <TouchableOpacity
@@ -221,7 +249,7 @@ export default function HomeScreen() {
               <BusinessCard
                 key={business.id}
                 business={business}
-                distance={getBusinessDistance(business)}
+                distance={getBusinessDistance(business) ?? undefined}
                 onPress={() => router.push(`/business/${business.id}` as any)}
               />
             ))
@@ -258,7 +286,7 @@ const CategoryItem = ({
     <View
       style={[
         styles.categoryIcon,
-        isSelected && styles.categoryIconSelected,
+        isSelected && styles.categoryItemSelected,
       ]}
     >
       <Ionicons
@@ -374,6 +402,9 @@ const styles = StyleSheet.create({
   },
   categoryIconSelected: {
     backgroundColor: Colors.primary,
+  },
+  categoryItemSelected: {
+    // Style for selected category item
   },
   categoryLabel: {
     fontSize: FontSize.xs,

@@ -1,7 +1,8 @@
 import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { useDemo } from '@/contexts/demo-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ScrollView,
@@ -13,9 +14,17 @@ import {
 } from 'react-native';
 
 export default function ExploreScreen() {
+  const { isDemo, demoCategories } = useDemo();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const categories = [
+  const categories = isDemo ? [
+    { id: 'all', name: 'All', icon: 'apps' },
+    ...demoCategories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon || 'briefcase'
+    }))
+  ] : [
     { id: '1', name: 'All', icon: 'apps' },
     { id: '2', name: 'Carpenter', icon: 'hammer' },
     { id: '3', name: 'Plumber', icon: 'water' },
@@ -23,6 +32,14 @@ export default function ExploreScreen() {
     { id: '5', name: 'Gardener', icon: 'leaf' },
     { id: '6', name: 'Cleaner', icon: 'sparkles' },
   ];
+
+  const handleCategoryPress = (categoryId: string) => {
+    // Navigate to home with selected category
+    router.push({
+      pathname: '/(tabs)/home',
+      params: { selectedCategory: categoryId === 'all' ? '' : categoryId }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -50,7 +67,11 @@ export default function ExploreScreen() {
         <Text style={styles.sectionTitle}>Categories</Text>
         <View style={styles.categoriesGrid}>
           {categories.map((category) => (
-            <TouchableOpacity key={category.id} style={styles.categoryCard}>
+            <TouchableOpacity 
+              key={category.id} 
+              style={styles.categoryCard}
+              onPress={() => handleCategoryPress(category.id)}
+            >
               <View style={styles.categoryIcon}>
                 <Ionicons name={category.icon as any} size={32} color={Colors.primary} />
               </View>

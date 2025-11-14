@@ -1,12 +1,34 @@
 import { Button } from '@/components/ui/button';
+import { DemoModeToggle } from '@/components/ui/demo-toggle';
 import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { useDemo } from '@/contexts/demo-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function WelcomeScreen() {
+  const { isDemo, setDemo } = useDemo();
+
+  const handleGetStarted = () => {
+    if (isDemo) {
+      setDemo(true);
+      router.replace('/(tabs)/home');
+    } else {
+      router.push('/auth/role-selection');
+    }
+  };
+
+  const handleSignIn = () => {
+    if (isDemo) {
+      setDemo(true);
+      router.replace('/(tabs)/home');
+    } else {
+      router.push('/auth/sign-in');
+    }
+  };
+
   return (
     <LinearGradient
       colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
@@ -47,17 +69,19 @@ export default function WelcomeScreen() {
           />
         </View>
 
+        <DemoModeToggle />
+
         <View style={styles.buttonContainer}>
           <Button
-            title="Get Started"
-            onPress={() => router.push('/auth/role-selection')}
+            title={isDemo ? "Enter Demo Mode" : "Get Started"}
+            onPress={handleGetStarted}
             variant="secondary"
             size="large"
             style={styles.button}
           />
           <Button
-            title="Sign In"
-            onPress={() => router.push('/auth/sign-in')}
+            title={isDemo ? "Demo Dashboard" : "Sign In"}
+            onPress={handleSignIn}
             variant="outline"
             size="large"
             style={styles.button}
