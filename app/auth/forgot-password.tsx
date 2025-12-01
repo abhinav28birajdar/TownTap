@@ -1,69 +1,58 @@
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
-import { supabase } from '@/lib/supabase';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router } from 'expo-router';
+import { MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
-    Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
 
+// Import our modern UI components
+import { Card } from '@/components/ui/Card';
+import { Text } from '@/components/ui/Text';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+// Import form validation
+import { useFormWithValidation } from '@/hooks/use-form-validation';
+import { ForgotPasswordFormData, forgotPasswordSchema } from '@/lib/validation-schemas';
+
+// Import theme and constants
+import { Gradients, Shadows } from '@/constants/colors';
+import { Spacing } from '@/constants/spacing';
+import { getThemeColors, useTheme } from '@/hooks/use-theme';
+import { supabase } from '@/lib/supabase';
+
 export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
   const [emailSent, setEmailSent] = useState(false);
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  // Enhanced form handling with validation
+  const form = useFormWithValidation(forgotPasswordSchema, {
+    defaultValues: {
+      email: '',
+    },
+    successMessage: 'Password reset email sent! 📧',
+  });
 
-  const handleResetPassword = async () => {
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
+  const handleResetPassword = async (data: ForgotPasswordFormData) => {
     try {
-      setLoading(true);
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: 'towntap://reset-password',
       });
 
       if (error) throw error;
 
       setEmailSent(true);
-      Alert.alert(
-        'Email Sent',
-        'Check your email for the password reset link',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      setEmailSent(true);
     } catch (error: any) {
       console.error('Reset password error:', error);
-      Alert.alert('Error', error.message || 'Failed to send reset email');
-    } finally {
-      setLoading(false);
+      throw new Error(error.message || 'Failed to send reset email. Please try again.');
     }
   };
 
@@ -76,70 +65,125 @@ export default function ForgotPasswordScreen() {
         options={{
           title: 'Forgot Password',
           headerTransparent: true,
-          headerTintColor: Colors.card,
+          headerTintColor: colors.primaryForeground,
         }}
       />
 
       <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
+        colors={Gradients.primary}
         style={styles.gradient}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.iconContainer}>
-            <Ionicons name="lock-closed" size={80} color={Colors.card} />
-          </View>
+          {!emailSent ? (
+            <>
+              {/* Animated Icon */}
+              <MotiView
+                from={{ opacity: 0, scale: 0.5, rotate: '45deg' }}
+                animate={{ opacity: 1, scale: 1, rotate: '0deg' }}
+                transition={{ type: 'spring', delay: 200 }}
+                style={styles.iconContainer}
+              >
+                <Text style={styles.lockIcon}>🔐</Text>
+              </MotiView>
 
-          <Text style={styles.title}>Forgot Password?</Text>
-          <Text style={styles.subtitle}>
-            Enter your email address and we'll send you a link to reset your password
-          </Text>
+              {/* Title Section */}
+              <MotiView
+                from={{ opacity: 0, translateY: -30 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ type: 'spring', delay: 400 }}
+                style={styles.header}
+              >
+                <Text variant="display-small" style={styles.title}>
+                  Forgot Password?
+                </Text>
+                <Text variant="body-large" style={styles.subtitle}>
+                  Enter your email address and we'll send you a link to reset your password
+                </Text>
+              </MotiView>
 
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="mail-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor={Colors.textSecondary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-              />
-            </View>
+              {/* Form Card */}
+              <MotiView
+                from={{ opacity: 0, translateY: 50 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ type: 'spring', delay: 600 }}
+              >
+                <Card variant="elevated" style={styles.formCard}>
+                  <View style={styles.form}>
+                    <Input
+                      label="Email Address"
+                      placeholder="Enter your email"
+                      value={form.watch('email')}
+                      onChangeText={(text) => form.setValue('email', text)}
+                      onBlur={() => form.trigger('email')}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      leftIcon="mail"
+                      error={form.isFieldInvalid('email')}
+                      helperText={form.getFieldError('email')}
+                      style={styles.input}
+                    />
 
-            <Button
-              title={emailSent ? 'Resend Email' : 'Send Reset Link'}
-              onPress={handleResetPassword}
-              loading={loading}
-              variant="secondary"
-              size="large"
-              style={styles.button}
-            />
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onPress={() => form.submitWithToast(handleResetPassword)}
+                      disabled={form.isSubmitting}
+                      style={styles.resetButton}
+                    >
+                      {form.isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                    </Button>
 
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
+                    <TouchableOpacity
+                      onPress={() => router.back()}
+                      style={styles.backToSignIn}
+                    >
+                      <Text variant="body-medium" style={styles.backToSignInText}>
+                        ← Back to Sign In
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </Card>
+              </MotiView>
+            </>
+          ) : (
+            /* Success State */
+            <MotiView
+              from={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', damping: 15 }}
+              style={styles.successContainer}
             >
-              <Text style={styles.backButtonText}>Back to Sign In</Text>
-            </TouchableOpacity>
-          </View>
+              <Text style={styles.successIcon}>📧</Text>
+              <Text variant="display-small" style={styles.successTitle}>
+                Check Your Email
+              </Text>
+              <Text variant="body-large" style={styles.successSubtitle}>
+                We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
+              </Text>
 
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={20} color={Colors.card} />
-            <Text style={styles.infoText}>
-              The reset link will expire in 1 hour for security reasons
-            </Text>
-          </View>
+              <Button
+                variant="secondary"
+                size="lg"
+                onPress={() => router.back()}
+                style={styles.doneButton}
+              >
+                Back to Sign In
+              </Button>
+
+              <TouchableOpacity
+                onPress={() => setEmailSent(false)}
+                style={styles.resendContainer}
+              >
+                <Text variant="body-small" style={styles.resendText}>
+                  Didn't receive the email? Try again
+                </Text>
+              </TouchableOpacity>
+            </MotiView>
+          )}
         </ScrollView>
       </LinearGradient>
     </KeyboardAvoidingView>
@@ -162,66 +206,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
+  lockIcon: {
+    fontSize: 80,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
   title: {
-    fontSize: FontSize.xxxl,
-    fontWeight: '700',
-    color: Colors.card,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: Spacing.md,
+    fontWeight: '700',
   },
   subtitle: {
-    fontSize: FontSize.md,
-    color: Colors.card,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    opacity: 0.9,
-    marginBottom: Spacing.xxl,
-    lineHeight: 22,
+    lineHeight: 24,
+    paddingHorizontal: Spacing.md,
+  },
+  formCard: {
+    ...Shadows.xl,
   },
   form: {
-    width: '100%',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.lg,
-    height: 56,
-  },
-  inputIcon: {
-    marginRight: Spacing.sm,
+    padding: Spacing.lg,
   },
   input: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.text,
+    marginBottom: Spacing.lg,
   },
-  button: {
+  resetButton: {
     marginBottom: Spacing.md,
   },
-  backButton: {
-    paddingVertical: Spacing.md,
+  backToSignIn: {
     alignItems: 'center',
+    paddingVertical: Spacing.md,
   },
-  backButtonText: {
-    fontSize: FontSize.md,
-    color: Colors.card,
+  backToSignInText: {
+    color: '#64748B',
     fontWeight: '600',
   },
-  infoBox: {
-    flexDirection: 'row',
+  successContainer: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginTop: Spacing.xxl,
+    paddingHorizontal: Spacing.lg,
   },
-  infoText: {
-    flex: 1,
-    fontSize: FontSize.sm,
-    color: Colors.card,
-    marginLeft: Spacing.sm,
-    lineHeight: 20,
+  successIcon: {
+    fontSize: 80,
+    marginBottom: Spacing.xl,
+  },
+  successTitle: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+    fontWeight: '700',
+  },
+  successSubtitle: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: Spacing.xl,
+  },
+  doneButton: {
+    marginBottom: Spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  resendContainer: {
+    alignItems: 'center',
+  },
+  resendText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    textDecorationLine: 'underline',
   },
 });

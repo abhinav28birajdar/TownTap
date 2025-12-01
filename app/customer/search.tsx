@@ -1,53 +1,356 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     FlatList,
     SafeAreaView,
     StyleSheet,
-    Text,
-    TextInput,
+    ScrollView,
     TouchableOpacity,
-    View
+    View,
+    RefreshControl,
 } from 'react-native';
+import { MotiView, AnimatePresence } from 'moti';
+
+// Import modern components
+import { Text, SearchBar, BusinessCard, LoadingScreen, Button, Badge } from '@/components/ui';
+import { OptimizedBusinessList } from '@/components/ui/optimized-business-list';
+
+// Import hooks and services
+import { useSearch } from '@/hooks/use-search';
+import { useMemoryOptimization } from '@/hooks/use-memory-optimization';
+import { SearchResult } from '@/lib/search-service';
+import { performanceMonitor } from '@/lib/performance-monitor';
+
+// Import theme and constants
+import { Colors, Gradients, Shadows } from '@/constants/colors';
+import { Spacing } from '@/constants/spacing';
+import { useTheme, getThemeColors } from '@/hooks/use-theme';
+
+// Import demo context for fallback
 import { useDemo } from '../../contexts/demo-context';
 
 export default function CustomerSearch() {
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
   const { isDemo, demoCategories, demoBusinesses } = useDemo();
-  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Performance and memory optimization
+  const memoryOpt = useMemoryOptimization({
+    autoCleanup: true,
+    cleanupThreshold: 120, // MB
+    preloadLimit: memoryOpt?.shouldReduceQuality ? 5 : 10,
+  });
+  
+  // State for UI
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filteredBusinesses, setFilteredBusinesses] = useState(demoBusinesses);
+  const [showMap, setShowMap] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Search hook with all the advanced features
+  const search = useSearch({
+    enableLocation: true,
+    enableSuggestions: true,
+    enableHistory: true,
+    autoSearch: true,
+    debounceMs: memoryOpt?.shouldReduceQuality ? 500 : 300,
+  });
 
+  // Initialize performance monitoring
   useEffect(() => {
-    let filtered = demoBusinesses;
+    performanceMonitor.initialize();
+    performanceMonitor.trackNavigation('customer/search');
+    
+    return () => {
+      performanceMonitor.stop();
+    };
+  }, []);
 
-    if (searchQuery) {
-      filtered = filtered.filter((business: any) =>
-        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.category_id?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  // Results processing
+  const displayResults = useMemo(() => {
+    if (search.results.length > 0) {
+      return search.results;
     }
-
-    if (selectedCategory && selectedCategory !== 'All') {
-      filtered = filtered.filter((business: any) => business.category_id === selectedCategory);
+    
+    // Fallback to demo data if no search results
+    if (isDemo && !search.query.trim()) {
+      return demoBusinesses.map((business: any) => ({
+        business: {
+          ...business,
+          averageRating: business.rating || 4.0,
+          reviewCount: business.review_count || Math.floor(Math.random() * 100) + 10,
+          isOpen: business.is_open !== false,
+          distance: search.userLocation ? Math.floor(Math.random() * 5000) + 500 : undefined,
+        },
+        relevanceScore: 85,
+        matchedFields: ['name'],
+      }));
     }
+    
+    return [];
+  }, [search.results, isDemo, demoBusinesses, search.query, search.userLocation]);
 
-    setFilteredBusinesses(filtered);
-  }, [searchQuery, selectedCategory, demoBusinesses]);
-
-  const handleBusinessPress = (business: any) => {
+  // Handle business selection
+  const handleBusinessPress = (result: SearchResult) => {
+    const startTime = Date.now();
+    
     router.push({
       pathname: '/business/[id]' as any,
-      params: { id: business.id }
+      params: { id: result.business.id }
     });
+    
+    const duration = Date.now() - startTime;
+    performanceMonitor.trackUserInteraction('business_select', 'search_results', true, duration);
   };
 
-  const renderBusiness = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.businessCard}
-      onPress={() => handleBusinessPress(item)}
+  // Handle search
+  const handleSearch = (query: string, results: any[]) => {
+    performanceMonitor.trackCustomMetric('search_results_count', results.length, {
+      query_length: query.length.toString(),
+      has_location: search.userLocation ? 'true' : 'false',
+    });
+    console.log('Search performed:', query, results.length);
+  };
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const startTime = Date.now();
+    
+    try {
+      await search.requestLocation();
+      if (search.query.trim()) {
+        await search.search();
+      }
+      
+      const duration = Date.now() - startTime;
+      performanceMonitor.trackUserInteraction('refresh', 'search_screen', true, duration);
+    } catch (error) {
+      console.error('Refresh error:', error);
+      performanceMonitor.trackUserInteraction('refresh', 'search_screen', false);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Filter by category
+  const handleCategoryFilter = (categoryId: string) => {
+    const startTime = Date.now();
+    
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
+      search.updateFilters({ category: undefined });
+    } else {
+      setSelectedCategory(categoryId);
+      search.updateFilters({ category: categoryId });
+    }
+    
+    const duration = Date.now() - startTime;
+    performanceMonitor.trackUserInteraction('category_filter', 'category_chips', true, duration);
+  };
+
+  // Popular categories for quick access
+  const popularCategories = [
+    { id: 'restaurant', name: 'Restaurants', icon: '🍽️', color: Colors.orange[500] },
+    { id: 'coffee', name: 'Coffee', icon: '☕', color: Colors.amber[600] },
+    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: Colors.pink[500] },
+    { id: 'beauty', name: 'Beauty', icon: '💄', color: Colors.purple[500] },
+    { id: 'fitness', name: 'Fitness', icon: '💪', color: Colors.green[500] },
+    { id: 'entertainment', name: 'Fun', icon: '🎬', color: Colors.blue[500] },
+  ];
+
+  // Empty state
+  const renderEmptyState = () => (
+    <MotiView
+      from={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      style={styles.emptyStateContainer}
     >
+      <Text style={styles.emptyStateIcon}>🔍</Text>
+      <Text variant="title-medium" style={styles.emptyStateTitle}>
+        {search.query.trim() ? 'No Results Found' : 'Start Your Search'}
+      </Text>
+      <Text variant="body-medium" style={styles.emptyStateMessage}>
+        {search.query.trim() 
+          ? 'Try adjusting your search terms or filters' 
+          : 'Search for businesses, food, services and more'}
+      </Text>
+      
+      {!search.userLocation && (
+        <Button
+          variant="outline"
+          size="sm"
+          onPress={search.requestLocation}
+          loading={search.isLoadingLocation}
+          style={styles.locationButton}
+          leftIcon="location"
+        >
+          Enable Location
+        </Button>
+      )}
+    </MotiView>
+  );
+
+  // Loading state
+  if (search.isLoading && displayResults.length === 0) {
+    return <LoadingScreen message="Searching businesses..." />;
+  }
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
+        <View style={styles.headerContent}>
+          <Text variant="title-large" style={styles.headerTitle}>
+            Search
+          </Text>
+          
+          {/* Header Actions */}
+          <View style={styles.headerActions}>
+            {search.userLocation && (
+              <TouchableOpacity
+                style={[
+                  styles.headerButton,
+                  { backgroundColor: showMap ? colors.primary : colors.muted }
+                ]}
+                onPress={() => setShowMap(!showMap)}
+              >
+                <Ionicons
+                  name={showMap ? "list" : "map"}
+                  size={20}
+                  color={showMap ? colors.primaryForeground : colors.mutedForeground}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          placeholder="Search businesses, food, services..."
+          onSearch={handleSearch}
+          onResultSelect={(result) => handleBusinessPress(result)}
+          enableFilters={true}
+          enableLocation={true}
+          autoSearch={true}
+          style={styles.searchBar}
+        />
+      </View>
+
+      {/* Quick Categories */}
+      {!search.query.trim() && (
+        <MotiView
+          from={{ opacity: 0, translateY: -20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          style={styles.categoriesContainer}
+        >
+          <Text variant="title-small" style={styles.categoriesTitle}>
+            Popular Categories
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesScrollContainer}
+          >
+            {popularCategories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[
+                  styles.categoryChip,
+                  {
+                    backgroundColor: selectedCategory === category.id 
+                      ? category.color 
+                      : colors.muted,
+                    borderColor: selectedCategory === category.id 
+                      ? category.color 
+                      : 'transparent',
+                  }
+                ]}
+                onPress={() => handleCategoryFilter(category.id)}
+              >
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text
+                  variant="body-small"
+                  style={[
+                    styles.categoryName,
+                    {
+                      color: selectedCategory === category.id
+                        ? colors.primaryForeground
+                        : colors.foreground
+                    }
+                  ]}
+                >
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </MotiView>
+      )}
+
+      {/* Results Header */}
+      {displayResults.length > 0 && (
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={styles.resultsHeader}
+        >
+          <Text variant="body-medium" style={styles.resultsCount}>
+            {displayResults.length} {displayResults.length === 1 ? 'business' : 'businesses'} found
+            {search.userLocation && ' nearby'}
+          </Text>
+          
+          {/* Sort Options */}
+          <TouchableOpacity style={styles.sortButton}>
+            <Text variant="body-small" style={styles.sortText}>Sort</Text>
+            <Ionicons name="chevron-down" size={16} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        </MotiView>
+      )}
+
+      {/* Results List */}
+      <View style={styles.resultsContainer}>
+        <OptimizedBusinessList
+          data={displayResults}
+          onBusinessPress={handleBusinessPress}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+          loading={search.isLoading}
+          showDistance={!!search.userLocation}
+          showReviews={true}
+          showOpenStatus={true}
+          enableVirtualization={displayResults.length > 20}
+          preloadImages={!memoryOpt?.shouldReduceQuality}
+          estimatedItemSize={memoryOpt?.shouldReduceQuality ? 150 : 200}
+          onViewableItemsChanged={(items) => {
+            performanceMonitor.trackCustomMetric('visible_businesses', items.length);
+          }}
+          emptyComponent={renderEmptyState()}
+        />
+      </View>
+
+      {/* Search Loading Overlay */}
+      <AnimatePresence>
+        {search.isLoading && displayResults.length > 0 && (
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={styles.searchOverlay}
+          >
+            <View style={[styles.searchOverlayContent, { backgroundColor: colors.card }]}>
+              <LoadingScreen size="small" message="Updating results..." />
+            </View>
+          </MotiView>
+        )}
+      </AnimatePresence>
+    </SafeAreaView>
+  );
+}
       <View style={styles.businessHeader}>
         <View style={styles.businessIcon}>
           <Ionicons name={item.icon} size={24} color="#6366F1" />

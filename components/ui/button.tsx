@@ -1,175 +1,307 @@
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/spacing';
-import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView } from 'moti';
 import React from 'react';
 import {
     ActivityIndicator,
-    Text,
+    StyleSheet,
     TextStyle,
     TouchableOpacity,
     TouchableOpacityProps,
-    ViewStyle
+    View,
+    ViewStyle,
 } from 'react-native';
+import { Spacing } from '../../constants/spacing';
+import { BorderRadius, ComponentSizes, Shadows } from '../../constants/theme';
+import { getThemeColors, useTheme } from '../../hooks/use-theme';
+import { Text } from './Text';
 
-interface ButtonProps extends TouchableOpacityProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'small' | 'medium' | 'large';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+type ButtonSize = 'sm' | 'md' | 'lg';
+
+interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
-  gradient?: boolean;
-  icon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   fullWidth?: boolean;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+  children: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  title,
-  onPress,
   variant = 'primary',
-  size = 'medium',
+  size = 'md',
   loading = false,
-  gradient = false,
-  icon,
+  leftIcon,
+  rightIcon,
   fullWidth = false,
   disabled,
   style,
+  textStyle,
+  children,
+  onPress,
   ...props
 }) => {
-  const getContainerStyle = (): ViewStyle => {
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
+  const sizeConfig = ComponentSizes.button[size];
+  
+  const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
+      height: sizeConfig.height,
+      paddingHorizontal: sizeConfig.paddingHorizontal,
       borderRadius: BorderRadius.lg,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: Spacing.sm,
+      minWidth: 44, // Accessibility minimum touch target
+      ...Shadows.sm,
     };
-
-    // Size
-    switch (size) {
-      case 'small':
-        baseStyle.paddingVertical = Spacing.sm;
-        baseStyle.paddingHorizontal = Spacing.md;
-        break;
-      case 'large':
-        baseStyle.paddingVertical = Spacing.md + 2;
-        baseStyle.paddingHorizontal = Spacing.lg;
-        break;
-      default:
-        baseStyle.paddingVertical = Spacing.md;
-        baseStyle.paddingHorizontal = Spacing.lg;
-    }
-
-    // Variant
-    switch (variant) {
-      case 'primary':
-        baseStyle.backgroundColor = Colors.primary;
-        break;
-      case 'secondary':
-        baseStyle.backgroundColor = Colors.secondary;
-        break;
-      case 'outline':
-        baseStyle.backgroundColor = 'transparent';
-        baseStyle.borderWidth = 2;
-        baseStyle.borderColor = Colors.primary;
-        break;
-      case 'ghost':
-        baseStyle.backgroundColor = 'transparent';
-        break;
-    }
-
-    if (disabled) {
-      baseStyle.opacity = 0.5;
-    }
-
+    
     if (fullWidth) {
       baseStyle.width = '100%';
     }
-
-    return baseStyle;
-  };
-
-  const getTextStyle = (): TextStyle => {
-    const baseStyle: TextStyle = {
-      fontWeight: FontWeight.semibold,
-      textAlign: 'center',
-    };
-
-    switch (size) {
-      case 'small':
-        baseStyle.fontSize = FontSize.sm;
-        break;
-      case 'large':
-        baseStyle.fontSize = FontSize.lg;
-        break;
-      default:
-        baseStyle.fontSize = FontSize.md;
-    }
-
+    
     switch (variant) {
       case 'primary':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.primary,
+          borderWidth: 0,
+        };
       case 'secondary':
-        baseStyle.color = Colors.background;
-        break;
+        return {
+          ...baseStyle,
+          backgroundColor: colors.secondary,
+          borderWidth: 0,
+        };
       case 'outline':
+        return {
+          ...baseStyle,
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.border,
+          ...Shadows.sm,
+        };
       case 'ghost':
-        baseStyle.color = Colors.primary;
-        break;
+        return {
+          ...baseStyle,
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+          shadowOpacity: 0,
+          elevation: 0,
+        };
+      case 'destructive':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.error,
+          borderWidth: 0,
+        };
+      default:
+        return baseStyle;
     }
-
-    return baseStyle;
   };
-
-  const containerStyle = getContainerStyle();
-  const textStyle = getTextStyle();
-
-  if (gradient && (variant === 'primary' || variant === 'secondary')) {
-    return (
+  
+  const getTextColor = (): string => {
+    switch (variant) {
+      case 'primary':
+        return colors.primaryForeground;
+      case 'secondary':
+        return colors.secondaryForeground;
+      case 'outline':
+        return colors.text;
+      case 'ghost':
+        return colors.primary;
+      case 'destructive':
+        return colors.errorForeground;
+      default:
+        return colors.text;
+    }
+  };
+  
+  const getTextVariant = () => {
+    return size === 'lg' ? 'label-large' : 'label-medium';
+  };
+  
+  const isDisabled = disabled || loading;
+  
+  const buttonStyle = getButtonStyle();
+  const finalButtonStyle: ViewStyle = {
+    ...buttonStyle,
+    opacity: isDisabled ? 0.6 : 1,
+  };
+  
+  const handlePress = (event: any) => {
+    if (!loading && !disabled && onPress) {
+      onPress(event);
+    }
+  };
+  
+  return (
+    <MotiView
+      from={{ scale: 1 }}
+      animate={{ scale: 1 }}
+      exit={{ scale: 0.95 }}
+      transition={{
+        type: 'timing',
+        duration: 150,
+      }}
+    >
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={[{ borderRadius: BorderRadius.lg }, style]}
+        style={[finalButtonStyle, style]}
+        onPress={handlePress}
+        disabled={isDisabled}
+        activeOpacity={0.8}
         {...props}
       >
-        <LinearGradient
-          colors={
-            variant === 'primary'
-              ? [Colors.primary, Colors.primaryDark]
-              : [Colors.secondary, Colors.secondaryDark]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={containerStyle}
-        >
-          {loading ? (
-            <ActivityIndicator color={Colors.background} />
-          ) : (
-            <>
-              {icon}
-              <Text style={textStyle}>{title}</Text>
-            </>
-          )}
-        </LinearGradient>
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={getTextColor()}
+          />
+        ) : (
+          <>
+            {leftIcon && (
+              <View style={styles.leftIcon}>
+                {leftIcon}
+              </View>
+            )}
+            
+            <Text
+              variant={getTextVariant()}
+              style={[
+                { 
+                  color: getTextColor(),
+                  fontSize: sizeConfig.fontSize,
+                },
+                textStyle,
+              ]}
+              weight="medium"
+            >
+              {children}
+            </Text>
+            
+            {rightIcon && (
+              <View style={styles.rightIcon}>
+                {rightIcon}
+              </View>
+            )}
+          </>
+        )}
       </TouchableOpacity>
-    );
-  }
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      style={[containerStyle, style]}
-      {...props}
-    >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === 'outline' || variant === 'ghost' ? Colors.primary : Colors.background}
-        />
-      ) : (
-        <>
-          {icon}
-          <Text style={textStyle}>{title}</Text>
-        </>
-      )}
-    </TouchableOpacity>
+    </MotiView>
   );
 };
+
+// Icon Button Component
+interface IconButtonProps extends Omit<TouchableOpacityProps, 'style'> {
+  icon: React.ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  style?: ViewStyle;
+}
+
+export const IconButton: React.FC<IconButtonProps> = ({
+  icon,
+  variant = 'ghost',
+  size = 'md',
+  style,
+  ...props
+}) => {
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
+  const sizeConfig = ComponentSizes.button[size];
+  
+  const buttonStyle: ViewStyle = {
+    width: sizeConfig.height,
+    height: sizeConfig.height,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: variant === 'ghost' ? 'transparent' : colors.primary,
+  };
+  
+  return (
+    <MotiView
+      from={{ scale: 1 }}
+      animate={{ scale: 1 }}
+      transition={{
+        type: 'timing',
+        duration: 150,
+      }}
+    >
+      <TouchableOpacity
+        style={[buttonStyle, style]}
+        activeOpacity={0.7}
+        {...props}
+      >
+        {icon}
+      </TouchableOpacity>
+    </MotiView>
+  );
+};
+
+// Floating Action Button
+interface FABProps extends Omit<TouchableOpacityProps, 'style'> {
+  icon: React.ReactNode;
+  size?: 'md' | 'lg';
+  style?: ViewStyle;
+}
+
+export const FloatingActionButton: React.FC<FABProps> = ({
+  icon,
+  size = 'lg',
+  style,
+  ...props
+}) => {
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
+  
+  const fabSize = size === 'lg' ? 56 : 48;
+  
+  const fabStyle: ViewStyle = {
+    width: fabSize,
+    height: fabSize,
+    borderRadius: fabSize / 2,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: Spacing.lg,
+    right: Spacing.lg,
+    ...Shadows.lg,
+  };
+  
+  return (
+    <MotiView
+      from={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      exit={{ scale: 0 }}
+      transition={{
+        type: 'spring',
+        damping: 15,
+        stiffness: 150,
+      }}
+    >
+      <TouchableOpacity
+        style={[fabStyle, style]}
+        activeOpacity={0.8}
+        {...props}
+      >
+        {icon}
+      </TouchableOpacity>
+    </MotiView>
+  );
+};
+
+const styles = StyleSheet.create({
+  leftIcon: {
+    marginRight: Spacing.xs,
+  },
+  rightIcon: {
+    marginLeft: Spacing.xs,
+  },
+});
+
+export default Button;

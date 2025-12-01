@@ -1,92 +1,75 @@
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
-import { useAuth } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
-    Text,
-    TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+
+// Import our modern UI components
+import { Card } from '@/components/ui/Card';
+import { Text } from '@/components/ui/Text';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+// Import form validation
+import { useFormWithValidation } from '@/hooks/use-form-validation';
+import { SignUpFormData, signUpSchema } from '@/lib/validation-schemas';
+
+// Import theme and auth
+import { Gradients } from '@/constants/colors';
+import { Spacing } from '@/constants/spacing';
+import { Shadows } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
+import { getThemeColors, useTheme } from '@/hooks/use-theme';
 
 export default function SignUpScreen() {
   const { role } = useLocalSearchParams<{ role: string }>();
   const { signUp } = useAuth();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { colorScheme } = useTheme();
+  const colors = getThemeColors(colorScheme);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const validateForm = () => {
-    if (!fullName.trim()) {
-      Alert.alert('Error', 'Please enter your full name');
-      return false;
-    }
+  // Enhanced form handling with validation
+  const form = useFormWithValidation(signUpSchema, {
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      phone: '',
+      termsAccepted: false,
+      marketingOptIn: false,
+    },
+    successMessage: 'Account created successfully! 🎉',
+  });
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return false;
-    }
+  const userRole = (role as 'customer' | 'business_owner') || 'customer';
 
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-      Alert.alert('Error', 'Please enter a valid 10-digit phone number');
-      return false;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSignUp = async () => {
-    if (!validateForm()) return;
-
+  const handleSignUp = async (data: SignUpFormData) => {
     try {
-      setLoading(true);
       await signUp(
-        email,
-        password,
-        fullName,
-        phone,
-        (role as 'customer' | 'business_owner') || 'customer'
+        data.email,
+        data.password,
+        `${data.firstName} ${data.lastName}`,
+        data.phone || '',
+        userRole
       );
       
-      Alert.alert(
-        'Success',
-        'Account created successfully!',
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)/home') }]
-      );
+      router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Sign up error:', error);
-      Alert.alert('Error', error.message || 'Failed to create account');
-    } finally {
-      setLoading(false);
+      throw new Error(error.message || 'Failed to create account. Please try again.');
     }
   };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -96,156 +79,202 @@ export default function SignUpScreen() {
         options={{
           title: 'Create Account',
           headerTransparent: true,
-          headerTintColor: Colors.card,
+          headerTintColor: colors.primaryForeground,
         }}
       />
 
       <LinearGradient
-        colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
+        colors={Gradients.primary}
         style={styles.gradient}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>
-              Sign up as {role === 'business_owner' ? 'Business Owner' : 'Customer'}
+          {/* Animated Header */}
+          <MotiView
+            from={{ opacity: 0, scale: 0.8, translateY: -50 }}
+            animate={{ opacity: 1, scale: 1, translateY: 0 }}
+            transition={{ type: 'spring', delay: 200 }}
+            style={styles.header}
+          >
+            <Text style={styles.logo}>🏘️</Text>
+            <Text variant="display-small" style={styles.title}>
+              Create Account
             </Text>
-          </View>
-
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                placeholderTextColor={Colors.textSecondary}
-                value={fullName}
-                onChangeText={setFullName}
-                autoCapitalize="words"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="mail-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor={Colors.textSecondary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="call-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Phone Number"
-                placeholderTextColor={Colors.textSecondary}
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                maxLength={10}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor={Colors.textSecondary}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={Colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color={Colors.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                placeholderTextColor={Colors.textSecondary}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={Colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <Button
-              title="Create Account"
-              onPress={handleSignUp}
-              loading={loading}
-              variant="secondary"
-              size="large"
-              style={styles.signUpButton}
-            />
-
-            <View style={styles.signInContainer}>
-              <Text style={styles.signInText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-                <Text style={styles.signInLink}>Sign In</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.termsText}>
-              By signing up, you agree to our Terms of Service and Privacy Policy
+            <Text variant="body-large" style={styles.subtitle}>
+              Join TownTap as {userRole === 'business_owner' ? 'Business Owner' : 'Customer'}
             </Text>
-          </View>
+          </MotiView>
+
+          {/* Modern Form Card */}
+          <MotiView
+            from={{ opacity: 0, translateY: 50 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', delay: 400 }}
+          >
+            <Card variant="elevated" style={styles.formCard}>
+              <View style={styles.form}>
+                {/* Name Fields */}
+                <View style={styles.nameRow}>
+                  <Input
+                    label="First Name"
+                    placeholder="John"
+                    value={form.watch('firstName')}
+                    onChangeText={(text) => form.setValue('firstName', text)}
+                    onBlur={() => form.trigger('firstName')}
+                    leftIcon="person"
+                    error={form.isFieldInvalid('firstName')}
+                    helperText={form.getFieldError('firstName')}
+                    style={[styles.input, styles.nameInput]}
+                  />
+                  
+                  <Input
+                    label="Last Name"
+                    placeholder="Doe"
+                    value={form.watch('lastName')}
+                    onChangeText={(text) => form.setValue('lastName', text)}
+                    onBlur={() => form.trigger('lastName')}
+                    leftIcon="person"
+                    error={form.isFieldInvalid('lastName')}
+                    helperText={form.getFieldError('lastName')}
+                    style={[styles.input, styles.nameInput]}
+                  />
+                </View>
+
+                {/* Email Input */}
+                <Input
+                  label="Email Address"
+                  placeholder="john.doe@example.com"
+                  value={form.watch('email')}
+                  onChangeText={(text) => form.setValue('email', text)}
+                  onBlur={() => form.trigger('email')}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  leftIcon="mail"
+                  error={form.isFieldInvalid('email')}
+                  helperText={form.getFieldError('email')}
+                  style={styles.input}
+                />
+
+                {/* Phone Input */}
+                <Input
+                  label="Phone Number (Optional)"
+                  placeholder="(555) 123-4567"
+                  value={form.watch('phone')}
+                  onChangeText={(text) => form.setValue('phone', text)}
+                  onBlur={() => form.trigger('phone')}
+                  keyboardType="phone-pad"
+                  autoComplete="tel"
+                  leftIcon="call"
+                  error={form.isFieldInvalid('phone')}
+                  helperText={form.getFieldError('phone')}
+                  style={styles.input}
+                />
+
+                {/* Password Fields */}
+                <Input
+                  label="Password"
+                  placeholder="Create a strong password"
+                  value={form.watch('password')}
+                  onChangeText={(text) => form.setValue('password', text)}
+                  onBlur={() => form.trigger('password')}
+                  secureTextEntry={!showPassword}
+                  leftIcon="lock-closed"
+                  rightIcon={showPassword ? 'eye-off' : 'eye'}
+                  onRightIconPress={() => setShowPassword(!showPassword)}
+                  error={form.isFieldInvalid('password')}
+                  helperText={form.getFieldError('password') || 'Must be at least 8 characters with uppercase, lowercase, and number'}
+                  style={styles.input}
+                />
+
+                <Input
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  value={form.watch('confirmPassword')}
+                  onChangeText={(text) => form.setValue('confirmPassword', text)}
+                  onBlur={() => form.trigger('confirmPassword')}
+                  secureTextEntry={!showConfirmPassword}
+                  leftIcon="lock-closed"
+                  rightIcon={showConfirmPassword ? 'eye-off' : 'eye'}
+                  onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  error={form.isFieldInvalid('confirmPassword')}
+                  helperText={form.getFieldError('confirmPassword')}
+                  style={styles.input}
+                />
+
+                {/* Terms and Conditions */}
+                <View style={styles.checkboxContainer}>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => form.setValue('termsAccepted', !form.watch('termsAccepted'))}
+                  >
+                    <View style={[
+                      styles.checkboxBox,
+                      form.watch('termsAccepted') && styles.checkboxChecked
+                    ]}>
+                      {form.watch('termsAccepted') && (
+                        <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
+                      )}
+                    </View>
+                    <Text variant="body-small" style={styles.checkboxText}>
+                      I agree to the{' '}
+                      <Text style={styles.linkText}>Terms of Service</Text>
+                      {' '}and{' '}
+                      <Text style={styles.linkText}>Privacy Policy</Text>
+                    </Text>
+                  </TouchableOpacity>
+                  {form.isFieldInvalid('termsAccepted') && (
+                    <Text variant="body-small" style={styles.errorText}>
+                      {form.getFieldError('termsAccepted')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Marketing Opt-in */}
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => form.setValue('marketingOptIn', !form.watch('marketingOptIn'))}
+                >
+                  <View style={[
+                    styles.checkboxBox,
+                    form.watch('marketingOptIn') && styles.checkboxChecked
+                  ]}>
+                    {form.watch('marketingOptIn') && (
+                      <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
+                    )}
+                  </View>
+                  <Text variant="body-small" style={styles.checkboxText}>
+                    Send me updates and promotional offers
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Sign Up Button */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onPress={() => form.submitWithToast(handleSignUp)}
+                  disabled={form.isSubmitting}
+                  style={styles.signUpButton}
+                >
+                  {form.isSubmitting ? 'Creating Account...' : 'Create Account'}
+                </Button>
+
+                {/* Sign In Link */}
+                <View style={styles.signInContainer}>
+                  <Text variant="body-medium" style={styles.signInText}>
+                    Already have an account?{' '}
+                  </Text>
+                  <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
+                    <Text variant="body-medium" style={styles.signInLink}>
+                      Sign In
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Card>
+          </MotiView>
         </ScrollView>
       </LinearGradient>
     </KeyboardAvoidingView>
@@ -263,70 +292,94 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: Spacing.xl,
-    paddingTop: 100,
+    paddingTop: 80,
   },
   header: {
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
+  logo: {
+    fontSize: 60,
+    marginBottom: Spacing.sm,
+  },
   title: {
-    fontSize: FontSize.xxxl,
-    fontWeight: '700',
-    color: Colors.card,
+    color: '#FFFFFF',
     marginBottom: Spacing.xs,
+    textAlign: 'center',
+    fontWeight: '700',
   },
   subtitle: {
-    fontSize: FontSize.md,
-    color: Colors.card,
-    opacity: 0.9,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+  },
+  formCard: {
+    marginBottom: Spacing.xl,
+    ...Shadows.xl,
   },
   form: {
-    width: '100%',
+    padding: Spacing.lg,
   },
-  inputContainer: {
+  nameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-    height: 56,
+    gap: Spacing.md,
   },
-  inputIcon: {
-    marginRight: Spacing.sm,
+  nameInput: {
+    flex: 1,
   },
   input: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.text,
+    marginBottom: Spacing.md,
   },
-  eyeIcon: {
-    padding: Spacing.xs,
+  checkboxContainer: {
+    marginBottom: Spacing.md,
+  },
+  checkbox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  checkboxBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    marginRight: Spacing.sm,
+    marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  checkboxText: {
+    flex: 1,
+    color: '#64748B',
+    lineHeight: 20,
+  },
+  linkText: {
+    color: '#2563EB',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: '#EF4444',
+    marginTop: Spacing.xs,
   },
   signUpButton: {
-    marginTop: Spacing.md,
-    marginBottom: Spacing.md,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.lg,
   },
   signInContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
   },
   signInText: {
-    color: Colors.card,
-    fontSize: FontSize.md,
+    color: '#64748B',
   },
   signInLink: {
-    color: Colors.card,
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
-  termsText: {
-    color: Colors.card,
-    fontSize: FontSize.xs,
-    textAlign: 'center',
-    opacity: 0.8,
+    color: '#2563EB',
+    fontWeight: '600',
   },
 });
