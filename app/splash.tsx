@@ -2,18 +2,49 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { MotiView } from 'moti';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function SplashScreen() {
-  React.useEffect(() => {
-    // Auto-navigate to welcome after 3 seconds
-    const timer = setTimeout(() => {
-      router.replace('/welcome');
-    }, 3000);
+// Import services for initialization
+import { imageCacheService } from '@/lib/image-cache-service';
+import { performanceMonitor } from '@/lib/performance-monitor';
+import { securityService } from '@/lib/security-service';
 
-    return () => clearTimeout(timer);
+export default function SplashScreen() {
+  const [initializationStatus, setInitializationStatus] = React.useState('Initializing...');
+
+  React.useEffect(() => {
+    initializeServices();
   }, []);
+
+  const initializeServices = async () => {
+    try {
+      setInitializationStatus('Initializing security...');
+      await securityService.initialize();
+      
+      setInitializationStatus('Starting performance monitoring...');
+      await performanceMonitor.initialize();
+      
+      setInitializationStatus('Preparing image cache...');
+      await imageCacheService.initialize();
+      
+      setInitializationStatus('Ready!');
+      
+      // Auto-navigate to welcome after initialization
+      setTimeout(() => {
+        router.replace('/welcome');
+      }, 1500);
+    } catch (error) {
+      console.error('Service initialization error:', error);
+      setInitializationStatus('Ready!');
+      
+      // Still navigate even if some services fail
+      setTimeout(() => {
+        router.replace('/welcome');
+      }, 2000);
+    }
+  };
 
   return (
     <LinearGradient
@@ -25,24 +56,80 @@ export default function SplashScreen() {
       <StatusBar style="light" />
       
       <View style={styles.content}>
-        {/* App Logo */}
-        <View style={styles.logoContainer}>
+        {/* Animated App Logo */}
+        <MotiView
+          from={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', duration: 800 }}
+          style={styles.logoContainer}
+        >
           <View style={styles.logoCircle}>
             <Ionicons name="business-outline" size={64} color="#FFFFFF" />
           </View>
-          <Text style={styles.appName}>TownTap</Text>
-          <Text style={styles.tagline}>Your Complete Service Ecosystem</Text>
-        </View>
+          <MotiView
+            from={{ translateY: 20, opacity: 0 }}
+            animate={{ translateY: 0, opacity: 1 }}
+            transition={{ type: 'timing', duration: 600, delay: 400 }}
+          >
+            <Text style={styles.appName}>TownTap</Text>
+            <Text style={styles.tagline}>Your Complete Service Ecosystem</Text>
+          </MotiView>
+        </MotiView>
 
-        {/* Loading Animation */}
-        <View style={styles.loadingContainer}>
+        {/* Enhanced Loading Animation */}
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 800, duration: 400 }}
+          style={styles.loadingContainer}
+        >
           <View style={styles.loadingDots}>
-            <View style={[styles.dot, styles.dot1]} />
-            <View style={[styles.dot, styles.dot2]} />
-            <View style={[styles.dot, styles.dot3]} />
+            <MotiView
+              from={{ scale: 0.5 }}
+              animate={{ scale: [0.5, 1, 0.5] }}
+              transition={{ 
+                type: 'timing',
+                duration: 1200,
+                loop: true,
+                repeatReverse: false,
+                delay: 0
+              }}
+              style={[styles.dot, styles.dot1]}
+            />
+            <MotiView
+              from={{ scale: 0.5 }}
+              animate={{ scale: [0.5, 1, 0.5] }}
+              transition={{ 
+                type: 'timing',
+                duration: 1200,
+                loop: true,
+                repeatReverse: false,
+                delay: 200
+              }}
+              style={[styles.dot, styles.dot2]}
+            />
+            <MotiView
+              from={{ scale: 0.5 }}
+              animate={{ scale: [0.5, 1, 0.5] }}
+              transition={{ 
+                type: 'timing',
+                duration: 1200,
+                loop: true,
+                repeatReverse: false,
+                delay: 400
+              }}
+              style={[styles.dot, styles.dot3]}
+            />
           </View>
-          <Text style={styles.loadingText}>Connecting communities...</Text>
-        </View>
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            key={initializationStatus} // Re-animate when status changes
+            transition={{ duration: 300 }}
+          >
+            <Text style={styles.loadingText}>{initializationStatus}</Text>
+          </MotiView>
+        </MotiView>
       </View>
 
       {/* Version */}

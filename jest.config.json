@@ -1,5 +1,5 @@
 {
-  "testEnvironment": "jsdom", 
+  "preset": "jest-expo",
   "setupFilesAfterEnv": ["<rootDir>/jest-setup.js"],
   "testMatch": [
     "**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)",
@@ -9,11 +9,8 @@
   "transform": {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
   },
-  "moduleNameMapper": {
-    "^@/(.*)$": "<rootDir>/$1",
-    "\\.(jpg|jpeg|png|gif|svg)$": "identity-obj-proxy",
-    "react-native": "<rootDir>/node_modules/react-native",
-    "@react-native": "<rootDir>/node_modules/@react-native"
+  "moduleNameMapping": {
+    "^@/(.*)$": "<rootDir>/$1"
   },
   "collectCoverageFrom": [
     "**/*.{js,jsx,ts,tsx}",

@@ -1,24 +1,22 @@
 module.exports = function (api) {
   api.cache(true);
   
+  const isTest = api.env('test');
+  
+  if (isTest) {
+    return {
+      presets: [
+        '@babel/preset-env',
+        '@babel/preset-react',
+        '@babel/preset-typescript'
+      ],
+    };
+  }
+  
   return {
     presets: ['babel-preset-expo'],
     plugins: [
       'react-native-reanimated/plugin'
     ],
-    env: {
-      test: {
-        presets: [
-          ['@babel/preset-env', { loose: true }],
-          '@babel/preset-react',
-          '@babel/preset-typescript'
-        ],
-        plugins: [
-          ['@babel/plugin-transform-private-methods', { loose: true }],
-          ['@babel/plugin-transform-private-property-in-object', { loose: true }],
-          ['@babel/plugin-transform-class-properties', { loose: true }]
-        ],
-      },
-    },
   };
 };

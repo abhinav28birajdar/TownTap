@@ -56,6 +56,15 @@ export const resetPasswordSchema = z.object({
 });
 
 // Profile Schemas
+export const profileSchema = z.object({
+  firstName: nameSchema,
+  lastName: nameSchema,
+  email: emailSchema,
+  phone: phoneSchema.optional(),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Please enter date in YYYY-MM-DD format').optional(),
+  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
+});
+
 export const updateProfileSchema = z.object({
   firstName: nameSchema,
   lastName: nameSchema,
@@ -248,6 +257,7 @@ export type SignInFormData = z.infer<typeof signInSchema>;
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type ProfileFormData = z.infer<typeof profileSchema>;
 export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export type BusinessRegistrationFormData = z.infer<typeof businessRegistrationSchema>;

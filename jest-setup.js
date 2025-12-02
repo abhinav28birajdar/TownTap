@@ -1,17 +1,13 @@
-// Minimal Jest setup file
+// Jest setup file
+import '@testing-library/jest-native/extend-expect';
 
-// Mock fetch for API tests
-global.fetch = jest.fn();
+// Mock React Native modules
+jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
+  const { EventEmitter } = require('events');
+  return EventEmitter;
+});
 
-// Setup global console methods for test environment  
-global.console = {
-  ...console,
-  log: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
 // Mock Expo modules
 jest.mock('expo-constants', () => ({
@@ -113,16 +109,15 @@ global.performance = {
 // Mock fetch for API tests
 global.fetch = jest.fn();
 
-// Setup global console methods for test environment
-global.console = {
-  ...console,
-  // Uncomment to ignore a specific log level
-  log: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+// Silence the warning: Animated: `useNativeDriver` is not supported
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+
+// Mock dimensions
+jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
+  get: jest.fn(() => ({ width: 375, height: 812 })),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+}));
 
 // Setup test timeout
 jest.setTimeout(10000);

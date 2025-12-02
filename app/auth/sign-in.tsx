@@ -27,6 +27,8 @@ import { signInSchema, SignInFormData } from '@/lib/validation-schemas';
 // Import theme and auth
 import { useTheme, getThemeColors } from '@/hooks/use-theme';
 import { useAuth } from '@/contexts/auth-context';
+import { useBiometricAuth, useSecureStorage } from '@/lib/security-service';
+import { performanceMonitor } from '@/lib/performance-monitor';
 import { Gradients } from '@/constants/colors';
 import { BorderRadius, Shadows } from '@/constants/theme';
 import { Spacing } from '@/constants/spacing';
@@ -37,6 +39,30 @@ export default function SignInScreen() {
   const colors = getThemeColors(colorScheme);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastEmail, setLastEmail] = useState('');
+  
+  // Biometric authentication
+  const { isAvailable: biometricAvailable, authenticate: authenticateBiometric, authTypes } = useBiometricAuth();
+  const { retrieve: getStoredCredentials, store: storeCredentials } = useSecureStorage();
+  
+  // Check for stored credentials on mount
+  React.useEffect(() => {
+    loadStoredCredentials();
+    performanceMonitor.trackNavigation('auth/sign-in');
+  }, []);
+  
+  const loadStoredCredentials = async () => {
+    try {
+      const storedEmail = await getStoredCredentials('user_email');
+      if (storedEmail) {
+        setLastEmail(storedEmail);
+        form.setValue('email', storedEmail);
+      }
+    } catch (error) {
+      console.error('Failed to load stored credentials:', error);
+    }
+  };
 
   // Enhanced form handling with validation
   const form = useFormWithValidation(signInSchema, {
@@ -60,13 +86,74 @@ export default function SignInScreen() {
     form.setValue('password', password);
   };
 
+  const handleBiometricSignIn = async () => {
+    if (!biometricAvailable) {
+      Alert.alert('Biometric Not Available', 'Biometric authentication is not available on this device.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      performanceMonitor.trackUserInteraction('biometric_signin_attempt', 'sign_in_screen', true);
+
+      const authResult = await authenticateBiometric({
+        reason: 'Please authenticate to sign in to TownTap',
+        fallbackLabel: 'Use password instead',
+      });
+
+      if (authResult.success) {
+        // Get stored credentials after successful biometric auth
+        const storedCredentials = await getStoredCredentials('user_credentials', {
+          requireAuthentication: true,
+          authenticationPrompt: 'Access your saved credentials',
+        });
+
+        if (storedCredentials) {
+          const { email, password } = JSON.parse(storedCredentials);
+          await signIn(email, password);
+          performanceMonitor.trackUserInteraction('biometric_signin_success', 'sign_in_screen', true);
+          router.replace('/(tabs)/home');
+        } else {
+          Alert.alert('No Saved Credentials', 'Please sign in with your email and password first.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Biometric sign in error:', error);
+      performanceMonitor.trackUserInteraction('biometric_signin_error', 'sign_in_screen', false);
+      Alert.alert('Authentication Failed', error.message || 'Biometric authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignIn = async (data: SignInFormData) => {
+    const startTime = Date.now();
+    setIsLoading(true);
+    
     try {
       await signIn(data.email, data.password);
+      
+      // Store credentials securely if remember me is enabled
+      if (data.rememberMe && biometricAvailable) {
+        await storeCredentials('user_email', data.email);
+        await storeCredentials('user_credentials', JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }), {
+          requireAuthentication: true,
+          authenticationPrompt: 'Save credentials for quick sign in',
+        });
+      }
+      
+      const duration = Date.now() - startTime;
+      performanceMonitor.trackUserInteraction('email_signin_success', 'sign_in_screen', true, duration);
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Sign in error:', error);
+      performanceMonitor.trackUserInteraction('email_signin_error', 'sign_in_screen', false);
       throw new Error(error.message || 'Failed to sign in. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -188,11 +275,52 @@ export default function SignInScreen() {
                   variant="primary"
                   size="lg"
                   onPress={() => form.submitWithToast(handleSignIn)}
-                  disabled={form.isSubmitting}
+                  disabled={form.isSubmitting || isLoading}
                   style={styles.signInButton}
                 >
-                  {form.isSubmitting ? 'Signing In...' : 'Sign In'}
+                  {form.isSubmitting || isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
+
+                {/* Biometric Authentication */}
+                {biometricAvailable && lastEmail && (
+                  <AnimatePresence>
+                    <MotiView
+                      from={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ type: 'spring' }}
+                      style={styles.biometricContainer}
+                    >
+                      <View style={styles.divider}>
+                        <View style={styles.dividerLine} />
+                        <Text variant="body-small" style={styles.dividerText}>
+                          or
+                        </Text>
+                        <View style={styles.dividerLine} />
+                      </View>
+                      
+                      <Button
+                        variant="secondary"
+                        size="lg"
+                        onPress={handleBiometricSignIn}
+                        disabled={isLoading}
+                        style={styles.biometricButton}
+                        leftIcon={
+                          authTypes.includes(1) ? "finger-print" : 
+                          authTypes.includes(2) ? "scan" : "shield-checkmark"
+                        }
+                      >
+                        {authTypes.includes(1) ? 'Sign in with Touch ID' :
+                         authTypes.includes(2) ? 'Sign in with Face ID' :
+                         'Sign in with Biometrics'}
+                      </Button>
+                      
+                      <Text variant="body-small" style={styles.biometricHint}>
+                        Quick access as {lastEmail}
+                      </Text>
+                    </MotiView>
+                  </AnimatePresence>
+                )}
 
                 {/* Demo Section */}
                 <View style={styles.demoSection}>
@@ -353,6 +481,34 @@ const styles = StyleSheet.create({
   },
   signInButton: {
     marginBottom: Spacing.lg,
+  },
+  biometricContainer: {
+    marginBottom: Spacing.lg,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: Spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
+    color: '#64748B',
+    fontSize: 12,
+  },
+  biometricButton: {
+    marginBottom: Spacing.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  biometricHint: {
+    textAlign: 'center',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12,
   },
   demoSection: {
     paddingTop: Spacing.md,
