@@ -5,12 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function ExploreScreen() {
@@ -52,11 +52,11 @@ export default function ExploreScreen() {
 
       <View style={styles.searchSection}>
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={Colors.textSecondary} />
+          <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search services, businesses..."
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={Colors.light.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -73,7 +73,7 @@ export default function ExploreScreen() {
               onPress={() => handleCategoryPress(category.id)}
             >
               <View style={styles.categoryIcon}>
-                <Ionicons name={category.icon as any} size={32} color={Colors.primary} />
+                <Ionicons name={category.icon as any} size={32} color={Colors.light.primary} />
               </View>
               <Text style={styles.categoryName}>{category.name}</Text>
             </TouchableOpacity>
@@ -82,7 +82,7 @@ export default function ExploreScreen() {
 
         <Text style={styles.sectionTitle}>Popular Services</Text>
         <View style={styles.emptyState}>
-          <Ionicons name="construct-outline" size={64} color={Colors.textLight} />
+          <Ionicons name="construct-outline" size={64} color={Colors.light.textSecondary} />
           <Text style={styles.emptyText}>Coming Soon</Text>
           <Text style={styles.emptySubtext}>
             Explore feature will be available in the next update
@@ -96,18 +96,18 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.light.background,
   },
   searchSection: {
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.light.card,
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.light.border,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: Colors.light.muted,
     borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.md,
     height: 48,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: Spacing.sm,
     fontSize: FontSize.md,
-    color: Colors.text,
+    color: Colors.light.text,
   },
   content: {
     flex: 1,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSize.xl,
     fontWeight: '700',
-    color: Colors.text,
+    color: Colors.light.text,
     marginBottom: Spacing.md,
     marginTop: Spacing.md,
   },
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: '30%',
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.light.card,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Colors.light.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.sm,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: FontSize.sm,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.light.text,
     textAlign: 'center',
   },
   emptyState: {
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: FontSize.xl,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.lg,
   },
   emptySubtext: {
     fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    color: Colors.light.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
   },

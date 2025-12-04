@@ -37,6 +37,7 @@ export const spacing = {
   md: 16,     // Medium
   lg: 24,     // Large
   xl: 32,     // Extra large
+  xxl: 40,    // 2x Extra large (legacy)
   '2xl': 40,  // 2x Extra large
   '3xl': 48,  // 3x Extra large
   '4xl': 64,  // 4x Extra large

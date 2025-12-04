@@ -1,7 +1,9 @@
 module.exports = function (api) {
   const isTest = api.env('test');
   
+  // Only cache in test environment to avoid expo-router conflicts
   if (isTest) {
+    api.cache(true);
     return {
       presets: [
         '@babel/preset-env',
@@ -11,6 +13,7 @@ module.exports = function (api) {
     };
   }
   
+  // Don't use caching in development/production to avoid conflicts
   return {
     presets: ['babel-preset-expo'],
     plugins: [

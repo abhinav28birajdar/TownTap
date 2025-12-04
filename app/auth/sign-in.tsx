@@ -537,20 +537,6 @@ const styles = StyleSheet.create({
   socialContainer: {
     alignItems: 'center',
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    marginHorizontal: Spacing.md,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
   socialButtons: {
     flexDirection: 'row',
     gap: Spacing.md,

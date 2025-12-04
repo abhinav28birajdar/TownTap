@@ -1,32 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState, useMemo } from 'react';
+import { AnimatePresence, MotiView } from 'moti';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    FlatList,
     SafeAreaView,
-    StyleSheet,
     ScrollView,
+    StyleSheet,
     TouchableOpacity,
-    View,
-    RefreshControl,
+    View
 } from 'react-native';
-import { MotiView, AnimatePresence } from 'moti';
 
 // Import modern components
-import { Text, SearchBar, BusinessCard, LoadingScreen, Button, Badge } from '@/components/ui';
+import { Button, LoadingScreen, SearchBar, Text } from '@/components/ui';
 import { OptimizedBusinessList } from '@/components/ui/optimized-business-list';
 
 // Import hooks and services
-import { useSearch } from '@/hooks/use-search';
 import { useMemoryOptimization } from '@/hooks/use-memory-optimization';
-import { SearchResult } from '@/lib/search-service';
+import { useSearch } from '@/hooks/use-search';
 import { performanceMonitor } from '@/lib/performance-monitor';
+import { SearchResult } from '@/lib/search-service';
 
 // Import theme and constants
-import { Colors, Gradients, Shadows } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
-import { useTheme, getThemeColors } from '@/hooks/use-theme';
+import { Colors } from '@/constants/colors';
+import { getThemeColors, useTheme } from '@/hooks/use-theme';
 
 // Import demo context for fallback
 import { useDemo } from '../../contexts/demo-context';
@@ -348,129 +345,6 @@ export default function CustomerSearch() {
           </MotiView>
         )}
       </AnimatePresence>
-    </SafeAreaView>
-  );
-}
-      <View style={styles.businessHeader}>
-        <View style={styles.businessIcon}>
-          <Ionicons name={item.icon} size={24} color="#6366F1" />
-        </View>
-        <View style={styles.businessInfo}>
-          <Text style={styles.businessName}>{item.name}</Text>
-          <Text style={styles.businessCategory}>{item.category}</Text>
-        </View>
-        <View style={styles.businessRating}>
-          <Ionicons name="star" size={16} color="#FBBF24" />
-          <Text style={styles.ratingText}>{item.rating}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.businessDescription} numberOfLines={2}>
-        {item.description}
-      </Text>
-
-      <View style={styles.businessFooter}>
-        <Text style={styles.distanceText}>📍 {item.distance} km away</Text>
-        <Text style={styles.priceText}>From ₹{item.startingPrice}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderCategory = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryChip,
-        selectedCategory === item.name && styles.selectedCategoryChip
-      ]}
-      onPress={() => setSelectedCategory(
-        selectedCategory === item.name ? null : item.name
-      )}
-    >
-      <Text style={[
-        styles.categoryChipText,
-        selectedCategory === item.name && styles.selectedCategoryChipText
-      ]}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Search Services</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#6B7280" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search for services or businesses..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Category Filters */}
-      <View style={styles.filtersContainer}>
-        <FlatList
-          horizontal
-          data={[{ name: 'All' }, ...demoCategories]}
-          renderItem={renderCategory}
-          keyExtractor={(item) => item.name}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesList}
-        />
-      </View>
-
-      {/* Results Count */}
-      <View style={styles.resultsHeader}>
-        <Text style={styles.resultsCount}>
-          {filteredBusinesses.length} services found
-        </Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="options-outline" size={20} color="#6366F1" />
-          <Text style={styles.filterText}>Filters</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Business List */}
-      <FlatList
-        data={filteredBusinesses}
-        renderItem={renderBusiness}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.businessList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.businessListContent}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={64} color="#9CA3AF" />
-            <Text style={styles.emptyStateText}>No services found</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Try adjusting your search terms or filters
-            </Text>
-          </View>
-        )}
-      />
     </SafeAreaView>
   );
 }

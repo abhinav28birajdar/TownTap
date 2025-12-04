@@ -1,25 +1,23 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, router } from 'expo-router';
+import { MotiView } from 'moti';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { MotiView } from 'moti';
 
-import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
-import { useTheme, getThemeColors } from '@/hooks/use-theme';
-import { useBiometricAuth } from '@/lib/security-service';
-import { performanceMonitor } from '@/lib/performance-monitor';
-import { Gradients } from '@/constants/colors';
-import { BorderRadius, Shadows } from '@/constants/theme';
+import { Text } from '@/components/ui/Text';
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Shadows } from '@/constants/theme';
+import { getThemeColors, useTheme } from '@/hooks/use-theme';
+import { performanceMonitor } from '@/lib/performance-monitor';
+import { useBiometricAuth } from '@/lib/security-service';
 
 interface FeatureCard {
   id: string;
@@ -115,4 +113,414 @@ export default function FeaturesOverviewScreen() {
       status: 'available',
       route: '/profile/edit',
     },
-  ];\n\n  const getStatusColor = (status: FeatureCard['status']) => {\n    switch (status) {\n      case 'available':\n        return colors.info;\n      case 'configured':\n        return colors.success;\n      case 'needs_setup':\n        return colors.warning;\n      default:\n        return colors.textSecondary;\n    }\n  };\n\n  const getStatusText = (status: FeatureCard['status']) => {\n    switch (status) {\n      case 'available':\n        return 'Ready to use';\n      case 'configured':\n        return 'Active';\n      case 'needs_setup':\n        return 'Needs setup';\n      default:\n        return 'Unknown';\n    }\n  };\n\n  const getStatusIcon = (status: FeatureCard['status']) => {\n    switch (status) {\n      case 'available':\n        return 'checkmark-circle';\n      case 'configured':\n        return 'checkmark-circle';\n      case 'needs_setup':\n        return 'alert-circle';\n      default:\n        return 'help-circle';\n    }\n  };\n\n  const handleFeaturePress = (feature: FeatureCard) => {\n    if (feature.route) {\n      router.push(feature.route as any);\n    } else if (feature.action) {\n      feature.action();\n    } else {\n      Alert.alert(\n        feature.title,\n        `${feature.description}\\n\\nStatus: ${getStatusText(feature.status)}`\n      );\n    }\n  };\n\n  const renderFeatureCard = (feature: FeatureCard, index: number) => (\n    <MotiView\n      key={feature.id}\n      from={{ opacity: 0, translateY: 50 }}\n      animate={{ opacity: 1, translateY: 0 }}\n      transition={{\n        type: 'timing',\n        duration: 600,\n        delay: index * 100,\n      }}\n    >\n      <TouchableOpacity\n        onPress={() => handleFeaturePress(feature)}\n        style={[styles.featureCard, { backgroundColor: colors.card }]}\n      >\n        <View style={styles.featureHeader}>\n          <View style={[\n            styles.featureIcon,\n            { backgroundColor: getStatusColor(feature.status) + '20' }\n          ]}>\n            <Ionicons\n              name={feature.icon}\n              size={24}\n              color={getStatusColor(feature.status)}\n            />\n          </View>\n          \n          <View style={styles.featureInfo}>\n            <Text style={[styles.featureTitle, { color: colors.text }]}>\n              {feature.title}\n            </Text>\n            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>\n              {feature.description}\n            </Text>\n          </View>\n          \n          {feature.route && (\n            <Ionicons\n              name=\"chevron-forward\"\n              size={20}\n              color={colors.textSecondary}\n            />\n          )}\n        </View>\n        \n        <View style={styles.featureFooter}>\n          <View style={[\n            styles.statusBadge,\n            { backgroundColor: getStatusColor(feature.status) + '20' }\n          ]}>\n            <Ionicons\n              name={getStatusIcon(feature.status)}\n              size={14}\n              color={getStatusColor(feature.status)}\n            />\n            <Text style={[\n              styles.statusText,\n              { color: getStatusColor(feature.status) }\n            ]}>\n              {getStatusText(feature.status)}\n            </Text>\n          </View>\n        </View>\n      </TouchableOpacity>\n    </MotiView>\n  );\n\n  const renderStatsHeader = () => (\n    <Card style={styles.statsCard}>\n      <Text style={[styles.statsTitle, { color: colors.text }]}>\n        App Enhancement Summary\n      </Text>\n      \n      <View style={styles.statsGrid}>\n        <View style={styles.statItem}>\n          <Text style={[styles.statNumber, { color: colors.success }]}>\n            {features.filter(f => f.status === 'configured').length}\n          </Text>\n          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>\n            Active Features\n          </Text>\n        </View>\n        \n        <View style={styles.statItem}>\n          <Text style={[styles.statNumber, { color: colors.info }]}>\n            {features.filter(f => f.status === 'available').length}\n          </Text>\n          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>\n            Ready to Use\n          </Text>\n        </View>\n        \n        <View style={styles.statItem}>\n          <Text style={[styles.statNumber, { color: colors.warning }]}>\n            {features.filter(f => f.status === 'needs_setup').length}\n          </Text>\n          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>\n            Need Setup\n          </Text>\n        </View>\n      </View>\n      \n      <Text style={[styles.statsSubtitle, { color: colors.textSecondary }]}>\n        Your TownTap app has been enhanced with enterprise-level features for security,\n        performance, and user experience.\n      </Text>\n    </Card>\n  );\n\n  const renderQuickActions = () => (\n    <Card style={styles.actionsCard}>\n      <Text style={[styles.sectionTitle, { color: colors.text }]}>\n        Quick Actions\n      </Text>\n      \n      <View style={styles.actionsGrid}>\n        <TouchableOpacity\n          style={[styles.actionButton, { backgroundColor: colors.primary + '20' }]}\n          onPress={() => router.push('/dev/performance-monitor')}\n        >\n          <Ionicons name=\"analytics\" size={20} color={colors.primary} />\n          <Text style={[styles.actionText, { color: colors.primary }]}>\n            Performance\n          </Text>\n        </TouchableOpacity>\n        \n        <TouchableOpacity\n          style={[styles.actionButton, { backgroundColor: colors.warning + '20' }]}\n          onPress={() => router.push('/dev/security-audit')}\n        >\n          <Ionicons name=\"shield-checkmark\" size={20} color={colors.warning} />\n          <Text style={[styles.actionText, { color: colors.warning }]}>\n            Security\n          </Text>\n        </TouchableOpacity>\n        \n        <TouchableOpacity\n          style={[styles.actionButton, { backgroundColor: colors.success + '20' }]}\n          onPress={() => router.push('/settings/advanced')}\n        >\n          <Ionicons name=\"settings\" size={20} color={colors.success} />\n          <Text style={[styles.actionText, { color: colors.success }]}>\n            Settings\n          </Text>\n        </TouchableOpacity>\n        \n        <TouchableOpacity\n          style={[styles.actionButton, { backgroundColor: colors.info + '20' }]}\n          onPress={() => router.push('/profile/edit')}\n        >\n          <Ionicons name=\"person\" size={20} color={colors.info} />\n          <Text style={[styles.actionText, { color: colors.info }]}>\n            Profile\n          </Text>\n        </TouchableOpacity>\n      </View>\n    </Card>\n  );\n\n  return (\n    <LinearGradient\n      colors={[colors.background, colors.backgroundSecondary]}\n      style={styles.container}\n    >\n      <Stack.Screen\n        options={{\n          title: 'Enhanced Features',\n          headerBackTitle: 'Back',\n        }}\n      />\n\n      <ScrollView\n        style={styles.scrollContainer}\n        contentContainerStyle={styles.scrollContent}\n        showsVerticalScrollIndicator={false}\n      >\n        {/* Stats Header */}\n        {renderStatsHeader()}\n        \n        {/* Quick Actions */}\n        {renderQuickActions()}\n        \n        {/* Features List */}\n        <View style={styles.featuresSection}>\n          <Text style={[styles.sectionTitle, { color: colors.text }]}>\n            Available Features\n          </Text>\n          \n          {features.map(renderFeatureCard)}\n        </View>\n        \n        {/* Additional Info */}\n        <Card style={styles.infoCard}>\n          <View style={styles.infoHeader}>\n            <Ionicons name=\"information-circle\" size={24} color={colors.info} />\n            <Text style={[styles.infoTitle, { color: colors.text }]}>\n              What's New?\n            </Text>\n          </View>\n          \n          <Text style={[styles.infoDescription, { color: colors.textSecondary }]}>\n            Your TownTap app now includes enterprise-grade features:\n            {\"\\n\"}• Biometric authentication for secure access\n            {\"\\n\"}• Real-time performance monitoring\n            {\"\\n\"}• Security audit and issue tracking\n            {\"\\n\"}• Smart image caching and optimization\n            {\"\\n\"}• Enhanced user onboarding experience\n            {\"\\n\"}• Comprehensive profile management\n          </Text>\n        </Card>\n      </ScrollView>\n    </LinearGradient>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n  },\n  scrollContainer: {\n    flex: 1,\n  },\n  scrollContent: {\n    padding: Spacing.md,\n  },\n  // Stats\n  statsCard: {\n    marginBottom: Spacing.md,\n    padding: Spacing.lg,\n  },\n  statsTitle: {\n    fontSize: 20,\n    fontWeight: '700',\n    marginBottom: Spacing.sm,\n    textAlign: 'center',\n  },\n  statsGrid: {\n    flexDirection: 'row',\n    justifyContent: 'space-around',\n    marginVertical: Spacing.md,\n  },\n  statItem: {\n    alignItems: 'center',\n  },\n  statNumber: {\n    fontSize: 28,\n    fontWeight: '800',\n    marginBottom: 4,\n  },\n  statLabel: {\n    fontSize: 12,\n    fontWeight: '500',\n    textAlign: 'center',\n  },\n  statsSubtitle: {\n    fontSize: 14,\n    lineHeight: 20,\n    textAlign: 'center',\n    marginTop: Spacing.sm,\n  },\n  // Quick Actions\n  actionsCard: {\n    marginBottom: Spacing.md,\n    padding: Spacing.md,\n  },\n  actionsGrid: {\n    flexDirection: 'row',\n    flexWrap: 'wrap',\n    justifyContent: 'space-between',\n    gap: Spacing.sm,\n  },\n  actionButton: {\n    width: '48%',\n    alignItems: 'center',\n    padding: Spacing.md,\n    borderRadius: BorderRadius.md,\n  },\n  actionText: {\n    fontSize: 12,\n    fontWeight: '600',\n    marginTop: Spacing.xs,\n  },\n  // Features\n  featuresSection: {\n    marginBottom: Spacing.md,\n  },\n  sectionTitle: {\n    fontSize: 18,\n    fontWeight: '600',\n    marginBottom: Spacing.md,\n  },\n  featureCard: {\n    marginBottom: Spacing.sm,\n    padding: Spacing.md,\n    borderRadius: BorderRadius.lg,\n    ...Shadows.small,\n  },\n  featureHeader: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    marginBottom: Spacing.sm,\n  },\n  featureIcon: {\n    width: 48,\n    height: 48,\n    borderRadius: BorderRadius.md,\n    justifyContent: 'center',\n    alignItems: 'center',\n    marginRight: Spacing.sm,\n  },\n  featureInfo: {\n    flex: 1,\n  },\n  featureTitle: {\n    fontSize: 16,\n    fontWeight: '600',\n    marginBottom: 4,\n  },\n  featureDescription: {\n    fontSize: 14,\n    lineHeight: 18,\n  },\n  featureFooter: {\n    alignItems: 'flex-start',\n  },\n  statusBadge: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    paddingHorizontal: Spacing.sm,\n    paddingVertical: Spacing.xs,\n    borderRadius: BorderRadius.sm,\n  },\n  statusText: {\n    fontSize: 12,\n    fontWeight: '600',\n    marginLeft: 4,\n  },\n  // Info Card\n  infoCard: {\n    padding: Spacing.md,\n    marginBottom: Spacing.xl,\n  },\n  infoHeader: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    marginBottom: Spacing.sm,\n  },\n  infoTitle: {\n    fontSize: 16,\n    fontWeight: '600',\n    marginLeft: Spacing.sm,\n  },\n  infoDescription: {\n    fontSize: 14,\n    lineHeight: 20,\n  },\n});\n
+  ];
+
+  const getStatusColor = (status: FeatureCard['status']) => {
+    switch (status) {
+      case 'available':
+        return colors.info;
+      case 'configured':
+        return colors.success;
+      case 'needs_setup':
+        return colors.warning;
+      default:
+        return colors.textSecondary;
+    }
+  };
+
+  const getStatusText = (status: FeatureCard['status']) => {
+    switch (status) {
+      case 'available':
+        return 'Ready to use';
+      case 'configured':
+        return 'Active';
+      case 'needs_setup':
+        return 'Needs setup';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getStatusIcon = (status: FeatureCard['status']) => {
+    switch (status) {
+      case 'available':
+        return 'checkmark-circle';
+      case 'configured':
+        return 'checkmark-circle';
+      case 'needs_setup':
+        return 'alert-circle';
+      default:
+        return 'help-circle';
+    }
+  };
+
+  const handleFeaturePress = (feature: FeatureCard) => {
+    if (feature.route) {
+      router.push(feature.route as any);
+    } else if (feature.action) {
+      feature.action();
+    } else {
+      Alert.alert(
+        feature.title,
+        `${feature.description}\n\nStatus: ${getStatusText(feature.status)}`
+      );
+    }
+  };
+
+  const renderFeatureCard = (feature: FeatureCard, index: number) => (
+    <MotiView
+      key={feature.id}
+      from={{ opacity: 0, translateY: 50 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{
+        type: 'timing',
+        duration: 600,
+        delay: index * 100,
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => handleFeaturePress(feature)}
+        style={[styles.featureCard, { backgroundColor: colors.card }]}
+      >
+        <View style={styles.featureHeader}>
+          <View style={[
+            styles.featureIcon,
+            { backgroundColor: getStatusColor(feature.status) + '20' }
+          ]}>
+            <Ionicons
+              name={feature.icon}
+              size={24}
+              color={getStatusColor(feature.status)}
+            />
+          </View>
+          
+          <View style={styles.featureInfo}>
+            <Text style={[styles.featureTitle, { color: colors.text }]}>
+              {feature.title}
+            </Text>
+            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
+              {feature.description}
+            </Text>
+          </View>
+          
+          {feature.route && (
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
+            />
+          )}
+        </View>
+        
+        <View style={styles.featureFooter}>
+          <View style={[
+            styles.statusBadge,
+            { backgroundColor: getStatusColor(feature.status) + '20' }
+          ]}>
+            <Ionicons
+              name={getStatusIcon(feature.status)}
+              size={14}
+              color={getStatusColor(feature.status)}
+            />
+            <Text style={[
+              styles.statusText,
+              { color: getStatusColor(feature.status) }
+            ]}>
+              {getStatusText(feature.status)}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </MotiView>
+  );
+
+  const renderStatsHeader = () => (
+    <Card style={styles.statsCard}>
+      <Text style={[styles.statsTitle, { color: colors.text }]}>
+        App Enhancement Summary
+      </Text>
+      
+      <View style={styles.statsGrid}>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.success }]}>
+            {features.filter(f => f.status === 'configured').length}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Active Features
+          </Text>
+        </View>
+        
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.info }]}>
+            {features.filter(f => f.status === 'available').length}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Ready to Use
+          </Text>
+        </View>
+        
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.warning }]}>
+            {features.filter(f => f.status === 'needs_setup').length}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Need Setup
+          </Text>
+        </View>
+      </View>
+      
+      <Text style={[styles.statsSubtitle, { color: colors.textSecondary }]}>
+        Your TownTap app has been enhanced with enterprise-level features for security,
+        performance, and user experience.
+      </Text>
+    </Card>
+  );
+
+  const renderQuickActions = () => (
+    <Card style={styles.actionsCard}>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        Quick Actions
+      </Text>
+      
+      <View style={styles.actionsGrid}>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.primary + '20' }]}
+          onPress={() => router.push('/dev/performance-monitor')}
+        >
+          <Ionicons name="analytics" size={20} color={colors.primary} />
+          <Text style={[styles.actionText, { color: colors.primary }]}>
+            Performance
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.warning + '20' }]}
+          onPress={() => router.push('/dev/security-audit')}
+        >
+          <Ionicons name="shield-checkmark" size={20} color={colors.warning} />
+          <Text style={[styles.actionText, { color: colors.warning }]}>
+            Security
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.success + '20' }]}
+          onPress={() => router.push('/settings/advanced')}
+        >
+          <Ionicons name="settings" size={20} color={colors.success} />
+          <Text style={[styles.actionText, { color: colors.success }]}>
+            Settings
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.info + '20' }]}
+          onPress={() => router.push('/profile/edit')}
+        >
+          <Ionicons name="person" size={20} color={colors.info} />
+          <Text style={[styles.actionText, { color: colors.info }]}>
+            Profile
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </Card>
+  );
+
+  return (
+    <LinearGradient
+      colors={[colors.background, colors.backgroundSecondary]}
+      style={styles.container}
+    >
+      <Stack.Screen
+        options={{
+          title: 'Enhanced Features',
+          headerBackTitle: 'Back',
+        }}
+      />
+
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Stats Header */}
+        {renderStatsHeader()}
+        
+        {/* Quick Actions */}
+        {renderQuickActions()}
+        
+        {/* Features List */}
+        <View style={styles.featuresSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Available Features
+          </Text>
+          
+          {features.map(renderFeatureCard)}
+        </View>
+        
+        {/* Additional Info */}
+        <Card style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <Ionicons name="information-circle" size={24} color={colors.info} />
+            <Text style={[styles.infoTitle, { color: colors.text }]}>
+              What's New?
+            </Text>
+          </View>
+          
+          <Text style={[styles.infoDescription, { color: colors.textSecondary }]}>
+            Your TownTap app now includes enterprise-grade features:
+            {"\n"}• Biometric authentication for secure access
+            {"\n"}• Real-time performance monitoring
+            {"\n"}• Security audit and issue tracking
+            {"\n"}• Smart image caching and optimization
+            {"\n"}• Enhanced user onboarding experience
+            {"\n"}• Comprehensive profile management
+          </Text>
+        </Card>
+      </ScrollView>
+    </LinearGradient>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: Spacing.md,
+  },
+  // Stats
+  statsCard: {
+    marginBottom: Spacing.md,
+    padding: Spacing.lg,
+  },
+  statsTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: Spacing.md,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  statsSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginTop: Spacing.sm,
+  },
+  // Quick Actions
+  actionsCard: {
+    marginBottom: Spacing.md,
+    padding: Spacing.md,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
+  },
+  actionButton: {
+    width: '48%',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  actionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: Spacing.xs,
+  },
+  // Features
+  featuresSection: {
+    marginBottom: Spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+  },
+  featureCard: {
+    marginBottom: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    ...Shadows.small,
+  },
+  featureHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.sm,
+  },
+  featureInfo: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  featureFooter: {
+    alignItems: 'flex-start',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  // Info Card
+  infoCard: {
+    padding: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: Spacing.sm,
+  },
+  infoDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});
