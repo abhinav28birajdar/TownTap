@@ -1,6 +1,4 @@
 module.exports = function (api) {
-  api.cache(true);
-  
   const isTest = api.env('test');
   
   if (isTest) {

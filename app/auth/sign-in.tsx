@@ -1,37 +1,36 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, router } from 'expo-router';
+import { AnimatePresence, MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Alert,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { MotiView, AnimatePresence } from 'moti';
 
 // Import our modern UI components
+import { Card } from '@/components/ui/Card';
 import { Text } from '@/components/ui/Text';
 import { Button, IconButton } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/Card';
-import { LoadingScreen } from '@/components/ui/loading-screen';
 
 // Import form validation
 import { useFormWithValidation } from '@/hooks/use-form-validation';
-import { signInSchema, SignInFormData } from '@/lib/validation-schemas';
+import { SignInFormData, signInSchema } from '@/lib/validation-schemas';
 
 // Import theme and auth
-import { useTheme, getThemeColors } from '@/hooks/use-theme';
-import { useAuth } from '@/contexts/auth-context';
-import { useBiometricAuth, useSecureStorage } from '@/lib/security-service';
-import { performanceMonitor } from '@/lib/performance-monitor';
 import { Gradients } from '@/constants/colors';
-import { BorderRadius, Shadows } from '@/constants/theme';
 import { Spacing } from '@/constants/spacing';
+import { Shadows } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
+import { getThemeColors, useTheme } from '@/hooks/use-theme';
+import { performanceMonitor } from '@/lib/performance-monitor';
+import { useBiometricAuth, useSecureStorage } from '@/lib/security-service';
 
 export default function SignInScreen() {
   const { signIn } = useAuth();
@@ -157,11 +156,6 @@ export default function SignInScreen() {
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
   return (
     <KeyboardAvoidingView
       style={styles.container}

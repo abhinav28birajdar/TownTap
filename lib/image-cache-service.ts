@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+import React from 'react';
 import { Image } from 'react-native';
 
 interface CacheItem {
@@ -20,8 +21,9 @@ interface CacheConfig {
 
 class ImageCacheService {
   private readonly CACHE_KEY = '@TownTap:image_cache';
-  private readonly CACHE_DIR = `${FileSystem.cacheDirectory}images/`;
-  
+  private readonly CACHE_DIR_NAME = 'images/';
+  private cacheDir: string = '';
+
   private config: CacheConfig = {
     maxCacheSize: 100, // 100MB
     maxAge: 168, // 7 days
@@ -40,6 +42,9 @@ class ImageCacheService {
     if (this.initialized) return;
 
     try {
+      // Set up cache directory path - use a simple approach
+      this.cacheDir = `${await this.getCacheDirectory()}${this.CACHE_DIR_NAME}`;
+      
       // Ensure cache directory exists
       await this.ensureCacheDirectory();
       
@@ -57,6 +62,14 @@ class ImageCacheService {
     } catch (error) {
       console.error('Failed to initialize ImageCacheService:', error);
     }
+  }
+
+  /**
+   * Get cache directory path
+   */
+  private async getCacheDirectory(): Promise<string> {
+    // Use a simple cache directory - this will work in the app's sandbox
+    return './cache/';
   }
 
   /**
@@ -138,7 +151,7 @@ class ImageCacheService {
   async clearCache(): Promise<void> {
     try {
       // Remove all cached files
-      await FileSystem.deleteAsync(this.CACHE_DIR, { idempotent: true });
+      await FileSystem.deleteAsync(this.cacheDir, { idempotent: true });
       
       // Clear cache index
       this.cache.clear();
@@ -163,9 +176,9 @@ class ImageCacheService {
   // Private methods
 
   private async ensureCacheDirectory(): Promise<void> {
-    const dirInfo = await FileSystem.getInfoAsync(this.CACHE_DIR);
+    const dirInfo = await FileSystem.getInfoAsync(this.cacheDir);
     if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(this.CACHE_DIR, { intermediates: true });
+      await FileSystem.makeDirectoryAsync(this.cacheDir, { intermediates: true });
     }
   }
 
@@ -193,7 +206,7 @@ class ImageCacheService {
     try {
       const extension = this.getFileExtension(uri);
       const filename = `${cacheKey}${extension}`;
-      const localPath = `${this.CACHE_DIR}${filename}`;
+      const localPath = `${this.cacheDir}${filename}`;
 
       // Download the image
       const downloadResult = await FileSystem.downloadAsync(uri, localPath);
@@ -207,7 +220,7 @@ class ImageCacheService {
           uri,
           localPath: downloadResult.uri,
           timestamp: Date.now(),
-          size: fileInfo.size || 0,
+          size: (fileInfo.exists && 'size' in fileInfo) ? fileInfo.size : 0,
           lastAccessed: Date.now(),
           downloadCount: 1,
         };
@@ -425,27 +438,20 @@ interface CachedImageProps {
   onError?: (error: any) => void;
 }
 
-export const CachedImage: React.FC<CachedImageProps> = React.memo(({
-  source,
-  style,
-  placeholder,
-  onLoad,
-  onError,
-}) => {
-  const { cachedUri, isLoading, error } = useCachedImage(source.uri);
+export const CachedImage = React.memo<CachedImageProps>(function CachedImage(props) {
+  const { source, style, placeholder, onLoad, onError } = props;
+  const { cachedUri, isLoading } = useCachedImage(source.uri);
 
   if (isLoading && placeholder) {
-    return <>{placeholder}</>;
+    return React.createElement(React.Fragment, null, placeholder);
   }
 
-  return (
-    <Image
-      source={{ uri: cachedUri || source.uri }}
-      style={style}
-      onLoad={onLoad}
-      onError={onError}
-    />
-  );
+  return React.createElement(Image, {
+    source: { uri: cachedUri || source.uri },
+    style: style,
+    onLoad: onLoad,
+    onError: onError
+  });
 });
 
 export default imageCacheService;
