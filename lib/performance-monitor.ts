@@ -239,6 +239,13 @@ class PerformanceMonitorService {
   }
 
   /**
+   * Get current metrics
+   */
+  async getMetrics(): Promise<PerformanceReport> {
+    return this.generateReport();
+  }
+
+  /**
    * Generate performance report
    */
   async generateReport(): Promise<PerformanceReport> {

@@ -148,7 +148,6 @@ export function useFormWithValidation<TSchema extends z.ZodType<any, any>>(
 }
 
 // Form field component wrapper for consistent styling and error handling
-import React from 'react';
 import { ViewStyle } from 'react-native';
 import { Input, InputProps } from '../components/ui/input';
 import { Text } from '../components/ui/Text';

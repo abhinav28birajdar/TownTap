@@ -195,10 +195,20 @@ export default function FeaturesOverviewScreen() {
           </View>
           
           <View style={styles.featureInfo}>
-            <Text style={[styles.featureTitle, { color: colors.text }]}>
+            <Text 
+              style={{
+                ...styles.featureTitle,
+                color: colors.text,
+              }}
+            >
               {feature.title}
             </Text>
-            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
+            <Text 
+              style={{
+                ...styles.featureDescription,
+                color: colors.textSecondary,
+              }}
+            >
               {feature.description}
             </Text>
           </View>
@@ -222,10 +232,12 @@ export default function FeaturesOverviewScreen() {
               size={14}
               color={getStatusColor(feature.status)}
             />
-            <Text style={[
-              styles.statusText,
-              { color: getStatusColor(feature.status) }
-            ]}>
+            <Text 
+              style={{
+                ...styles.statusText,
+                color: getStatusColor(feature.status),
+              }}
+            >
               {getStatusText(feature.status)}
             </Text>
           </View>
@@ -236,40 +248,72 @@ export default function FeaturesOverviewScreen() {
 
   const renderStatsHeader = () => (
     <Card style={styles.statsCard}>
-      <Text style={[styles.statsTitle, { color: colors.text }]}>
+      <Text 
+        style={{
+          ...styles.statsTitle,
+          color: colors.text,
+        }}
+      >
         App Enhancement Summary
       </Text>
       
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: colors.success }]}>
+          <Text 
+            style={{
+              ...styles.statNumber,
+              color: colors.success,
+            }}
+          >
             {features.filter(f => f.status === 'configured').length}
           </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+          <Text style={{
+            ...styles.statLabel,
+            color: colors.textSecondary
+          }}>
             Active Features
           </Text>
         </View>
         
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: colors.info }]}>
+          <Text 
+            style={{
+              ...styles.statNumber,
+              color: colors.info,
+            }}
+          >
             {features.filter(f => f.status === 'available').length}
           </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+          <Text style={{
+            ...styles.statLabel,
+            color: colors.textSecondary
+          }}>
             Ready to Use
           </Text>
         </View>
         
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: colors.warning }]}>
+          <Text 
+            style={{
+              ...styles.statNumber,
+              color: colors.warning,
+            }}
+          >
             {features.filter(f => f.status === 'needs_setup').length}
           </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+          <Text style={{
+            ...styles.statLabel,
+            color: colors.textSecondary
+          }}>
             Need Setup
           </Text>
         </View>
       </View>
       
-      <Text style={[styles.statsSubtitle, { color: colors.textSecondary }]}>
+      <Text style={{
+        ...styles.statsSubtitle,
+        color: colors.textSecondary
+      }}>
         Your TownTap app has been enhanced with enterprise-level features for security,
         performance, and user experience.
       </Text>
