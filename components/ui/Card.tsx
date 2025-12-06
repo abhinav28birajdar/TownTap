@@ -62,7 +62,7 @@ export const Card: React.FC<CardProps> = ({
       case 'elevated':
         baseStyle.backgroundColor = colors.card;
         baseStyle.borderWidth = 0;
-        Object.assign(baseStyle, Shadows.md);
+        Object.assign(baseStyle, Shadows.medium);
         break;
       case 'filled':
         baseStyle.backgroundColor = colors.surfaceSecondary;
@@ -71,7 +71,7 @@ export const Card: React.FC<CardProps> = ({
       default:
         baseStyle.backgroundColor = colors.card;
         baseStyle.borderWidth = 0;
-        Object.assign(baseStyle, Shadows.sm);
+        Object.assign(baseStyle, Shadows.small);
     }
     
     return baseStyle;

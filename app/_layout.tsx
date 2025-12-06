@@ -11,6 +11,8 @@ import 'react-native-url-polyfill/auto';
 import { useRealtime } from '@/hooks/use-realtime';
 import { apiKeyHelpers, apiKeyManager } from '@/lib/api-key-manager';
 import { notificationService } from '@/lib/notification-service';
+import { isAppConfigured } from '@/lib/secure-config-manager';
+import { initializeSupabase } from '@/lib/supabase';
 
 function RootLayoutNav() {
   const { session, profile, loading } = useAuth();
@@ -36,6 +38,30 @@ function RootLayoutNav() {
     const initializeServices = async () => {
       try {
         console.log('🚀 Initializing app services...');
+
+        // Check if app is configured
+        const configured = await isAppConfigured();
+        if (!configured) {
+          console.log('⚙️ App not configured, redirecting to config setup...');
+          if (mounted) {
+            setServicesInitialized(true);
+            router.replace('/config-setup');
+          }
+          return;
+        }
+
+        // Initialize Supabase with secure config
+        const supabaseReady = await initializeSupabase();
+        if (supabaseReady) {
+          console.log('✅ Supabase initialized');
+        } else {
+          console.warn('⚠️ Supabase initialization failed, redirecting to config...');
+          if (mounted) {
+            setServicesInitialized(true);
+            router.replace('/config-setup');
+          }
+          return;
+        }
 
         // Initialize API key manager
         const apiKeyInitialized = await apiKeyManager.initialize();

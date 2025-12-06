@@ -32,7 +32,7 @@ interface TextProps extends Omit<RNTextProps, 'style'> {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
-  style?: TextStyle;
+  style?: TextStyle | TextStyle[];
 }
 
 const getVariantStyle = (variant: TextVariant): TextStyle => {

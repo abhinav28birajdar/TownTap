@@ -4,13 +4,13 @@ import { Stack, router } from 'expo-router';
 import { AnimatePresence, MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Import our modern UI components
@@ -212,9 +212,7 @@ export default function SignInScreen() {
                   autoCapitalize="none"
                   autoComplete="email"
                   leftIcon="mail"
-                  error={form.isFieldInvalid('email')}
-                  helperText={form.getFieldError('email')}
-                  style={styles.input}
+                  error={form.isFieldInvalid('email') ? form.getFieldError('email') || 'Invalid email' : undefined}
                 />
 
                 {/* Password Input */}
@@ -228,9 +226,7 @@ export default function SignInScreen() {
                   leftIcon="lock-closed"
                   rightIcon={showPassword ? 'eye-off' : 'eye'}
                   onRightIconPress={() => setShowPassword(!showPassword)}
-                  error={form.isFieldInvalid('password')}
-                  helperText={form.getFieldError('password')}
-                  style={styles.input}
+                  error={form.isFieldInvalid('password') ? form.getFieldError('password') || 'Invalid password' : undefined}
                 />
 
                 {/* Remember Me & Forgot Password */}

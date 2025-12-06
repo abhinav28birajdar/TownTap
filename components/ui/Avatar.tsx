@@ -311,7 +311,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
               borderWidth: 2,
               borderColor: colors.background,
             },
-          ]}
+          ] as any}
         />
       ))}
       
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   badge: {
     position: 'absolute',
     borderWidth: 2,
-    ...Shadows.sm,
+    ...Shadows.small,
   },
   
   // Avatar Group Styles
@@ -383,12 +383,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   groupAvatar: {
-    ...Shadows.sm,
+    ...Shadows.small,
   },
   moreButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.sm,
+    ...Shadows.small,
   },
   moreText: {
     fontWeight: '600',

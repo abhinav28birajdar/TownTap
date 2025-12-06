@@ -37,7 +37,7 @@ export default function CustomerSearch() {
   const memoryOpt = useMemoryOptimization({
     autoCleanup: true,
     cleanupThreshold: 120, // MB
-    preloadLimit: memoryOpt?.shouldReduceQuality ? 5 : 10,
+    preloadLimit: 10,
   });
   
   // State for UI
@@ -340,7 +340,7 @@ export default function CustomerSearch() {
             style={styles.searchOverlay}
           >
             <View style={[styles.searchOverlayContent, { backgroundColor: colors.card }]}>
-              <LoadingScreen size="small" message="Updating results..." />
+              <LoadingScreen message="Updating results..." fullScreen={false} />
             </View>
           </MotiView>
         )}
@@ -527,6 +527,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
   },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  emptyStateMessage: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    maxWidth: 240,
+  },
   emptyStateText: {
     fontSize: 18,
     fontWeight: '600',
@@ -539,5 +560,66 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     maxWidth: 240,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+  },
+  headerContent: {
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
+    padding: 8,
+  },
+  categoriesContainer: {
+    paddingVertical: 16,
+  },
+  categoriesTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  categoriesScrollContainer: {
+    paddingHorizontal: 16,
+  },
+  categoryIcon: {
+    marginBottom: 4,
+  },
+  categoryName: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sortText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  resultsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  searchOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchOverlayContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
   },
 });

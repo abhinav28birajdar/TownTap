@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, AppStateStatus } from 'react-native';
-import { router } from 'expo-router';
+import React from 'react';
+import { AppState, AppStateStatus, NativeEventSubscription } from 'react-native';
 
 interface PerformanceMetric {
   name: string;
@@ -81,7 +81,8 @@ class PerformanceMonitorService {
   private routeStartTime = 0;
   private memoryWarningThreshold = 100; // MB
   private isMonitoring = false;
-  private memoryCheckInterval?: NodeJS.Timeout;
+  private memoryCheckInterval?: ReturnType<typeof setInterval>;
+  private appStateSubscription?: NativeEventSubscription;
 
   /**
    * Initialize performance monitoring
@@ -97,7 +98,7 @@ class PerformanceMonitorService {
       this.startMemoryMonitoring();
       
       // Listen for app state changes
-      AppState.addEventListener('change', this.handleAppStateChange);
+      this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
       
       this.isMonitoring = true;
       console.log('Performance monitoring initialized');
@@ -118,7 +119,9 @@ class PerformanceMonitorService {
       clearInterval(this.memoryCheckInterval);
     }
     
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    if (this.appStateSubscription) {
+      this.appStateSubscription.remove();
+    }
     
     // Save metrics before stopping
     this.saveMetrics();
@@ -224,8 +227,9 @@ class PerformanceMonitorService {
     try {
       // This is a simplified version - in a real app you'd use
       // native modules to get actual memory usage
-      const used = performance.memory?.usedJSHeapSize || 0;
-      const total = performance.memory?.totalJSHeapSize || 0;
+      const memory = (performance as any).memory;
+      const used = memory?.usedJSHeapSize || 0;
+      const total = memory?.totalJSHeapSize || 0;
       
       return {
         used: used / (1024 * 1024), // MB
@@ -439,12 +443,12 @@ export function withPerformanceTracking<T extends object>(
   WrappedComponent: React.ComponentType<T>,
   componentName?: string
 ): React.ComponentType<T> {
-  const PerformanceTrackedComponent = React.forwardRef<any, T>((props, ref) => {
+  const PerformanceTrackedComponent: React.FC<T> = (props) => {
     const name = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Unknown';
     usePerformanceTracking(name);
     
-    return <WrappedComponent {...props} ref={ref} />;
-  });
+    return React.createElement(WrappedComponent, props);
+  };
 
   PerformanceTrackedComponent.displayName = `withPerformanceTracking(${componentName || WrappedComponent.displayName || WrappedComponent.name})`;
   

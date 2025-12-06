@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
-import React, { useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
     Image,
     StyleSheet,
@@ -33,7 +33,7 @@ interface BusinessCardProps {
   onBook?: () => void;
 }
 
-export const BusinessCard: React.FC<BusinessCardProps> = ({
+const BusinessCardComponent: React.FC<BusinessCardProps> = ({
   business,
   onPress,
   distance,
@@ -77,7 +77,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
     return isOpen ? colors.success : colors.error;
   };
   
-  const getRatingStars = (rating: number) => {
+  const getRatingStars = useCallback((rating: number) => {
     return Array.from({ length: 5 }, (_, index) => {
       const filled = index < Math.floor(rating);
       const halfFilled = index === Math.floor(rating) && rating % 1 !== 0;
@@ -92,11 +92,15 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
         />
       );
     });
-  };
+  }, [colors.warning]);
   
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = useCallback(() => {
     toggleFavorite(business.id);
-  };
+  }, [business.id, toggleFavorite]);
+  
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
   
   if (variant === 'compact') {
     return (
@@ -105,7 +109,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
         size="sm"
         pressable
         onPress={onPress}
-        style={[styles.compactCard, style]}
+        style={style}
       >
         <View style={styles.compactContainer}>
           <View style={styles.compactImageContainer}>
@@ -113,7 +117,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
               <Image
                 source={{ uri: business.avatar_url }}
                 style={styles.compactImage}
-                onError={() => setImageError(true)}
+                onError={handleImageError}
               />
             ) : (
               <View style={[styles.compactImage, styles.placeholderImage]}>
@@ -160,14 +164,14 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
         size="lg"
         pressable
         onPress={onPress}
-        style={[styles.featuredCard, style]}
+        style={style}
       >
         <View style={styles.featuredImageContainer}>
           {business.avatar_url && !imageError ? (
             <Image
               source={{ uri: business.avatar_url }}
               style={styles.featuredImage}
-              onError={() => setImageError(true)}
+              onError={handleImageError}
             />
           ) : (
             <View style={[styles.featuredImage, styles.placeholderImage]}>
@@ -271,7 +275,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
       variant="default"
       pressable
       onPress={onPress}
-      style={[styles.defaultCard, style]}
+      style={style}
     >
       <View style={styles.defaultContainer}>
         <View style={styles.imageContainer}>
@@ -279,7 +283,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
             <Image
               source={{ uri: business.avatar_url }}
               style={styles.image}
-              onError={() => setImageError(true)}
+              onError={handleImageError}
             />
           ) : (
             <View style={[styles.image, styles.placeholderImage]}>
@@ -475,7 +479,7 @@ const styles = StyleSheet.create({
     right: -4,
     backgroundColor: 'white',
     borderRadius: BorderRadius.full,
-    ...Shadows.sm,
+    ...Shadows.small,
   },
   content: {
     flex: 1,
@@ -524,6 +528,18 @@ const styles = StyleSheet.create({
   bookButton: {
     marginTop: Spacing.sm,
   },
+});
+
+// Export memoized component for performance
+export const BusinessCard = memo(BusinessCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.business.id === nextProps.business.id &&
+    prevProps.business.avg_rating === nextProps.business.avg_rating &&
+    prevProps.business.total_reviews === nextProps.business.total_reviews &&
+    prevProps.distance === nextProps.distance &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.showBookButton === nextProps.showBookButton
+  );
 });
 
 export default BusinessCard;

@@ -19,8 +19,8 @@ import { performanceMonitor, usePerformanceTracking } from '@/lib/performance-mo
 import { SearchResult } from '@/lib/search-service';
 
 // Theme and constants
-import { Colors, Shadows } from '@/constants/colors';
 import { Spacing } from '@/constants/spacing';
+import { Shadows } from '@/constants/theme';
 import { getThemeColors, useTheme } from '@/hooks/use-theme';
 
 interface OptimizedBusinessListProps {
@@ -93,16 +93,13 @@ const BusinessListItem = memo<BusinessListItemProps>(({
       <BusinessCard
         business={item.business}
         onPress={handlePress}
-        showDistance={showDistance}
-        showReviews={showReviews}
-        showOpenStatus={showOpenStatus}
         style={styles.businessCard}
       />
       
       {/* Image loading indicator */}
-      {!imageLoaded && item.business.imageUrl && (
+      {!imageLoaded && item.business.avatar_url && (
         <View style={styles.imageLoadingOverlay}>
-          <ActivityIndicator size="small" color={Colors.primary[500]} />
+          <ActivityIndicator size="small" color="#3B82F6" />
         </View>
       )}
     </MotiView>
@@ -134,7 +131,7 @@ export const OptimizedBusinessList = memo<OptimizedBusinessListProps>(({
   const { trackInteraction } = usePerformanceTracking('OptimizedBusinessList');
   
   const flatListRef = useRef<FlatList>(null);
-  const flashListRef = useRef<FlashList<SearchResult>>(null);
+  const flashListRef = useRef<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewableItems, setViewableItems] = useState<SearchResult[]>([]);
 
@@ -144,7 +141,7 @@ export const OptimizedBusinessList = memo<OptimizedBusinessListProps>(({
       // Preload first few images
       const imagesToPreload = data
         .slice(0, 10)
-        .map(item => item.business.imageUrl)
+        .map(item => item.business.avatar_url)
         .filter(Boolean) as string[];
       
       if (imagesToPreload.length > 0) {
@@ -284,7 +281,6 @@ export const OptimizedBusinessList = memo<OptimizedBusinessListProps>(({
         data={optimizedData}
         renderItem={renderBusinessItem}
         keyExtractor={keyExtractor}
-        estimatedItemSize={estimatedItemSize}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         onViewableItemsChanged={handleViewableItemsChanged}
@@ -366,7 +362,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 12,
     padding: Spacing.xs,
-    ...Shadows.sm,
+    ...Shadows.small,
   },
   footerContainer: {
     flexDirection: 'row',
@@ -376,7 +372,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   footerText: {
-    color: Colors.gray[600],
+    color: '#6B7280',
   },
   emptyContainer: {
     flex: 1,
@@ -392,7 +388,7 @@ const styles = StyleSheet.create({
   },
   emptyMessage: {
     textAlign: 'center',
-    color: Colors.gray[600],
+    color: '#6B7280',
     lineHeight: 20,
   },
 });

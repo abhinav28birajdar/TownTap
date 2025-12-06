@@ -56,7 +56,7 @@ export const Button: React.FC<ButtonProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       minWidth: 44, // Accessibility minimum touch target
-      ...Shadows.sm,
+      ...Shadows.small,
     };
     
     if (fullWidth) {
@@ -82,7 +82,7 @@ export const Button: React.FC<ButtonProps> = ({
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderColor: colors.border,
-          ...Shadows.sm,
+          ...Shadows.small,
         };
       case 'ghost':
         return {
@@ -175,7 +175,7 @@ export const Button: React.FC<ButtonProps> = ({
                   color: getTextColor(),
                   fontSize: sizeConfig.fontSize,
                 },
-                textStyle,
+                ...(textStyle ? [textStyle] : []),
               ]}
               weight="medium"
             >
@@ -270,7 +270,7 @@ export const FloatingActionButton: React.FC<FABProps> = ({
     position: 'absolute',
     bottom: Spacing.lg,
     right: Spacing.lg,
-    ...Shadows.lg,
+    ...Shadows.large,
   };
   
   return (

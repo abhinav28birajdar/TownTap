@@ -1,9 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { performanceMonitor } from '@/lib/performance-monitor';
 import { imageCacheService } from '@/lib/image-cache-service';
+import { performanceMonitor } from '@/lib/performance-monitor';
 
 interface MemoryUsage {
   used: number;
@@ -259,7 +259,7 @@ export function withMemoryOptimization<T extends object>(
   WrappedComponent: React.ComponentType<T>,
   config?: Partial<MemoryOptimizationConfig>
 ) {
-  const MemoryOptimizedComponent = React.forwardRef<any, T>((props, ref) => {
+  const MemoryOptimizedComponent: React.FC<T> = (props) => {
     const memoryOpt = useMemoryOptimization(config);
     
     // Pass memory optimization utilities as props
@@ -268,8 +268,8 @@ export function withMemoryOptimization<T extends object>(
       memoryOptimization: memoryOpt,
     } as T & { memoryOptimization: ReturnType<typeof useMemoryOptimization> };
     
-    return <WrappedComponent {...enhancedProps} ref={ref} />;
-  });
+    return React.createElement(WrappedComponent, enhancedProps);
+  };
 
   MemoryOptimizedComponent.displayName = `withMemoryOptimization(${WrappedComponent.displayName || WrappedComponent.name})`;
   

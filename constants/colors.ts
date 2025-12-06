@@ -3,7 +3,7 @@
  * Includes comprehensive color palette for light and dark modes
  */
 
-export const Colors = {
+const BaseColors = {
   light: {
     // Primary brand colors
     primary: '#2563EB', // Blue 600
@@ -303,14 +303,11 @@ export const ExtendedColors = {
   },
 } as const;
 
-// Merge extended colors with main Colors for backward compatibility
-const ColorsWithExtended = {
-  ...Colors,
+// Merge extended colors with base colors for complete palette
+export const Colors = {
+  ...BaseColors,
   ...ExtendedColors,
 } as const;
-
-// Export the merged colors
-export { ColorsWithExtended as Colors };
 
 // Category Colors
 export const CategoryColors = {

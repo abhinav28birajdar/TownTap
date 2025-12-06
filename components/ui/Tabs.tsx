@@ -124,7 +124,7 @@ export const Tabs: React.FC<TabsProps> = ({
           backgroundColor: isActive ? colors.primary : colors.muted,
           borderRadius: BorderRadius.md,
           marginHorizontal: 2,
-          ...Shadows.sm,
+          ...Shadows.small,
         };
         tabTextColor = isActive ? colors.primaryForeground : colors.textSecondary;
         break;
