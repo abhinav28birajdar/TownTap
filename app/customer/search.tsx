@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 // Import modern components
-import { Button, LoadingScreen, SearchBar, Text } from '@/components/ui';
+import { LoadingScreen, SearchBar } from '@/components/ui';
 import { OptimizedBusinessList } from '@/components/ui/optimized-business-list';
 
 // Import hooks and services
@@ -22,16 +22,11 @@ import { performanceMonitor } from '@/lib/performance-monitor';
 import { SearchResult } from '@/lib/search-service';
 
 // Import theme and constants
-import { Colors } from '@/constants/colors';
-import { getThemeColors, useTheme } from '@/hooks/use-theme';
-
-// Import demo context for fallback
-import { useDemo } from '../../contexts/demo-context';
+import { Colors } from '@/constants/theme';
+import { useColors } from '@/contexts/theme-context';
 
 export default function CustomerSearch() {
-  const { colorScheme } = useTheme();
-  const colors = getThemeColors(colorScheme);
-  const { isDemo, demoCategories, demoBusinesses } = useDemo();
+  const colors = useColors();
   
   // Performance and memory optimization
   const memoryOpt = useMemoryOptimization({
@@ -41,9 +36,9 @@ export default function CustomerSearch() {
   });
   
   // State for UI
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [/* removed */, /* removed */] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [/* removed */, /* removed */] = useState(false);
   
   // Search hook with all the advanced features
   const search = useSearch({
@@ -66,27 +61,8 @@ export default function CustomerSearch() {
 
   // Results processing
   const displayResults = useMemo(() => {
-    if (search.results.length > 0) {
-      return search.results;
-    }
-    
-    // Fallback to demo data if no search results
-    if (isDemo && !search.query.trim()) {
-      return demoBusinesses.map((business: any) => ({
-        business: {
-          ...business,
-          averageRating: business.rating || 4.0,
-          reviewCount: business.review_count || Math.floor(Math.random() * 100) + 10,
-          isOpen: business.is_open !== false,
-          distance: search.userLocation ? Math.floor(Math.random() * 5000) + 500 : undefined,
-        },
-        relevanceScore: 85,
-        matchedFields: ['name'],
-      }));
-    }
-    
-    return [];
-  }, [search.results, isDemo, demoBusinesses, search.query, search.userLocation]);
+    return search.results;
+  }, [search.results]);
 
   // Handle business selection
   const handleBusinessPress = (result: SearchResult) => {
@@ -112,7 +88,7 @@ export default function CustomerSearch() {
 
   // Handle refresh
   const handleRefresh = async () => {
-    setRefreshing(true);
+    /* removed */(true);
     const startTime = Date.now();
     
     try {
@@ -127,7 +103,7 @@ export default function CustomerSearch() {
       console.error('Refresh error:', error);
       performanceMonitor.trackUserInteraction('refresh', 'search_screen', false);
     } finally {
-      setRefreshing(false);
+      /* removed */(false);
     }
   };
 
@@ -135,11 +111,11 @@ export default function CustomerSearch() {
   const handleCategoryFilter = (categoryId: string) => {
     const startTime = Date.now();
     
-    if (selectedCategory === categoryId) {
-      setSelectedCategory(null);
+    if (/* removed */ === categoryId) {
+      /* removed */(null);
       search.updateFilters({ category: undefined });
     } else {
-      setSelectedCategory(categoryId);
+      /* removed */(categoryId);
       search.updateFilters({ category: categoryId });
     }
     
@@ -164,18 +140,18 @@ export default function CustomerSearch() {
       animate={{ opacity: 1, scale: 1 }}
       style={styles.emptyStateContainer}
     >
-      <Text style={styles.emptyStateIcon}>🔍</Text>
-      <Text variant="title-medium" style={styles.emptyStateTitle}>
+      <ThemedText style={styles.emptyStateIcon}>🔍</ThemedText>
+      <ThemedText variant="title-medium" style={styles.emptyStateTitle}>
         {search.query.trim() ? 'No Results Found' : 'Start Your Search'}
-      </Text>
-      <Text variant="body-medium" style={styles.emptyStateMessage}>
+      </ThemedText>
+      <ThemedText variant="body-medium" style={styles.emptyStateMessage}>
         {search.query.trim() 
           ? 'Try adjusting your search terms or filters' 
           : 'Search for businesses, food, services and more'}
-      </Text>
+      </ThemedText>
       
       {!search.userLocation && (
-        <Button
+        <ThemedButton
           variant="outline"
           size="sm"
           onPress={search.requestLocation}
@@ -184,7 +160,7 @@ export default function CustomerSearch() {
           leftIcon="location"
         >
           Enable Location
-        </Button>
+        </ThemedButton>
       )}
     </MotiView>
   );
@@ -200,9 +176,9 @@ export default function CustomerSearch() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <View style={styles.headerContent}>
-          <Text variant="title-large" style={styles.headerTitle}>
+          <ThemedText variant="title-large" style={styles.headerTitle}>
             Search
-          </Text>
+          </ThemedText>
           
           {/* Header Actions */}
           <View style={styles.headerActions}>
@@ -245,9 +221,9 @@ export default function CustomerSearch() {
           animate={{ opacity: 1, translateY: 0 }}
           style={styles.categoriesContainer}
         >
-          <Text variant="title-small" style={styles.categoriesTitle}>
+          <ThemedText variant="title-small" style={styles.categoriesTitle}>
             Popular Categories
-          </Text>
+          </ThemedText>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -259,30 +235,30 @@ export default function CustomerSearch() {
                 style={[
                   styles.categoryChip,
                   {
-                    backgroundColor: selectedCategory === category.id 
+                    backgroundColor: /* removed */ === category.id 
                       ? category.color 
                       : colors.muted,
-                    borderColor: selectedCategory === category.id 
+                    borderColor: /* removed */ === category.id 
                       ? category.color 
                       : 'transparent',
                   }
                 ]}
                 onPress={() => handleCategoryFilter(category.id)}
               >
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
-                <Text
+                <ThemedText style={styles.categoryIcon}>{category.icon}</ThemedText>
+                <ThemedText
                   variant="body-small"
                   style={[
                     styles.categoryName,
                     {
-                      color: selectedCategory === category.id
+                      color: /* removed */ === category.id
                         ? colors.primaryForeground
                         : colors.foreground
                     }
                   ]}
                 >
                   {category.name}
-                </Text>
+                </ThemedText>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -296,14 +272,14 @@ export default function CustomerSearch() {
           animate={{ opacity: 1 }}
           style={styles.resultsHeader}
         >
-          <Text variant="body-medium" style={styles.resultsCount}>
+          <ThemedText variant="body-medium" style={styles.resultsCount}>
             {displayResults.length} {displayResults.length === 1 ? 'business' : 'businesses'} found
             {search.userLocation && ' nearby'}
-          </Text>
+          </ThemedText>
           
           {/* Sort Options */}
           <TouchableOpacity style={styles.sortButton}>
-            <Text variant="body-small" style={styles.sortText}>Sort</Text>
+            <ThemedText variant="body-small" style={styles.sortText}>Sort</ThemedText>
             <Ionicons name="chevron-down" size={16} color={colors.mutedForeground} />
           </TouchableOpacity>
         </MotiView>
@@ -315,7 +291,7 @@ export default function CustomerSearch() {
           data={displayResults}
           onBusinessPress={handleBusinessPress}
           onRefresh={handleRefresh}
-          refreshing={refreshing}
+          /* removed */={/* removed */}
           loading={search.isLoading}
           showDistance={!!search.userLocation}
           showReviews={true}

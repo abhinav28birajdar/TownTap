@@ -1,37 +1,26 @@
-import { Button } from '@/components/ui/button';
-import { DemoModeToggle } from '@/components/ui/demo-toggle';
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
-import { useDemo } from '@/contexts/demo-context';
+import { ThemedButton } from '@/components/ui/themed-button';
+import { ThemedText } from '@/components/ui/themed-text-enhanced';
+import { Spacing } from '@/constants/spacing';
+import { useColors } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 export default function WelcomeScreen() {
-  const { isDemo, setDemo } = useDemo();
+  const colors = useColors();
 
   const handleGetStarted = () => {
-    if (isDemo) {
-      setDemo(true);
-      router.replace('/(tabs)/home');
-    } else {
-      router.push('/auth/role-selection');
-    }
+    router.push('/auth/role-selection');
   };
 
   const handleSignIn = () => {
-    if (isDemo) {
-      setDemo(true);
-      router.replace('/(tabs)/home');
-    } else {
-      router.push('/auth/sign-in');
-    }
+    router.push('/auth/sign-in');
   };
 
   return (
     <LinearGradient
-      colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
+      colors={[colors.primary, colors.primaryDark, colors.secondary]}
       style={styles.container}
     >
       <ScrollView
@@ -39,11 +28,13 @@ export default function WelcomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>🏘️</Text>
-          <Text style={styles.appName}>TownTap</Text>
-          <Text style={styles.tagline}>
+          <ThemedText variant="displayLarge" style={styles.logo}>🏘️</ThemedText>
+          <ThemedText variant="displayMedium" color="inverse" weight="bold" style={styles.appName}>
+            TownTap
+          </ThemedText>
+          <ThemedText variant="titleLarge" color="inverse" style={styles.tagline}>
             Your Local Service Marketplace
-          </Text>
+          </ThemedText>
         </View>
 
         <View style={styles.features}>
@@ -69,21 +60,21 @@ export default function WelcomeScreen() {
           />
         </View>
 
-        <DemoModeToggle />
-
         <View style={styles.buttonContainer}>
-          <Button
-            title={isDemo ? "Enter Demo Mode" : "Get Started"}
+          <ThemedButton
+            title="Get Started"
             onPress={handleGetStarted}
             variant="secondary"
             size="large"
+            fullWidth
             style={styles.button}
           />
-          <Button
-            title={isDemo ? "Demo Dashboard" : "Sign In"}
+          <ThemedButton
+            title="Sign In"
             onPress={handleSignIn}
             variant="outline"
             size="large"
+            fullWidth
             style={styles.button}
           />
         </View>
@@ -94,8 +85,8 @@ export default function WelcomeScreen() {
 
 const FeatureItem = ({ emoji, text }: { emoji: string; text: string }) => (
   <View style={styles.featureItem}>
-    <Text style={styles.featureEmoji}>{emoji}</Text>
-    <Text style={styles.featureText}>{text}</Text>
+    <ThemedText variant="headlineMedium" style={styles.featureEmoji}>{emoji}</ThemedText>
+    <ThemedText variant="bodyLarge" color="inverse" style={styles.featureText}>{text}</ThemedText>
   </View>
 );
 

@@ -1,19 +1,18 @@
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
-import { useDemo } from '@/contexts/demo-context';
+import { useColors } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface Notification {
@@ -28,7 +27,7 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const { user } = useAuth();
-  const { isDemo } = useDemo();
+  const colors = useColors();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

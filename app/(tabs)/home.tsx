@@ -1,8 +1,7 @@
 import { BusinessCard } from '@/components/ui/business-card';
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
-import { useDemo } from '@/contexts/demo-context';
+import { useColors } from '@/contexts/theme-context';
 import { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +25,7 @@ type Category = Database['public']['Tables']['categories']['Row'];
 
 export default function HomeScreen() {
   const { user, profile } = useAuth();
-  const { isDemo, demoCategories, demoBusinesses, currentUser } = useDemo();
+  const colors = useColors();
   const { selectedCategory: paramCategory } = useLocalSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -39,16 +38,9 @@ export default function HomeScreen() {
   } | null>(null);
 
   useEffect(() => {
-    if (isDemo) {
-      setCategories(demoCategories);
-      setBusinesses(demoBusinesses);
-      setLoading(false);
-      return;
-    }
-    
     requestLocationPermission();
     loadData();
-  }, [isDemo]);
+  }, []);
 
   const requestLocationPermission = async () => {
     try {
@@ -66,14 +58,6 @@ export default function HomeScreen() {
   };
 
   const loadData = async () => {
-    if (isDemo) {
-      setCategories(demoCategories);
-      setBusinesses(demoBusinesses);
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
-    
     try {
       await Promise.all([loadCategories(), loadBusinesses()]);
     } catch (error) {

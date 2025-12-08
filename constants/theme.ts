@@ -255,6 +255,47 @@ export const Breakpoints = {
 } as const;
 
 /**
+ * Font sizes - convenience export matching Typography.sizes
+ */
+export const FontSize = Typography.sizes;
+
+/**
+ * Legacy Colors export - prefer useColors() hook from theme-context
+ * This provides basic colors for non-component usage
+ */
+export const Colors = {
+  light: {
+    primary: '#2563eb',
+    background: '#ffffff',
+    card: '#ffffff',
+    text: '#111827',
+    border: '#e5e7eb',
+    notification: '#ef4444',
+    textSecondary: '#6b7280',
+  },
+  dark: {
+    primary: '#3b82f6',
+    background: '#111827',
+    card: '#1f2937',
+    text: '#f9fafb',
+    border: '#374151',
+    notification: '#f87171',
+    textSecondary: '#9ca3af',
+  },
+} as const;
+
+/**
+ * Gradients for backgrounds
+ */
+export const Gradients = {
+  primary: ['#2563eb', '#1e40af'],
+  secondary: ['#7c3aed', '#6d28d9'],
+  accent: ['#f59e0b', '#d97706'],
+  success: ['#10b981', '#059669'],
+  error: ['#ef4444', '#dc2626'],
+} as const;
+
+/**
  * Animation durations and easing
  */
 export const Animation = {

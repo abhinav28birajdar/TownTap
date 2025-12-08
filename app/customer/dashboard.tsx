@@ -1,3 +1,4 @@
+import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -13,7 +14,6 @@ import {
     View
 } from 'react-native';
 import { useAuth } from '../../contexts/auth-context';
-import { useDemo } from '../../contexts/demo-context';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -55,8 +55,9 @@ const recentBookings = [
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
-  const { isDemo, demoBookings, demoBusinesses } = useDemo();
+  const colors = useColors();
   const [greeting, setGreeting] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -65,7 +66,7 @@ export default function CustomerDashboard() {
     else setGreeting('Good Evening');
   }, []);
 
-  const displayBookings = isDemo ? demoBookings.slice(0, 2) : recentBookings;
+  const displayBookings = recentBookings;
 
   const handleQuickAction = (route: string) => {
     router.push(route as any);

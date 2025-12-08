@@ -5,7 +5,7 @@
 export { Button, FloatingActionButton, IconButton } from './button';
 export { Card, CardActions, CardContent, CardFooter, CardHeader } from './Card';
 export { Input, SearchInput, TextArea } from './input';
-export { LoadingDots, LoadingScreen, LoadingSkeleton, LoadingSpinner } from './loading-screen';
+export { default as LoadingScreen } from './loading-screen';
 export { Text } from './Text';
 
 // Enhanced Business Components
@@ -23,17 +23,25 @@ export { SimpleTabs, TabPanel, Tabs } from './Tabs';
 export { Avatar, AvatarGroup } from './Avatar';
 export { Badge, BadgeGroup, NotificationBadge, StatusBadge } from './Badge';
 
+// Modern Themed Components (New)
+export { ThemedButton } from './themed-button';
+export { ThemedCard } from './themed-card';
+export { ThemedInput } from './themed-input';
+export { ThemedText } from './themed-text-enhanced';
+
+// Utility Components
+export { ErrorBoundary } from './error-boundary-enhanced';
+export { OfflineIndicator } from './offline-indicator';
+export { SkeletonLoader } from './skeleton-loader';
+
 // Legacy components (to be migrated)
-export { default as Collapsible } from './collapsible';
-export { DemoToggle } from './demo-toggle';
+export { Collapsible, CollapsibleProps } from './collapsible';
 
 // Icon Symbol exports (iOS specific)
 export { IconSymbol } from './icon-symbol';
 
 // Type exports for convenience
-export type { ButtonProps } from './button';
-export type { CardProps } from './Card';
-export type { InputProps } from './input';
+// Note: Component props are exported with components
 
 /* 
  * Component Usage Examples:

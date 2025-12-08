@@ -1,3 +1,5 @@
+import { useAuth } from '@/contexts/auth-context';
+import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -11,7 +13,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { useDemo } from '../../contexts/demo-context';
 
 type BookingStatus = 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
 
@@ -44,31 +45,17 @@ const statusIcons = {
 };
 
 export default function CustomerBookings() {
-  const { isDemo, demoBookings } = useDemo();
+  const { user } = useAuth();
+  const colors = useColors();
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In demo mode, use demo data, otherwise fetch from API
-    if (isDemo) {
-      // Transform demo bookings to match Booking interface
-      const transformedBookings = demoBookings.map((booking: any) => ({
-        id: booking.id,
-        service: booking.service_id || 'Demo Service',
-        business: 'Demo Business',
-        date: booking.scheduled_for || new Date().toISOString(),
-        time: '10:00 AM',
-        status: booking.status,
-        price: booking.price || 100,
-        address: '123 Demo Street',
-        rating: 5
-      }));
-      setBookings(transformedBookings as Booking[]);
-    } else {
-      // Fetch real bookings from API
+    if (user) {
       fetchBookings();
     }
-  }, [isDemo]);
+  }, [user]);
 
   const fetchBookings = async () => {
     // API call would go here

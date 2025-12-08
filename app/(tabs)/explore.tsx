@@ -1,37 +1,47 @@
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
-import { useDemo } from '@/contexts/demo-context';
+import { Spacing } from '@/constants/spacing';
+import { useColors } from '@/contexts/theme-context';
+import { Database } from '@/lib/database.types';
+import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
-export default function ExploreScreen() {
-  const { isDemo, demoCategories } = useDemo();
-  const [searchQuery, setSearchQuery] = useState('');
+type Category = Database['public']['Tables']['categories']['Row'];
 
-  const categories = isDemo ? [
-    { id: 'all', name: 'All', icon: 'apps' },
-    ...demoCategories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      icon: cat.icon || 'briefcase'
-    }))
-  ] : [
-    { id: '1', name: 'All', icon: 'apps' },
-    { id: '2', name: 'Carpenter', icon: 'hammer' },
-    { id: '3', name: 'Plumber', icon: 'water' },
-    { id: '4', name: 'Electrician', icon: 'flash' },
-    { id: '5', name: 'Gardener', icon: 'leaf' },
-    { id: '6', name: 'Cleaner', icon: 'sparkles' },
-  ];
+export default function ExploreScreen() {
+  const colors = useColors();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCategoryPress = (categoryId: string) => {
     // Navigate to home with selected category

@@ -13,27 +13,21 @@ import {
 } from 'react-native';
 
 // Import our modern UI components
-import { Card } from '@/components/ui/Card';
-import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ThemedButton, ThemedCard, ThemedInput, ThemedText } from '@/components/ui';
 
 // Import form validation
 import { useFormWithValidation } from '@/hooks/use-form-validation';
 import { SignUpFormData, signUpSchema } from '@/lib/validation-schemas';
 
 // Import theme and auth
-import { Gradients } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
-import { Shadows } from '@/constants/theme';
+import { Gradients, Shadows, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { getThemeColors, useTheme } from '@/hooks/use-theme';
+import { useColors } from '@/contexts/theme-context';
 
 export default function SignUpScreen() {
   const { role } = useLocalSearchParams<{ role: string }>();
   const { signUp } = useAuth();
-  const { colorScheme } = useTheme();
-  const colors = getThemeColors(colorScheme);
+  const colors = useColors();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -79,7 +73,7 @@ export default function SignUpScreen() {
         options={{
           title: 'Create Account',
           headerTransparent: true,
-          headerTintColor: colors.primaryForeground,
+          headerTintColor: colors.textInverse,
         }}
       />
 
@@ -98,26 +92,26 @@ export default function SignUpScreen() {
             transition={{ type: 'spring', delay: 200 }}
             style={styles.header}
           >
-            <Text style={styles.logo}>🏘️</Text>
-            <Text variant="display-small" style={styles.title}>
+            <ThemedText style={styles.logo}>🏘️</ThemedText>
+            <ThemedText variant="display-small" style={styles.title}>
               Create Account
-            </Text>
-            <Text variant="body-large" style={styles.subtitle}>
+            </ThemedText>
+            <ThemedText variant="body-large" style={styles.subtitle}>
               Join TownTap as {userRole === 'business_owner' ? 'Business Owner' : 'Customer'}
-            </Text>
+            </ThemedText>
           </MotiView>
 
-          {/* Modern Form Card */}
+          {/* Modern Form ThemedCard */}
           <MotiView
             from={{ opacity: 0, translateY: 50 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'spring', delay: 400 }}
           >
-            <Card variant="elevated" style={styles.formCard}>
+            <ThemedCard variant="elevated" style={styles.formCard}>
               <View style={styles.form}>
                 {/* Name Fields */}
                 <View style={styles.nameRow}>
-                  <Input
+                  <ThemedInput
                     label="First Name"
                     placeholder="John"
                     value={form.watch('firstName')}
@@ -129,7 +123,7 @@ export default function SignUpScreen() {
                     style={[styles.input, styles.nameInput]}
                   />
                   
-                  <Input
+                  <ThemedInput
                     label="Last Name"
                     placeholder="Doe"
                     value={form.watch('lastName')}
@@ -142,8 +136,8 @@ export default function SignUpScreen() {
                   />
                 </View>
 
-                {/* Email Input */}
-                <Input
+                {/* Email ThemedInput */}
+                <ThemedInput
                   label="Email Address"
                   placeholder="john.doe@example.com"
                   value={form.watch('email')}
@@ -158,8 +152,8 @@ export default function SignUpScreen() {
                   style={styles.input}
                 />
 
-                {/* Phone Input */}
-                <Input
+                {/* Phone ThemedInput */}
+                <ThemedInput
                   label="Phone Number (Optional)"
                   placeholder="(555) 123-4567"
                   value={form.watch('phone')}
@@ -174,7 +168,7 @@ export default function SignUpScreen() {
                 />
 
                 {/* Password Fields */}
-                <Input
+                <ThemedInput
                   label="Password"
                   placeholder="Create a strong password"
                   value={form.watch('password')}
@@ -189,7 +183,7 @@ export default function SignUpScreen() {
                   style={styles.input}
                 />
 
-                <Input
+                <ThemedInput
                   label="Confirm Password"
                   placeholder="Confirm your password"
                   value={form.watch('confirmPassword')}
@@ -215,20 +209,20 @@ export default function SignUpScreen() {
                       form.watch('termsAccepted') && styles.checkboxChecked
                     ]}>
                       {form.watch('termsAccepted') && (
-                        <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
+                        <Ionicons name="checkmark" size={12} color={colors.textInverse} />
                       )}
                     </View>
-                    <Text variant="body-small" style={styles.checkboxText}>
+                    <ThemedText variant="body-small" style={styles.checkboxText}>
                       I agree to the{' '}
-                      <Text style={styles.linkText}>Terms of Service</Text>
+                      <ThemedText style={styles.linkText}>Terms of Service</ThemedText>
                       {' '}and{' '}
-                      <Text style={styles.linkText}>Privacy Policy</Text>
-                    </Text>
+                      <ThemedText style={styles.linkText}>Privacy Policy</ThemedText>
+                    </ThemedText>
                   </TouchableOpacity>
                   {form.isFieldInvalid('termsAccepted') && (
-                    <Text variant="body-small" style={styles.errorText}>
+                    <ThemedText variant="body-small" style={styles.errorText}>
                       {form.getFieldError('termsAccepted')}
-                    </Text>
+                    </ThemedText>
                   )}
                 </View>
 
@@ -242,16 +236,16 @@ export default function SignUpScreen() {
                     form.watch('marketingOptIn') && styles.checkboxChecked
                   ]}>
                     {form.watch('marketingOptIn') && (
-                      <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
+                      <Ionicons name="checkmark" size={12} color={colors.textInverse} />
                     )}
                   </View>
-                  <Text variant="body-small" style={styles.checkboxText}>
+                  <ThemedText variant="body-small" style={styles.checkboxText}>
                     Send me updates and promotional offers
-                  </Text>
+                  </ThemedText>
                 </TouchableOpacity>
 
-                {/* Sign Up Button */}
-                <Button
+                {/* Sign Up ThemedButton */}
+                <ThemedButton
                   variant="primary"
                   size="lg"
                   onPress={() => form.submitWithToast(handleSignUp)}
@@ -259,21 +253,21 @@ export default function SignUpScreen() {
                   style={styles.signUpButton}
                 >
                   {form.isSubmitting ? 'Creating Account...' : 'Create Account'}
-                </Button>
+                </ThemedButton>
 
                 {/* Sign In Link */}
                 <View style={styles.signInContainer}>
-                  <Text variant="body-medium" style={styles.signInText}>
+                  <ThemedText variant="body-medium" style={styles.signInText}>
                     Already have an account?{' '}
-                  </Text>
+                  </ThemedText>
                   <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-                    <Text variant="body-medium" style={styles.signInLink}>
+                    <ThemedText variant="body-medium" style={styles.signInLink}>
                       Sign In
-                    </Text>
+                    </ThemedText>
                   </TouchableOpacity>
                 </View>
               </View>
-            </Card>
+            </ThemedCard>
           </MotiView>
         </ScrollView>
       </LinearGradient>

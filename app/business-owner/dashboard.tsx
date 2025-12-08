@@ -1,3 +1,4 @@
+import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -13,7 +14,6 @@ import {
     View,
 } from 'react-native';
 import { useAuth } from '../../contexts/auth-context';
-import { useDemo } from '../../contexts/demo-context';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -37,9 +37,10 @@ const businessStats = {
 
 export default function BusinessOwnerDashboard() {
   const { user } = useAuth();
-  const { isDemo } = useDemo();
+  const colors = useColors();
   const [greeting, setGreeting] = useState('');
   const [businessName, setBusinessName] = useState('QuickFix Services');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const hour = new Date().getHours();

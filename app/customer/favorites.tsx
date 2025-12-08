@@ -1,8 +1,12 @@
+import { useAuth } from '@/contexts/auth-context';
+import { useColors } from '@/contexts/theme-context';
+import { Database } from '@/lib/database.types';
+import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     FlatList,
     SafeAreaView,
@@ -11,11 +15,36 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { useDemo } from '../../contexts/demo-context';
+
+type Business = Database['public']['Tables']['businesses']['Row'];
 
 export default function CustomerFavorites() {
-  const { isDemo, demoBusinesses } = useDemo();
-  const [favorites, setFavorites] = useState(demoBusinesses.slice(0, 4)); // Demo favorites
+  const { user } = useAuth();
+  const colors = useColors();
+  const [favorites, setFavorites] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadFavorites();
+    }
+  }, [user]);
+
+  const loadFavorites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*, business:businesses(*)')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setFavorites(data?.map(f => f.business) || []);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRemoveFromFavorites = (businessId: number) => {
     setFavorites((prev: any[]) => prev.filter((business: any) => business.id !== businessId));

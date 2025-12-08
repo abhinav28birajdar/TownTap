@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, AppStateStatus, NativeEventSubscription } from 'react-native';
 
 import { imageCacheService } from '@/lib/image-cache-service';
 import { performanceMonitor } from '@/lib/performance-monitor';
@@ -36,16 +36,18 @@ export function useMemoryOptimization(config: Partial<MemoryOptimizationConfig> 
   
   const [memoryUsage, setMemoryUsage] = useState<MemoryUsage | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const cleanupIntervalRef = useRef<NodeJS.Timeout>();
+  const cleanupIntervalRef = useRef<ReturnType<typeof setInterval>>();
   const lastCleanupRef = useRef(0);
+  const appStateSubscription = useRef<NativeEventSubscription>();
 
   // Get current memory usage
   const getMemoryUsage = useCallback(async (): Promise<MemoryUsage | null> => {
     try {
       // Use performance.memory if available (Chrome DevTools)
-      if (typeof performance !== 'undefined' && performance.memory) {
-        const used = performance.memory.usedJSHeapSize / (1024 * 1024);
-        const total = performance.memory.totalJSHeapSize / (1024 * 1024);
+      const memory = (performance as any).memory;
+      if (typeof performance !== 'undefined' && memory) {
+        const used = memory.usedJSHeapSize / (1024 * 1024);
+        const total = memory.totalJSHeapSize / (1024 * 1024);
         const available = total - used;
         const percentage = (used / total) * 100;
 
@@ -181,7 +183,7 @@ export function useMemoryOptimization(config: Partial<MemoryOptimizationConfig> 
     };
 
     // Check memory every 30 seconds
-    cleanupIntervalRef.current = setInterval(checkMemory, 30000);
+    cleanupIntervalRef.current = setInterval(checkMemory, 30000) as any;
     
     // Initial check
     checkMemory();
@@ -221,13 +223,15 @@ export function useMemoryOptimization(config: Partial<MemoryOptimizationConfig> 
   // Initialize monitoring
   useEffect(() => {
     startMemoryMonitoring();
-    AppState.addEventListener('change', handleAppStateChange);
+    appStateSubscription.current = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
       if (cleanupIntervalRef.current) {
         clearInterval(cleanupIntervalRef.current);
       }
-      AppState.removeEventListener('change', handleAppStateChange);
+      if (appStateSubscription.current) {
+        appStateSubscription.current.remove();
+      }
     };
   }, [startMemoryMonitoring, handleAppStateChange]);
 

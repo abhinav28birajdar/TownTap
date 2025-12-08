@@ -1,8 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/colors';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
-import { useDemo } from '@/contexts/demo-context';
+import { useColors } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,30 +19,18 @@ import {
 
 export default function ProfileScreen() {
   const { user, profile, signOut, updateProfile } = useAuth();
-  const { isDemo, currentUser, setCurrentUser } = useDemo();
+  const colors = useColors();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fullName, setFullName] = useState((isDemo ? currentUser?.full_name : profile?.full_name) || '');
-  const [phone, setPhone] = useState((isDemo ? currentUser?.phone : profile?.phone) || '');
+  const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      
-      if (isDemo) {
-        // Update demo user
-        setCurrentUser({
-          ...currentUser,
-          full_name: fullName,
-          phone: phone
-        });
-        setIsEditing(false);
-        Alert.alert('Success', 'Demo profile updated successfully');
-      } else {
-        await updateProfile({ full_name: fullName, phone });
-        setIsEditing(false);
-        Alert.alert('Success', 'Profile updated successfully');
-      }
+      await updateProfile({ full_name: fullName, phone });
+      setIsEditing(false);
+      Alert.alert('Success', 'Profile updated successfully');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update profile');
     } finally {
