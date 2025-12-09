@@ -35,7 +35,7 @@ export { OfflineIndicator } from './offline-indicator';
 export { SkeletonLoader } from './skeleton-loader';
 
 // Legacy components (to be migrated)
-export { Collapsible, CollapsibleProps } from './collapsible';
+export { Collapsible } from './collapsible';
 
 // Icon Symbol exports (iOS specific)
 export { IconSymbol } from './icon-symbol';

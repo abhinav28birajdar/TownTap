@@ -3,12 +3,12 @@ import { Stack, router } from 'expo-router';
 import { MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Import our modern UI components
@@ -122,9 +122,9 @@ export default function ForgotPasswordScreen() {
                       autoCapitalize="none"
                       autoComplete="email"
                       leftIcon="mail"
-                      error={form.isFieldInvalid('email')}
-                      helperText={form.getFieldError('email')}
-                      style={styles.input}
+                      error={form.isFieldInvalid('email') ? form.getFieldError('email') || 'Invalid email' : undefined}
+                      hint={form.getFieldError('email')}
+                      containerStyle={styles.input}
                     />
 
                     <Button

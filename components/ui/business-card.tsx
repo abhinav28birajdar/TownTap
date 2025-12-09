@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React, { memo, useCallback, useState } from 'react';
 import {
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 import { SemanticColors } from '../../constants/colors';
 import { Spacing } from '../../constants/spacing';
@@ -135,7 +135,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
               {business.name}
             </Text>
             <View style={styles.compactRating}>
-              {getRatingStars(business.avg_rating)}
+              {getRatingStars(business.rating || 0)}
               <Text variant="body-small" color="textSecondary">
                 ({business.total_reviews})
               </Text>
@@ -233,9 +233,9 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
           
           <View style={styles.featuredMetrics}>
             <View style={styles.ratingContainer}>
-              {getRatingStars(business.avg_rating)}
+              {getRatingStars(business.rating || 0)}
               <Text variant="body-small" weight="semibold">
-                {business.avg_rating.toFixed(1)}
+                {(business.rating || 0).toFixed(1)}
               </Text>
               <Text variant="body-small" color="textSecondary">
                 ({business.total_reviews} reviews)
@@ -341,9 +341,9 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
 
           <View style={styles.footer}>
             <View style={styles.ratingContainer}>
-              {getRatingStars(business.avg_rating)}
+              {getRatingStars(business.rating || 0)}
               <Text variant="body-small" weight="semibold">
-                {business.avg_rating.toFixed(1)}
+                {(business.rating || 0).toFixed(1)}
               </Text>
               <Text variant="body-small" color="textSecondary">
                 ({business.total_reviews})
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
 export const BusinessCard = memo(BusinessCardComponent, (prevProps, nextProps) => {
   return (
     prevProps.business.id === nextProps.business.id &&
-    prevProps.business.avg_rating === nextProps.business.avg_rating &&
+    prevProps.business.rating === nextProps.business.rating &&
     prevProps.business.total_reviews === nextProps.business.total_reviews &&
     prevProps.distance === nextProps.distance &&
     prevProps.variant === nextProps.variant &&

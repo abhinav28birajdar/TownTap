@@ -1,4 +1,6 @@
+import { Button } from '@/components/ui';
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Colors, FontSize } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useColors } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
@@ -7,14 +9,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function ProfileScreen() {
@@ -128,8 +130,8 @@ export default function ProfileScreen() {
           onPress={pickImage}
           disabled={!isEditing}
         >
-          {((isDemo ? currentUser?.avatar_url : profile?.avatar_url)) ? (
-            <Image source={{ uri: (isDemo ? currentUser?.avatar_url : profile?.avatar_url) || '' }} style={styles.avatar} />
+          {((profile?.avatar_url)) ? (
+            <Image source={{ uri: (profile?.avatar_url) || '' }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Ionicons name="person" size={48} color={Colors.textLight} />
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: Colors.primary,
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     fontWeight: '600',
   },
   header: {
@@ -319,13 +321,13 @@ const styles = StyleSheet.create({
     borderColor: Colors.card,
   },
   name: {
-    fontSize: FontSize.xxl,
+    fontSize: FontSize['2xl'],
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
   },
   email: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.textSecondary,
     marginBottom: Spacing.sm,
   },
@@ -348,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   label: {
-    fontSize: FontSize.sm,
+    fontSize: FontSize.base,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: Spacing.xs,
@@ -357,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.text,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: FontSize.sm,
+    fontSize: FontSize.base,
     fontWeight: '600',
     color: Colors.textSecondary,
     paddingHorizontal: Spacing.lg,
@@ -392,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.text,
     marginLeft: Spacing.md,
   },
@@ -407,7 +409,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
   },
   signOutText: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.error,
     fontWeight: '600',
     marginLeft: Spacing.sm,

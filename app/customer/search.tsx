@@ -4,15 +4,15 @@ import { StatusBar } from 'expo-status-bar';
 import { AnimatePresence, MotiView } from 'moti';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Import modern components
-import { LoadingScreen, SearchBar } from '@/components/ui';
+import { LoadingScreen, SearchBar, ThemedButton, ThemedText } from '@/components/ui';
 import { OptimizedBusinessList } from '@/components/ui/optimized-business-list';
 
 // Import hooks and services
@@ -22,11 +22,12 @@ import { performanceMonitor } from '@/lib/performance-monitor';
 import { SearchResult } from '@/lib/search-service';
 
 // Import theme and constants
-import { Colors } from '@/constants/theme';
 import { useColors } from '@/contexts/theme-context';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function CustomerSearch() {
   const colors = useColors();
+  const colorScheme = useColorScheme();
   
   // Performance and memory optimization
   const memoryOpt = useMemoryOptimization({
@@ -36,9 +37,10 @@ export default function CustomerSearch() {
   });
   
   // State for UI
-  const [/* removed */, /* removed */] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
-  const [/* removed */, /* removed */] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Search hook with all the advanced features
   const search = useSearch({
@@ -88,7 +90,7 @@ export default function CustomerSearch() {
 
   // Handle refresh
   const handleRefresh = async () => {
-    /* removed */(true);
+    setRefreshing(true);
     const startTime = Date.now();
     
     try {
@@ -103,7 +105,7 @@ export default function CustomerSearch() {
       console.error('Refresh error:', error);
       performanceMonitor.trackUserInteraction('refresh', 'search_screen', false);
     } finally {
-      /* removed */(false);
+      setRefreshing(false);
     }
   };
 
@@ -111,11 +113,11 @@ export default function CustomerSearch() {
   const handleCategoryFilter = (categoryId: string) => {
     const startTime = Date.now();
     
-    if (/* removed */ === categoryId) {
-      /* removed */(null);
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
       search.updateFilters({ category: undefined });
     } else {
-      /* removed */(categoryId);
+      setSelectedCategory(categoryId);
       search.updateFilters({ category: categoryId });
     }
     
@@ -125,12 +127,12 @@ export default function CustomerSearch() {
 
   // Popular categories for quick access
   const popularCategories = [
-    { id: 'restaurant', name: 'Restaurants', icon: '🍽️', color: Colors.orange[500] },
-    { id: 'coffee', name: 'Coffee', icon: '☕', color: Colors.amber[600] },
-    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: Colors.pink[500] },
-    { id: 'beauty', name: 'Beauty', icon: '💄', color: Colors.purple[500] },
-    { id: 'fitness', name: 'Fitness', icon: '💪', color: Colors.green[500] },
-    { id: 'entertainment', name: 'Fun', icon: '🎬', color: Colors.blue[500] },
+    { id: 'restaurant', name: 'Restaurants', icon: '🍽️', color: colors.warning[500] },
+    { id: 'coffee', name: 'Coffee', icon: '☕', color: colors.warning[600] },
+    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: colors.error[500] },
+    { id: 'beauty', name: 'Beauty', icon: '💄', color: colors.primary[500] },
+    { id: 'fitness', name: 'Fitness', icon: '💪', color: colors.success[500] },
+    { id: 'entertainment', name: 'Fun', icon: '🎬', color: colors.info[500] },
   ];
 
   // Empty state
@@ -141,10 +143,10 @@ export default function CustomerSearch() {
       style={styles.emptyStateContainer}
     >
       <ThemedText style={styles.emptyStateIcon}>🔍</ThemedText>
-      <ThemedText variant="title-medium" style={styles.emptyStateTitle}>
+      <ThemedText variant="titleMedium" style={styles.emptyStateTitle}>
         {search.query.trim() ? 'No Results Found' : 'Start Your Search'}
       </ThemedText>
-      <ThemedText variant="body-medium" style={styles.emptyStateMessage}>
+      <ThemedText variant="bodyMedium" style={styles.emptyStateMessage}>
         {search.query.trim() 
           ? 'Try adjusting your search terms or filters' 
           : 'Search for businesses, food, services and more'}
@@ -153,13 +155,15 @@ export default function CustomerSearch() {
       {!search.userLocation && (
         <ThemedButton
           variant="outline"
-          size="sm"
+          size="small"
           onPress={search.requestLocation}
           loading={search.isLoadingLocation}
           style={styles.locationButton}
-          leftIcon="location"
         >
-          Enable Location
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="location" size={16} color={colors.text} />
+            <ThemedText>Enable Location</ThemedText>
+          </View>
         </ThemedButton>
       )}
     </MotiView>
@@ -176,7 +180,7 @@ export default function CustomerSearch() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <View style={styles.headerContent}>
-          <ThemedText variant="title-large" style={styles.headerTitle}>
+          <ThemedText variant="titleLarge" style={styles.headerTitle}>
             Search
           </ThemedText>
           
@@ -186,14 +190,14 @@ export default function CustomerSearch() {
               <TouchableOpacity
                 style={[
                   styles.headerButton,
-                  { backgroundColor: showMap ? colors.primary : colors.muted }
+                  { backgroundColor: showMap ? colors.primary : colors.cardBorder }
                 ]}
                 onPress={() => setShowMap(!showMap)}
               >
                 <Ionicons
                   name={showMap ? "list" : "map"}
                   size={20}
-                  color={showMap ? colors.primaryForeground : colors.mutedForeground}
+                  color={showMap ? colors.textInverse : colors.textSecondary}
                 />
               </TouchableOpacity>
             )}
@@ -221,7 +225,7 @@ export default function CustomerSearch() {
           animate={{ opacity: 1, translateY: 0 }}
           style={styles.categoriesContainer}
         >
-          <ThemedText variant="title-small" style={styles.categoriesTitle}>
+          <ThemedText variant="titleSmall" style={styles.categoriesTitle}>
             Popular Categories
           </ThemedText>
           <ScrollView
@@ -235,10 +239,10 @@ export default function CustomerSearch() {
                 style={[
                   styles.categoryChip,
                   {
-                    backgroundColor: /* removed */ === category.id 
+                    backgroundColor: selectedCategory === category.id 
                       ? category.color 
-                      : colors.muted,
-                    borderColor: /* removed */ === category.id 
+                      : colors.cardBorder,
+                    borderColor: selectedCategory === category.id 
                       ? category.color 
                       : 'transparent',
                   }
@@ -247,13 +251,13 @@ export default function CustomerSearch() {
               >
                 <ThemedText style={styles.categoryIcon}>{category.icon}</ThemedText>
                 <ThemedText
-                  variant="body-small"
+                  variant="bodySmall"
                   style={[
                     styles.categoryName,
                     {
-                      color: /* removed */ === category.id
-                        ? colors.primaryForeground
-                        : colors.foreground
+                      color: selectedCategory === category.id
+                        ? colors.textInverse
+                        : colors.text
                     }
                   ]}
                 >
@@ -272,15 +276,15 @@ export default function CustomerSearch() {
           animate={{ opacity: 1 }}
           style={styles.resultsHeader}
         >
-          <ThemedText variant="body-medium" style={styles.resultsCount}>
+          <ThemedText variant="bodyMedium" style={styles.resultsCount}>
             {displayResults.length} {displayResults.length === 1 ? 'business' : 'businesses'} found
             {search.userLocation && ' nearby'}
           </ThemedText>
           
           {/* Sort Options */}
           <TouchableOpacity style={styles.sortButton}>
-            <ThemedText variant="body-small" style={styles.sortText}>Sort</ThemedText>
-            <Ionicons name="chevron-down" size={16} color={colors.mutedForeground} />
+            <ThemedText variant="bodySmall" style={styles.sortText}>Sort</ThemedText>
+            <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </MotiView>
       )}
@@ -291,7 +295,6 @@ export default function CustomerSearch() {
           data={displayResults}
           onBusinessPress={handleBusinessPress}
           onRefresh={handleRefresh}
-          /* removed */={/* removed */}
           loading={search.isLoading}
           showDistance={!!search.userLocation}
           showReviews={true}
@@ -599,3 +602,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 });
+
+

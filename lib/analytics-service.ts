@@ -87,7 +87,7 @@ class AnalyticsService {
       const { error } = await supabase.rpc('increment_business_view', {
         p_business_id: businessId,
         p_date: today,
-      });
+      } as any);
 
       if (error) {
         console.error('Failed to update business analytics:', error);

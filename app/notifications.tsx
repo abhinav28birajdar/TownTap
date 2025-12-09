@@ -1,4 +1,5 @@
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Colors, FontSize } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useColors } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
@@ -82,11 +83,7 @@ export default function NotificationsScreen() {
   ];
 
   useEffect(() => {
-    if (isDemo) {
-      setNotifications(demoNotifications);
-      setLoading(false);
-      return;
-    }
+    
     
     loadNotifications();
     
@@ -110,7 +107,7 @@ export default function NotificationsScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, isDemo]);
+  }, [user?.id]);
 
   const loadNotifications = async () => {
     try {
@@ -134,15 +131,6 @@ export default function NotificationsScreen() {
   };
 
   const markAsRead = async (notificationId: string) => {
-    if (isDemo) {
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-      return;
-    }
-    
     try {
       const { error } = await supabase
         .from('notifications')
@@ -163,13 +151,6 @@ export default function NotificationsScreen() {
   };
 
   const markAllAsRead = async () => {
-    if (isDemo) {
-      setNotifications(prev => 
-        prev.map(notif => ({ ...notif, read: true }))
-      );
-      return;
-    }
-    
     try {
       if (!user?.id) return;
 
@@ -193,11 +174,6 @@ export default function NotificationsScreen() {
   };
 
   const deleteNotification = async (notificationId: string) => {
-    if (isDemo) {
-      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
-      return;
-    }
-    
     try {
       // @ts-ignore
       const { error } = await supabase
@@ -339,7 +315,7 @@ export default function NotificationsScreen() {
           <Ionicons
             name="notifications-off-outline"
             size={80}
-            color={Colors.textLight}
+            color={Colors.light.textSecondary}
           />
           <Text style={styles.emptyText}>No notifications yet</Text>
           <Text style={styles.emptySubtext}>
@@ -358,7 +334,7 @@ export default function NotificationsScreen() {
                 setRefreshing(true);
                 loadNotifications();
               }}
-              colors={[Colors.primary]}
+              colors={[Colors.light.primary]}
             />
           }
           contentContainerStyle={styles.listContent}
@@ -371,13 +347,13 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.light.background,
   },
   markAllButton: {
     marginRight: Spacing.md,
   },
   markAllText: {
-    color: Colors.primary,
+    color: Colors.light.primary,
     fontSize: FontSize.sm,
     fontWeight: '600',
   },
@@ -386,7 +362,7 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     flexDirection: 'row',
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.light.card,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
@@ -403,7 +379,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
@@ -416,22 +392,22 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   notificationTitle: {
-    fontSize: FontSize.md,
-    color: Colors.text,
+    fontSize: FontSize.base,
+    color: Colors.light.text,
     marginBottom: 4,
   },
   unreadTitle: {
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.light.text,
   },
   notificationMessage: {
     fontSize: FontSize.sm,
-    color: Colors.textSecondary,
+    color: Colors.light.textSecondary,
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: FontSize.xs,
-    color: Colors.textLight,
+    color: Colors.light.textSecondary,
   },
   deleteButton: {
     padding: Spacing.xs,
@@ -445,12 +421,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: FontSize.xl,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.lg,
   },
   emptySubtext: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    fontSize: FontSize.base,
+    color: Colors.light.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
   },

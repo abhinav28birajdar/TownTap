@@ -2,14 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { AppState, AppStateStatus, NativeEventSubscription } from 'react-native';
 
-interface PerformanceMetric {
+export interface PerformanceMetric {
   name: string;
   value: number;
   timestamp: number;
   tags?: Record<string, string>;
 }
 
-interface NavigationMetric {
+export interface NavigationMetric {
   route: string;
   loadTime: number;
   timestamp: number;
@@ -17,14 +17,14 @@ interface NavigationMetric {
   error?: string;
 }
 
-interface MemoryMetric {
+export interface MemoryMetric {
   used: number;
   available: number;
   timestamp: number;
   warning?: boolean;
 }
 
-interface APIMetric {
+export interface APIMetric {
   endpoint: string;
   method: string;
   duration: number;
@@ -34,7 +34,7 @@ interface APIMetric {
   size?: number;
 }
 
-interface UserInteractionMetric {
+export interface UserInteractionMetric {
   action: string;
   component: string;
   timestamp: number;
@@ -42,8 +42,9 @@ interface UserInteractionMetric {
   success: boolean;
 }
 
-interface PerformanceReport {
+export interface PerformanceReport {
   appStartTime: number;
+  timestamp?: number;
   navigationMetrics: NavigationMetric[];
   apiMetrics: APIMetric[];
   memoryMetrics: MemoryMetric[];
@@ -247,6 +248,25 @@ class PerformanceMonitorService {
    */
   async getMetrics(): Promise<PerformanceReport> {
     return this.generateReport();
+  }
+
+  /**
+   * Get realtime metrics (current snapshot)
+   */
+  getRealtimeMetrics(): {
+    navigation: NavigationMetric[];
+    api: APIMetric[];
+    memory: MemoryMetric[];
+    userInteractions: UserInteractionMetric[];
+    custom: PerformanceMetric[];
+  } {
+    return {
+      navigation: [...this.metrics.navigation],
+      api: [...this.metrics.api],
+      memory: [...this.metrics.memory],
+      userInteractions: [...this.metrics.userInteractions],
+      custom: [...this.metrics.custom],
+    };
   }
 
   /**

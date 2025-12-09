@@ -14,10 +14,10 @@ import { BorderRadius, ComponentSizes, Shadows } from '../../constants/theme';
 import { getThemeColors, useTheme } from '../../hooks/use-theme';
 import { Text } from './Text';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
-type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'default' | 'error' | 'warning' | 'success' | 'info';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'large';
 
-interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
+export interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
@@ -26,7 +26,8 @@ interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  title?: string; // Support for title prop as alternative to children
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -40,12 +41,18 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   children,
+  title,
   onPress,
   ...props
 }) => {
   const { colorScheme } = useTheme();
   const colors = getThemeColors(colorScheme);
-  const sizeConfig = ComponentSizes.button[size];
+  // Normalize size - treat 'large' as 'lg'
+  const normalizedSize = size === 'large' ? 'lg' : size;
+  const sizeConfig = ComponentSizes.button[normalizedSize];
+  
+  // Support both children and title prop
+  const content = children || title;
   
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
@@ -93,10 +100,36 @@ export const Button: React.FC<ButtonProps> = ({
           elevation: 0,
         };
       case 'destructive':
+      case 'error':
         return {
           ...baseStyle,
           backgroundColor: colors.error,
           borderWidth: 0,
+        };
+      case 'success':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.success,
+          borderWidth: 0,
+        };
+      case 'warning':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.warning,
+          borderWidth: 0,
+        };
+      case 'info':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.info,
+          borderWidth: 0,
+        };
+      case 'default':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: colors.border,
         };
       default:
         return baseStyle;
@@ -121,7 +154,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
   
   const getTextVariant = () => {
-    return size === 'lg' ? 'label-large' : 'label-medium';
+    return normalizedSize === 'lg' ? 'label-large' : 'label-medium';
   };
   
   const isDisabled = disabled || loading;
@@ -179,7 +212,7 @@ export const Button: React.FC<ButtonProps> = ({
               ]}
               weight="medium"
             >
-              {children}
+              {content}
             </Text>
             
             {rightIcon && (

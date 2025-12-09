@@ -101,9 +101,6 @@ export default function CustomerDashboard() {
               <Text style={styles.userName}>
                 {user?.user_metadata?.name || user?.email?.split('@')[0] || 'Customer'}
               </Text>
-              {isDemo && (
-                <Text style={styles.demoLabel}>Demo Mode</Text>
-              )}
             </View>
             
             <TouchableOpacity 

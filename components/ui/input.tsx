@@ -1,13 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React, { forwardRef, useState } from 'react';
 import {
-    StyleSheet,
-    TextInput,
-    TextInputProps,
-    TextStyle,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 import { Spacing } from '../../constants/spacing';
 import { BorderRadius, ComponentSizes } from '../../constants/theme';
@@ -24,8 +25,8 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   required?: boolean;
   size?: InputSize;
   variant?: InputVariant;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode | string;
+  rightIcon?: React.ReactNode | string;
   onRightIconPress?: () => void;
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
@@ -105,6 +106,13 @@ export const Input = forwardRef<TextInput, InputProps>(({
     onBlur?.(e);
   };
   
+  const renderIcon = (icon: React.ReactNode | string, iconColor: string) => {
+    if (typeof icon === 'string') {
+      return <Ionicons name={icon as any} size={20} color={iconColor} />;
+    }
+    return icon;
+  };
+  
   return (
     <View style={[styles.container, containerStyle]}>
       {label && (
@@ -138,7 +146,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
       >
         {leftIcon && (
           <View style={styles.leftIcon}>
-            {leftIcon}
+            {renderIcon(leftIcon, colors.textSecondary)}
           </View>
         )}
         
@@ -159,7 +167,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
             style={styles.rightIcon}
             disabled={!onRightIconPress}
           >
-            {rightIcon}
+            {renderIcon(rightIcon, colors.textSecondary)}
           </TouchableOpacity>
         )}
       </MotiView>

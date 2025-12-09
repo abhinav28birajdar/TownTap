@@ -12,27 +12,60 @@ export interface Database {
       profiles: {
         Row: {
           id: string
+          email: string
           full_name: string | null
+          first_name: string | null
+          last_name: string | null
           phone: string | null
           role: 'customer' | 'business_owner' | 'admin'
           avatar_url: string | null
+          date_of_birth: string | null
+          location: Json | null
+          address: string | null
+          preferences: Json
+          verified_email: boolean
+          verified_phone: boolean
+          last_login_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
+          email: string
           full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
           phone?: string | null
           role?: 'customer' | 'business_owner' | 'admin'
           avatar_url?: string | null
+          date_of_birth?: string | null
+          location?: Json | null
+          address?: string | null
+          preferences?: Json
+          verified_email?: boolean
+          verified_phone?: boolean
+          last_login_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
+          email?: string
           full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
           phone?: string | null
           role?: 'customer' | 'business_owner' | 'admin'
           avatar_url?: string | null
+          date_of_birth?: string | null
+          location?: Json | null
+          address?: string | null
+          preferences?: Json
+          verified_email?: boolean
+          verified_phone?: boolean
+          last_login_at?: string | null
           created_at?: string
+          updated_at?: string
         }
       }
       categories: {
@@ -68,13 +101,18 @@ export interface Database {
           address: string | null
           latitude: number | null
           longitude: number | null
-          opening_hours: Json | null
+          opening_hours: Json
           phone: string | null
           avatar_url: string | null
-          avg_rating: number
+          rating: number
           total_reviews: number
+          total_bookings: number
+          is_open: boolean
           is_verified: boolean
+          is_featured: boolean
+          status: 'pending' | 'active' | 'suspended' | 'closed'
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -85,13 +123,18 @@ export interface Database {
           address?: string | null
           latitude?: number | null
           longitude?: number | null
-          opening_hours?: Json | null
+          opening_hours?: Json
           phone?: string | null
           avatar_url?: string | null
-          avg_rating?: number
+          rating?: number
           total_reviews?: number
+          total_bookings?: number
+          is_open?: boolean
           is_verified?: boolean
+          is_featured?: boolean
+          status?: 'pending' | 'active' | 'suspended' | 'closed'
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -105,10 +148,15 @@ export interface Database {
           opening_hours?: Json | null
           phone?: string | null
           avatar_url?: string | null
-          avg_rating?: number
+          rating?: number
           total_reviews?: number
+          total_bookings?: number
+          is_open?: boolean
           is_verified?: boolean
+          is_featured?: boolean
+          status?: 'pending' | 'active' | 'suspended' | 'closed'
           created_at?: string
+          updated_at?: string
         }
       }
       services: {
@@ -148,6 +196,7 @@ export interface Database {
           service_id: string | null
           status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled'
           scheduled_for: string | null
+          booking_date: string | null
           price: number | null
           payment_method: string | null
           payment_status: 'unpaid' | 'paid' | 'refunded'
@@ -160,6 +209,7 @@ export interface Database {
           service_id?: string | null
           status?: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled'
           scheduled_for?: string | null
+          booking_date?: string | null
           price?: number | null
           payment_method?: string | null
           payment_status?: 'unpaid' | 'paid' | 'refunded'
@@ -172,6 +222,7 @@ export interface Database {
           service_id?: string | null
           status?: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled'
           scheduled_for?: string | null
+          booking_date?: string | null
           price?: number | null
           payment_method?: string | null
           payment_status?: 'unpaid' | 'paid' | 'refunded'
@@ -297,6 +348,32 @@ export interface Database {
           type?: string
           read?: boolean
           data?: Json | null
+          created_at?: string
+        }
+      }
+      messages: {
+        Row: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          receiver_id?: string
+          content?: string
+          read?: boolean
           created_at?: string
         }
       }

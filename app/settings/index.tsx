@@ -9,13 +9,13 @@ import * as Application from 'expo-application';
 import { Stack, router } from 'expo-router';
 import React from 'react';
 import {
-    Alert,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    View
+  Alert,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  View
 } from 'react-native';
 
 type SettingItemProps = {
@@ -66,7 +66,7 @@ function SettingItem({ icon, title, subtitle, onPress, rightElement, variant = '
 export default function SettingsScreen() {
   const colors = useColors();
   const { themeMode, setThemeMode, isDark } = useThemeContext();
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, user } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [locationEnabled, setLocationEnabled] = React.useState(true);
 
@@ -158,7 +158,7 @@ export default function SettingsScreen() {
                   {profile.full_name || 'User'}
                 </ThemedText>
                 <ThemedText variant="bodySmall" color="secondary">
-                  {profile.email}
+                  {user?.email || 'No email'}
                 </ThemedText>
                 <ThemedText variant="labelSmall" color="secondary" style={styles.roleTag}>
                   {profile.role.replace('_', ' ').toUpperCase()}

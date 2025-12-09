@@ -3,11 +3,11 @@ import { Stack, router } from 'expo-router';
 import { AnimatePresence, MotiView } from 'moti';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    View,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 // UI Components
@@ -19,8 +19,7 @@ import { getThemeColors, useTheme } from '@/hooks/use-theme';
 import { securityService } from '@/lib/security-service';
 
 // Constants
-import { Colors } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
+import { Colors, Spacing } from '@/constants/theme';
 
 interface SecurityIssue {
   id: string;
@@ -170,7 +169,7 @@ export default function SecurityAuditScreen() {
     switch (severity) {
       case 'critical': return Colors.red[600];
       case 'high': return Colors.red[500];
-      case 'medium': return Colors.orange[500];
+      case 'medium': return Colors.warning;
       case 'low': return Colors.yellow[600];
       default: return Colors.gray[500];
     }
@@ -189,7 +188,7 @@ export default function SecurityAuditScreen() {
   const getScoreColor = (score: number) => {
     if (score >= 90) return Colors.green[600];
     if (score >= 70) return Colors.yellow[600];
-    if (score >= 50) return Colors.orange[500];
+    if (score >= 50) return Colors.warning;
     return Colors.red[500];
   };
 
@@ -383,7 +382,7 @@ export default function SecurityAuditScreen() {
           >
             <Card style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Ionicons name="lightbulb" size={24} color={colors.primary} />
+                <Ionicons name="bulb" size={24} color={colors.primary} />
                 <Text variant="title-medium" style={styles.sectionTitle}>
                   Security Recommendations
                 </Text>

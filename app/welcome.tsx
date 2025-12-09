@@ -1,6 +1,7 @@
 import { ThemedButton } from '@/components/ui/themed-button';
 import { ThemedText } from '@/components/ui/themed-text-enhanced';
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, FontSize } from '@/constants/theme';
 import { useColors } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -110,14 +111,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   appName: {
-    fontSize: FontSize.xxxl + 8,
+    fontSize: FontSize['3xl'] + 8,
     fontWeight: '700',
-    color: Colors.card,
+    color: '#ffffff',
     marginBottom: Spacing.xs,
   },
   tagline: {
     fontSize: FontSize.lg,
-    color: Colors.card,
+    color: '#ffffff',
     opacity: 0.9,
     textAlign: 'center',
   },
@@ -138,8 +139,8 @@ const styles = StyleSheet.create({
   },
   featureText: {
     flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.card,
+    fontSize: FontSize.base,
+    color: '#ffffff',
     fontWeight: '500',
   },
   buttonContainer: {

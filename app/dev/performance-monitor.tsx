@@ -3,11 +3,11 @@ import { Stack } from 'expo-router';
 import { MotiView } from 'moti';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Dimensions,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    View,
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 // UI Components
@@ -17,11 +17,10 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 // Services and hooks
 import { getThemeColors, useTheme } from '@/hooks/use-theme';
 import { imageCacheService } from '@/lib/image-cache-service';
-import { PerformanceMetric, PerformanceReport, performanceMonitor } from '@/lib/performance-monitor';
+import { MemoryMetric, PerformanceReport, performanceMonitor } from '@/lib/performance-monitor';
 
 // Constants
-import { Colors } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
+import { Colors, Spacing } from '@/constants/theme';
 
 interface ChartData {
   label: string;
@@ -39,7 +38,7 @@ export default function PerformanceMonitorScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [report, setReport] = useState<PerformanceReport | null>(null);
-  const [realtimeMetrics, setRealtimeMetrics] = useState<PerformanceMetric[]>([]);
+  const [realtimeMetrics, setRealtimeMetrics] = useState<MemoryMetric[]>([]);
   const [cacheStats, setCacheStats] = useState<any>(null);
 
   useEffect(() => {
@@ -68,7 +67,7 @@ export default function PerformanceMonitorScreen() {
     const interval = setInterval(async () => {
       try {
         const metrics = performanceMonitor.getRealtimeMetrics();
-        setRealtimeMetrics(metrics.slice(-10)); // Keep last 10 metrics
+        setRealtimeMetrics(metrics.memory.slice(-10)); // Keep last 10 memory metrics
       } catch (error) {
         console.error('Failed to get realtime metrics:', error);
       }
@@ -104,14 +103,14 @@ export default function PerformanceMonitorScreen() {
 
   // Chart data calculations
   const responseTimeChart = useMemo(() => {
-    if (!report?.details.apiCalls.length) return [];
+    if (!report?.apiMetrics.length) return [];
     
-    return report.details.apiCalls
+    return report.apiMetrics
       .slice(-10)
       .map((call, index) => ({
         label: `${index + 1}`,
-        value: call.responseTime,
-        color: call.responseTime > 1000 ? Colors.red[500] : Colors.green[500],
+        value: call.duration,
+        color: call.duration > 1000 ? Colors.red[500] : Colors.green[500],
       }));
   }, [report]);
 
@@ -120,7 +119,7 @@ export default function PerformanceMonitorScreen() {
     
     return realtimeMetrics.map((metric, index) => ({
       label: `${index + 1}`,
-      value: metric.data.memoryUsage || 0,
+      value: metric.used || 0,
       color: Colors.blue[500],
     }));
   }, [realtimeMetrics]);
@@ -307,7 +306,7 @@ export default function PerformanceMonitorScreen() {
                 Total API Calls:
               </Text>
               <Text variant="body-medium" style={styles.metricValue}>
-                {report.details.apiCalls.length}
+                {report.apiMetrics.length}
               </Text>
             </View>
 
@@ -316,7 +315,7 @@ export default function PerformanceMonitorScreen() {
                 Navigation Events:
               </Text>
               <Text variant="body-medium" style={styles.metricValue}>
-                {report.details.navigations.length}
+                {report.navigationMetrics.length}
               </Text>
             </View>
 
@@ -343,7 +342,7 @@ export default function PerformanceMonitorScreen() {
                 Report Period:
               </Text>
               <Text variant="body-medium" style={styles.metricValue}>
-                {new Date(report.timestamp).toLocaleDateString()}
+                {report.timestamp ? new Date(report.timestamp).toLocaleDateString() : 'N/A'}
               </Text>
             </View>
           </Card>

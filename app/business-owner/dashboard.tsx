@@ -69,9 +69,6 @@ export default function BusinessOwnerDashboard() {
             <View style={styles.greetingSection}>
               <Text style={styles.greeting}>{greeting}!</Text>
               <Text style={styles.businessName}>{businessName}</Text>
-              {isDemo && (
-                <Text style={styles.demoLabel}>Demo Mode</Text>
-              )}
             </View>
             
             <View style={styles.headerActions}>

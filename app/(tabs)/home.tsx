@@ -1,5 +1,6 @@
 import { BusinessCard } from '@/components/ui/business-card';
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Colors, FontSize } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useColors } from '@/contexts/theme-context';
 import { Database } from '@/lib/database.types';
@@ -10,14 +11,14 @@ import * as Location from 'expo-location';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 type Business = Database['public']['Tables']['businesses']['Row'];
@@ -80,14 +81,6 @@ export default function HomeScreen() {
   };
 
   const loadBusinesses = async () => {
-    if (isDemo) {
-      const filteredBusinesses = selectedCategory 
-        ? demoBusinesses.filter(b => b.category_id === selectedCategory)
-        : demoBusinesses;
-      setBusinesses(filteredBusinesses);
-      return;
-    }
-
     let query = supabase.from('businesses').select('*').eq('is_verified', true);
 
     if (selectedCategory) {
@@ -101,12 +94,10 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    if (!loading && !isDemo) {
-      loadBusinesses();
-    } else if (isDemo) {
+    if (!loading) {
       loadBusinesses();
     }
-  }, [selectedCategory, isDemo, loading]);
+  }, [selectedCategory, loading]);
 
   const getBusinessDistance = (business: Business) => {
     if (!userLocation || !business.latitude || !business.longitude) {
@@ -159,8 +150,8 @@ export default function HomeScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <TouchableOpacity onPress={() => router.push('/profile')}>
-              {((isDemo ? currentUser?.avatar_url : profile?.avatar_url)) ? (
-                <Image source={{ uri: (isDemo ? currentUser?.avatar_url : profile?.avatar_url) || '' }} style={styles.avatar} />
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile?.avatar_url || '' }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <Ionicons name="person" size={20} color={Colors.primary} />
@@ -169,7 +160,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View>
               <Text style={styles.greeting}>Hello,</Text>
-              <Text style={styles.userName}>{isDemo ? currentUser?.full_name || 'Demo User' : profile?.full_name || 'User'}</Text>
+              <Text style={styles.userName}>{profile?.full_name || user?.user_metadata?.full_name || 'User'}</Text>
             </View>
           </View>
           <TouchableOpacity
@@ -181,7 +172,7 @@ export default function HomeScreen() {
         </View>
 
         <TouchableOpacity style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={Colors.textSecondary} />
+          <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
           <Text style={styles.searchPlaceholder}>Search services...</Text>
         </TouchableOpacity>
       </LinearGradient>
@@ -195,7 +186,7 @@ export default function HomeScreen() {
               setRefreshing(true);
               loadData();
             }}
-            colors={[Colors.primary]}
+            colors={[Colors.light.primary]}
           />
         }
       >
@@ -211,6 +202,7 @@ export default function HomeScreen() {
               icon="apps"
               isSelected={selectedCategory === null}
               onPress={() => setSelectedCategory(null)}
+              colors={colors}
             />
             {categories.map((category) => (
               <CategoryItem
@@ -219,6 +211,7 @@ export default function HomeScreen() {
                 icon={getCategoryIcon(category.slug)}
                 isSelected={selectedCategory === category.id}
                 onPress={() => setSelectedCategory(category.id)}
+                colors={colors}
               />
             ))}
           </ScrollView>
@@ -239,7 +232,7 @@ export default function HomeScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="business-outline" size={64} color={Colors.textLight} />
+              <Ionicons name="business-outline" size={64} color={Colors.light.textSecondary} />
               <Text style={styles.emptyText}>No services available</Text>
               <Text style={styles.emptySubtext}>
                 Check back later for new businesses
@@ -257,11 +250,13 @@ const CategoryItem = ({
   icon,
   isSelected,
   onPress,
+  colors,
 }: {
   label: string;
   icon: string;
   isSelected: boolean;
   onPress: () => void;
+  colors: ReturnType<typeof useColors>;
 }) => (
   <TouchableOpacity
     style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}
@@ -276,7 +271,7 @@ const CategoryItem = ({
       <Ionicons
         name={icon as any}
         size={24}
-        color={isSelected ? Colors.card : Colors.primary}
+        color={isSelected ? colors.card : colors.primary}
       />
     </View>
     <Text
@@ -293,7 +288,7 @@ const CategoryItem = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.light.background,
   },
   header: {
     paddingTop: 60,
@@ -320,20 +315,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.card,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.sm,
   },
   greeting: {
     fontSize: FontSize.sm,
-    color: Colors.card,
+    color: '#ffffff',
     opacity: 0.9,
   },
   userName: {
     fontSize: FontSize.lg,
     fontWeight: '700',
-    color: Colors.card,
+    color: '#ffffff',
   },
   notificationButton: {
     width: 40,
@@ -346,7 +341,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
+    backgroundColor: '#ffffff',
     borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.md,
     height: 48,
@@ -354,8 +349,8 @@ const styles = StyleSheet.create({
   searchPlaceholder: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    fontSize: FontSize.base,
+    color: Colors.light.textSecondary,
   },
   categoriesSection: {
     paddingTop: Spacing.lg,
@@ -363,7 +358,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSize.xl,
     fontWeight: '700',
-    color: Colors.text,
+    color: Colors.light.text,
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.md,
   },
@@ -379,25 +374,25 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Colors.light.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xs,
   },
   categoryIconSelected: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.light.primary,
   },
   categoryItemSelected: {
     // Style for selected category item
   },
   categoryLabel: {
     fontSize: FontSize.xs,
-    color: Colors.text,
+    color: Colors.light.text,
     textAlign: 'center',
   },
   categoryLabelSelected: {
     fontWeight: '600',
-    color: Colors.primary,
+    color: Colors.light.primary,
   },
   businessesSection: {
     padding: Spacing.lg,
@@ -409,12 +404,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: FontSize.xl,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.lg,
   },
   emptySubtext: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
+    fontSize: FontSize.base,
+    color: Colors.light.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
   },

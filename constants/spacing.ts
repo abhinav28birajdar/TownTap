@@ -42,6 +42,7 @@ export const spacing = {
   '3xl': 48,  // 3x Extra large
   '4xl': 64,  // 4x Extra large
   '5xl': 80,  // 5x Extra large
+  '6xl': 96,  // 6x Extra large
   
   // Component specific
   button: {

@@ -31,14 +31,16 @@ export default function CustomerFavorites() {
   }, [user]);
 
   const loadFavorites = async () => {
+    if (!user?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('favorites')
         .select('*, business:businesses(*)')
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      setFavorites(data?.map(f => f.business) || []);
+      setFavorites(data?.map((f: any) => f.business).filter(Boolean) || []);
     } catch (error) {
       console.error('Error loading favorites:', error);
     } finally {

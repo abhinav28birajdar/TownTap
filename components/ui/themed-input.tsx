@@ -108,8 +108,8 @@ export const ThemedInput = memo(({
             style,
           ]}
           placeholderTextColor={colors.textTertiary}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onFocus={handleFocus as any}
+          onBlur={handleBlur as any}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           {...props}
         />

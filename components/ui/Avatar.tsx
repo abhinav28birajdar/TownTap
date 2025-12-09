@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 import { BorderRadius, Shadows } from '../../constants/theme';
 import { getThemeColors, useTheme } from '../../hooks/use-theme';
@@ -15,6 +15,7 @@ import { Text } from './Text';
 interface AvatarProps {
   source?: { uri: string } | number;
   name?: string;
+  fallbackText?: string;
   size?: number | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   variant?: 'circle' | 'rounded' | 'square';
   fallbackIcon?: keyof typeof Ionicons.glyphMap;
@@ -32,6 +33,7 @@ interface AvatarProps {
 export const Avatar: React.FC<AvatarProps> = ({
   source,
   name,
+  fallbackText,
   size = 'md',
   variant = 'circle',
   fallbackIcon = 'person',
@@ -108,7 +110,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   
   const renderContent = () => {
     const showImage = source && !imageError && !loading;
-    const showInitials = name && !showImage;
+    const showInitials = (name || fallbackText) && !showImage;
     const showIcon = !showImage && !showInitials;
     
     if (loading || imageLoading) {
@@ -155,6 +157,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     }
     
     if (showInitials) {
+      const displayText = fallbackText || (name ? getInitials(name) : '');
       return (
         <View
           style={[
@@ -177,7 +180,7 @@ export const Avatar: React.FC<AvatarProps> = ({
               },
             ]}
           >
-            {getInitials(name)}
+            {displayText}
           </Text>
         </View>
       );

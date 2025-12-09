@@ -225,6 +225,20 @@ export const Spacing = {
   '72': 288,
   '80': 320,
   '96': 384,
+  
+  // Semantic spacing
+  none: 0,
+  xs: 4,      // Extra small
+  sm: 8,      // Small
+  md: 16,     // Medium
+  lg: 24,     // Large
+  xl: 32,     // Extra large
+  xxl: 40,    // 2x Extra large (legacy)
+  '2xl': 40,  // 2x Extra large
+  '3xl': 48,  // 3x Extra large
+  '4xl': 64,  // 4x Extra large
+  '5xl': 80,  // 5x Extra large
+  '6xl': 96,  // 6x Extra large
 } as const;
 
 /**
@@ -260,28 +274,148 @@ export const Breakpoints = {
 export const FontSize = Typography.sizes;
 
 /**
- * Legacy Colors export - prefer useColors() hook from theme-context
- * This provides basic colors for non-component usage
+ * Comprehensive Colors export with full palette support
+ * This provides all colors needed throughout the application
  */
 export const Colors = {
+  // Color scales for granular control
+  blue: {
+    50: '#EFF6FF',
+    100: '#DBEAFE',
+    200: '#BFDBFE',
+    300: '#93C5FD',
+    400: '#60A5FA',
+    500: '#3B82F6',
+    600: '#2563EB',
+    700: '#1D4ED8',
+    800: '#1E40AF',
+    900: '#1E3A8A',
+  },
+  gray: {
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
+  },
+  red: {
+    50: '#FEF2F2',
+    100: '#FEE2E2',
+    200: '#FECACA',
+    300: '#FCA5A5',
+    400: '#F87171',
+    500: '#EF4444',
+    600: '#DC2626',
+    700: '#B91C1C',
+    800: '#991B1B',
+    900: '#7F1D1D',
+  },
+  green: {
+    50: '#F0FDF4',
+    100: '#DCFCE7',
+    200: '#BBF7D0',
+    300: '#86EFAC',
+    400: '#4ADE80',
+    500: '#22C55E',
+    600: '#16A34A',
+    700: '#15803D',
+    800: '#166534',
+    900: '#14532D',
+  },
+  yellow: {
+    50: '#FEFCE8',
+    100: '#FEF9C3',
+    200: '#FEF08A',
+    300: '#FDE047',
+    400: '#FACC15',
+    500: '#EAB308',
+    600: '#CA8A04',
+    700: '#A16207',
+    800: '#854D0E',
+    900: '#713F12',
+  },
+  
+  // Theme colors
   light: {
-    primary: '#2563eb',
-    background: '#ffffff',
-    card: '#ffffff',
+    primary: '#2563EB',
+    primaryLight: '#3B82F6',
+    primaryDark: '#1D4ED8',
+    
+    secondary: '#7C3AED',
+    
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    info: '#3B82F6',
+    
+    background: '#FFFFFF',
+    backgroundGray: '#F9FAFB',
+    
+    card: '#FFFFFF',
+    
     text: '#111827',
-    border: '#e5e7eb',
-    notification: '#ef4444',
-    textSecondary: '#6b7280',
+    textSecondary: '#6B7280',
+    textLight: '#9CA3AF',
+    
+    border: '#E5E7EB',
+    
+    notification: '#EF4444',
   },
   dark: {
-    primary: '#3b82f6',
+    primary: '#3B82F6',
+    primaryLight: '#60A5FA',
+    primaryDark: '#2563EB',
+    
+    secondary: '#8B5CF6',
+    
+    success: '#34D399',
+    warning: '#FBBF24',
+    error: '#F87171',
+    info: '#60A5FA',
+    
     background: '#111827',
-    card: '#1f2937',
-    text: '#f9fafb',
+    backgroundGray: '#1F2937',
+    
+    card: '#1F2937',
+    
+    text: '#F9FAFB',
+    textSecondary: '#9CA3AF',
+    textLight: '#6B7280',
+    
     border: '#374151',
-    notification: '#f87171',
-    textSecondary: '#9ca3af',
+    
+    notification: '#F87171',
   },
+  
+  // Flat properties for direct access (defaults to light theme)
+  primary: '#2563EB',
+  primaryLight: '#3B82F6',
+  primaryDark: '#1D4ED8',
+  
+  secondary: '#7C3AED',
+  
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
+  
+  background: '#FFFFFF',
+  backgroundGray: '#F9FAFB',
+  
+  card: '#FFFFFF',
+  
+  text: '#111827',
+  textSecondary: '#6B7280',
+  textLight: '#9CA3AF',
+  
+  border: '#E5E7EB',
+  
+  notification: '#EF4444',
 } as const;
 
 /**

@@ -3,12 +3,12 @@ import { Stack, router } from 'expo-router';
 import { MotiView } from 'moti';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // UI Components
@@ -22,8 +22,7 @@ import { performanceMonitor } from '@/lib/performance-monitor';
 import { securityService, useBiometricAuth } from '@/lib/security-service';
 
 // Constants
-import { Colors } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
+import { Colors, Spacing } from '@/constants/theme';
 
 interface SecuritySettings {
   biometricEnabled: boolean;

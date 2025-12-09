@@ -21,8 +21,7 @@ import { useSearch } from '@/hooks/use-search';
 import { SearchFilter, SearchSuggestion } from '@/lib/search-service';
 
 // Import theme and constants
-import { Colors } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
+import { Colors, Spacing } from '@/constants/theme';
 import { getThemeColors, useTheme } from '@/hooks/use-theme';
 
 interface SearchBarProps {

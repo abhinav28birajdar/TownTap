@@ -5,13 +5,13 @@ import { Stack, router } from 'expo-router';
 import { MotiView } from 'moti';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import { Avatar } from '@/components/ui/Avatar';
@@ -50,7 +50,7 @@ export default function EditProfileScreen() {
   const { colorScheme } = useTheme();
   const colors = getThemeColors(colorScheme);
   const [isLoading, setIsLoading] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
+  const [profileImage, setProfileImage] = useState<string | null>((user as any)?.avatar_url || null);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications'>('profile');
   
   // Security settings
@@ -73,11 +73,11 @@ export default function EditProfileScreen() {
 
   const form = useFormWithValidation(profileSchema, {
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
+      firstName: (user as any)?.first_name || '',
+      lastName: (user as any)?.last_name || '',
       email: user?.email || '',
       phone: user?.phone || '',
-      dateOfBirth: user?.dateOfBirth || '',
+      dateOfBirth: (user as any)?.date_of_birth || '',
     },
   });
 
@@ -217,7 +217,7 @@ export default function EditProfileScreen() {
     try {
       await updateProfile({
         ...data,
-        avatar: profileImage,
+        avatar_url: profileImage,
       });
 
       const duration = Date.now() - startTime;
@@ -269,8 +269,8 @@ export default function EditProfileScreen() {
         <TouchableOpacity onPress={handleImagePicker}>
           <Avatar
             size={120}
-            source={profileImage}
-            fallbackText={`${form.values.firstName[0] || 'U'}${form.values.lastName[0] || ''}`}
+            source={profileImage ? { uri: profileImage } : undefined}
+            fallbackText={`${form.watch('firstName')?.[0] || 'U'}${form.watch('lastName')?.[0] || ''}`}
           />
           <View style={[styles.editAvatarButton, { backgroundColor: colors.primary }]}>
             <Ionicons name="camera" size={16} color="#FFFFFF" />
@@ -283,27 +283,27 @@ export default function EditProfileScreen() {
         <Input
           label="First Name"
           placeholder="Enter your first name"
-          value={form.values.firstName}
+          value={form.watch('firstName')}
           onChangeText={(value) => form.setValue('firstName', value)}
-          error={form.errors.firstName}
+          error={form.formState.errors.firstName?.message}
           leftIcon="person-outline"
         />
 
         <Input
           label="Last Name"
           placeholder="Enter your last name"
-          value={form.values.lastName}
+          value={form.watch('lastName')}
           onChangeText={(value) => form.setValue('lastName', value)}
-          error={form.errors.lastName}
+          error={form.formState.errors.lastName?.message}
           leftIcon="person-outline"
         />
 
         <Input
           label="Email"
           placeholder="Enter your email"
-          value={form.values.email}
+          value={form.watch('email')}
           onChangeText={(value) => form.setValue('email', value)}
-          error={form.errors.email}
+          error={form.formState.errors.email?.message}
           keyboardType="email-address"
           autoCapitalize="none"
           leftIcon="mail-outline"
@@ -312,9 +312,9 @@ export default function EditProfileScreen() {
         <Input
           label="Phone Number"
           placeholder="Enter your phone number"
-          value={form.values.phone}
+          value={form.watch('phone')}
           onChangeText={(value) => form.setValue('phone', value)}
-          error={form.errors.phone}
+          error={form.formState.errors.phone?.message}
           keyboardType="phone-pad"
           leftIcon="call-outline"
         />
@@ -322,9 +322,9 @@ export default function EditProfileScreen() {
         <Input
           label="Date of Birth"
           placeholder="YYYY-MM-DD"
-          value={form.values.dateOfBirth}
+          value={form.watch('dateOfBirth')}
           onChangeText={(value) => form.setValue('dateOfBirth', value)}
-          error={form.errors.dateOfBirth}
+          error={form.formState.errors.dateOfBirth?.message}
           leftIcon="calendar-outline"
         />
       </View>
@@ -452,7 +452,7 @@ export default function EditProfileScreen() {
           )}
           {authTypes.includes(2) && (
             <View style={styles.biometricMethod}>
-              <Ionicons name="face-outline" size={20} color={colors.success} />
+              <Ionicons name="happy-outline" size={20} color={colors.success} />
               <Text style={[styles.biometricMethodText, { color: colors.text }]}>Face Recognition</Text>
             </View>
           )}
@@ -657,8 +657,8 @@ export default function EditProfileScreen() {
           <View style={[styles.saveContainer, { backgroundColor: colors.background }]}>
             <Button
               title="Save Changes"
-              onPress={() => handleSaveProfile(form.values)}
-              disabled={!form.isValid || isLoading}
+              onPress={() => handleSaveProfile({ firstName: form.watch('firstName'), lastName: form.watch('lastName'), email: form.watch('email'), phone: form.watch('phone'), dateOfBirth: form.watch('dateOfBirth') })}
+              disabled={!form.formState.isValid || isLoading}
               style={styles.saveButton}
             />
           </View>

@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-    Text as RNText,
-    TextProps as RNTextProps,
-    StyleSheet,
-    TextStyle,
+  Text as RNText,
+  TextProps as RNTextProps,
+  StyleSheet,
+  TextStyle,
 } from 'react-native';
 import { Typography } from '../../constants/theme';
 import { getThemeColors, useTheme } from '../../hooks/use-theme';
@@ -14,7 +14,8 @@ type TextVariant =
   | 'headline-large' | 'headline-medium' | 'headline-small'
   | 'title-large' | 'title-medium' | 'title-small'
   | 'body-large' | 'body-medium' | 'body-small'
-  | 'label-large' | 'label-medium' | 'label-small';
+  | 'label-large' | 'label-medium' | 'label-small'
+  | 'caption';
 
 type TextColor = 
   | 'primary' | 'secondary' | 'accent'
@@ -52,6 +53,7 @@ const getVariantStyle = (variant: TextVariant): TextStyle => {
     'label-large': Typography.styles.label.large,
     'label-medium': Typography.styles.label.medium,
     'label-small': Typography.styles.label.small,
+    'caption': { fontSize: 12, lineHeight: 16, fontWeight: '400' },
   };
   
   return variantMap[variant] || Typography.styles.body.medium;

@@ -1,4 +1,5 @@
 import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Colors, FontSize } from '@/constants/theme';
 import { useColors } from '@/contexts/theme-context';
 import { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
@@ -6,12 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 type Category = Database['public']['Tables']['categories']['Row'];
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.muted,
+    backgroundColor: Colors.light.card,
     borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.md,
     height: 48,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.light.text,
   },
   content: {
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.light.primaryLight,
+    backgroundColor: Colors.light.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.sm,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   emptySubtext: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.light.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,

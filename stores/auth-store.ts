@@ -74,6 +74,7 @@ export interface AuthState {
   refreshSession: () => Promise<void>;
   clearError: () => void;
   initialize: () => Promise<void>;
+  fetchUserProfile: (userId: string) => Promise<UserProfile | null>;
 }
 
 export const useAuthStore = create<AuthState>()(

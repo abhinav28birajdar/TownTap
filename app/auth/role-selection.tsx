@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Colors } from '@/constants/colors';
 import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router } from 'expo-router';

@@ -93,10 +93,10 @@ export default function SignUpScreen() {
             style={styles.header}
           >
             <ThemedText style={styles.logo}>🏘️</ThemedText>
-            <ThemedText variant="display-small" style={styles.title}>
+            <ThemedText variant="displaySmall" style={styles.title}>
               Create Account
             </ThemedText>
-            <ThemedText variant="body-large" style={styles.subtitle}>
+            <ThemedText variant="bodyLarge" style={styles.subtitle}>
               Join TownTap as {userRole === 'business_owner' ? 'Business Owner' : 'Customer'}
             </ThemedText>
           </MotiView>
@@ -118,7 +118,7 @@ export default function SignUpScreen() {
                     onChangeText={(text) => form.setValue('firstName', text)}
                     onBlur={() => form.trigger('firstName')}
                     leftIcon="person"
-                    error={form.isFieldInvalid('firstName')}
+                    error={form.isFieldInvalid('firstName') ? form.getFieldError('firstName') : undefined}
                     helperText={form.getFieldError('firstName')}
                     style={[styles.input, styles.nameInput]}
                   />
@@ -130,7 +130,7 @@ export default function SignUpScreen() {
                     onChangeText={(text) => form.setValue('lastName', text)}
                     onBlur={() => form.trigger('lastName')}
                     leftIcon="person"
-                    error={form.isFieldInvalid('lastName')}
+                    error={form.isFieldInvalid('lastName') ? form.getFieldError('lastName') : undefined}
                     helperText={form.getFieldError('lastName')}
                     style={[styles.input, styles.nameInput]}
                   />
@@ -147,7 +147,7 @@ export default function SignUpScreen() {
                   autoCapitalize="none"
                   autoComplete="email"
                   leftIcon="mail"
-                  error={form.isFieldInvalid('email')}
+                  error={form.isFieldInvalid('email') ? form.getFieldError('email') : undefined}
                   helperText={form.getFieldError('email')}
                   style={styles.input}
                 />
@@ -162,7 +162,7 @@ export default function SignUpScreen() {
                   keyboardType="phone-pad"
                   autoComplete="tel"
                   leftIcon="call"
-                  error={form.isFieldInvalid('phone')}
+                  error={form.isFieldInvalid('phone') ? form.getFieldError('phone') : undefined}
                   helperText={form.getFieldError('phone')}
                   style={styles.input}
                 />
@@ -178,7 +178,7 @@ export default function SignUpScreen() {
                   leftIcon="lock-closed"
                   rightIcon={showPassword ? 'eye-off' : 'eye'}
                   onRightIconPress={() => setShowPassword(!showPassword)}
-                  error={form.isFieldInvalid('password')}
+                  error={form.isFieldInvalid('password') ? form.getFieldError('password') : undefined}
                   helperText={form.getFieldError('password') || 'Must be at least 8 characters with uppercase, lowercase, and number'}
                   style={styles.input}
                 />
@@ -193,7 +193,7 @@ export default function SignUpScreen() {
                   leftIcon="lock-closed"
                   rightIcon={showConfirmPassword ? 'eye-off' : 'eye'}
                   onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  error={form.isFieldInvalid('confirmPassword')}
+                  error={form.isFieldInvalid('confirmPassword') ? form.getFieldError('confirmPassword') : undefined}
                   helperText={form.getFieldError('confirmPassword')}
                   style={styles.input}
                 />
@@ -212,7 +212,7 @@ export default function SignUpScreen() {
                         <Ionicons name="checkmark" size={12} color={colors.textInverse} />
                       )}
                     </View>
-                    <ThemedText variant="body-small" style={styles.checkboxText}>
+                    <ThemedText variant="bodySmall" style={styles.checkboxText}>
                       I agree to the{' '}
                       <ThemedText style={styles.linkText}>Terms of Service</ThemedText>
                       {' '}and{' '}
@@ -220,7 +220,7 @@ export default function SignUpScreen() {
                     </ThemedText>
                   </TouchableOpacity>
                   {form.isFieldInvalid('termsAccepted') && (
-                    <ThemedText variant="body-small" style={styles.errorText}>
+                    <ThemedText variant="bodySmall" style={styles.errorText}>
                       {form.getFieldError('termsAccepted')}
                     </ThemedText>
                   )}
@@ -239,7 +239,7 @@ export default function SignUpScreen() {
                       <Ionicons name="checkmark" size={12} color={colors.textInverse} />
                     )}
                   </View>
-                  <ThemedText variant="body-small" style={styles.checkboxText}>
+                  <ThemedText variant="bodySmall" style={styles.checkboxText}>
                     Send me updates and promotional offers
                   </ThemedText>
                 </TouchableOpacity>
@@ -247,7 +247,7 @@ export default function SignUpScreen() {
                 {/* Sign Up ThemedButton */}
                 <ThemedButton
                   variant="primary"
-                  size="lg"
+                  size="large"
                   onPress={() => form.submitWithToast(handleSignUp)}
                   disabled={form.isSubmitting}
                   style={styles.signUpButton}
@@ -257,11 +257,11 @@ export default function SignUpScreen() {
 
                 {/* Sign In Link */}
                 <View style={styles.signInContainer}>
-                  <ThemedText variant="body-medium" style={styles.signInText}>
+                  <ThemedText variant="bodyMedium" style={styles.signInText}>
                     Already have an account?{' '}
                   </ThemedText>
                   <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-                    <ThemedText variant="body-medium" style={styles.signInLink}>
+                    <ThemedText variant="bodyMedium" style={styles.signInLink}>
                       Sign In
                     </ThemedText>
                   </TouchableOpacity>
@@ -377,3 +377,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+

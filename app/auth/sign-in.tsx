@@ -241,7 +241,7 @@ export default function SignInScreen() {
                         <Ionicons name="checkmark" size={12} color={colors.textInverse} />
                       )}
                     </View>
-                    <ThemedText variant="body-small" style={styles.rememberMeText}>
+                    <ThemedText variant="bodySmall" style={styles.rememberMeText}>
                       Remember me
                     </ThemedText>
                   </TouchableOpacity>
@@ -249,7 +249,7 @@ export default function SignInScreen() {
                   <TouchableOpacity
                     onPress={() => router.push('/auth/forgot-password')}
                   >
-                    <ThemedText variant="body-small" style={styles.forgotPasswordText}>
+                    <ThemedText variant="bodySmall" style={styles.forgotPasswordText}>
                       Forgot Password?
                     </ThemedText>
                   </TouchableOpacity>
@@ -258,7 +258,7 @@ export default function SignInScreen() {
                 {/* Sign In ThemedButton */}
                 <ThemedButton
                   variant="primary"
-                  size="lg"
+                  size="large"
                   onPress={() => form.submitWithToast(handleSignIn)}
                   disabled={form.isSubmitting || isLoading}
                   style={styles.signInButton}
@@ -278,7 +278,7 @@ export default function SignInScreen() {
                     >
                       <View style={styles.divider}>
                         <View style={styles.dividerLine} />
-                        <ThemedText variant="body-small" style={styles.dividerText}>
+                        <ThemedText variant="bodySmall" style={styles.dividerText}>
                           or
                         </ThemedText>
                         <View style={styles.dividerLine} />
@@ -286,21 +286,26 @@ export default function SignInScreen() {
                       
                       <ThemedButton
                         variant="secondary"
-                        size="lg"
+                        size="large"
                         onPress={handleBiometricSignIn}
                         disabled={isLoading}
                         style={styles.biometricButton}
-                        leftIcon={
-                          authTypes.includes(1) ? "finger-print" : 
-                          authTypes.includes(2) ? "scan" : "shield-checkmark"
-                        }
                       >
-                        {authTypes.includes(1) ? 'Sign in with Touch ID' :
-                         authTypes.includes(2) ? 'Sign in with Face ID' :
-                         'Sign in with Biometrics'}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Ionicons 
+                            name={authTypes.includes(1) ? "finger-print" : authTypes.includes(2) ? "scan" : "shield-checkmark"} 
+                            size={20} 
+                            color={colors.text} 
+                          />
+                          <ThemedText>
+                            {authTypes.includes(1) ? 'Sign in with Touch ID' :
+                             authTypes.includes(2) ? 'Sign in with Face ID' :
+                             'Sign in with Biometrics'}
+                          </ThemedText>
+                        </View>
                       </ThemedButton>
                       
-                      <ThemedText variant="body-small" style={styles.biometricHint}>
+                      <ThemedText variant="bodySmall" style={styles.biometricHint}>
                         Quick access as {lastEmail}
                       </ThemedText>
                     </MotiView>
@@ -309,13 +314,13 @@ export default function SignInScreen() {
 
                 {/* Demo Section */}
                 <View style={styles.demoSection}>
-                  <ThemedText variant="label-medium" style={styles.demoTitle}>
+                  <ThemedText variant="labelMedium" style={styles.demoTitle}>
                     Quick Demo Access:
                   </ThemedText>
                   <View style={styles.demoButtons}>
                     <ThemedButton
                       variant="outline"
-                      size="sm"
+                      size="small"
                       onPress={() => handleDemoLogin('customer')}
                       style={styles.demoButton}
                     >
@@ -324,7 +329,7 @@ export default function SignInScreen() {
                     
                     <ThemedButton
                       variant="outline"
-                      size="sm"
+                      size="small"
                       onPress={() => handleDemoLogin('business')}
                       style={styles.demoButton}
                     >
@@ -335,11 +340,11 @@ export default function SignInScreen() {
 
                 {/* Sign Up Link */}
                 <View style={styles.signUpContainer}>
-                  <ThemedText variant="body-medium" style={styles.signUpText}>
+                  <ThemedText variant="bodyMedium" style={styles.signUpText}>
                     Don't have an account?{' '}
                   </ThemedText>
                   <TouchableOpacity onPress={() => router.push('/auth/role-selection')}>
-                    <ThemedText variant="body-medium" style={styles.signUpLink}>
+                    <ThemedText variant="bodyMedium" style={styles.signUpLink}>
                       Sign Up
                     </ThemedText>
                   </TouchableOpacity>
@@ -357,34 +362,36 @@ export default function SignInScreen() {
           >
             <View style={styles.divider}>
               <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <ThemedText variant="body-small" style={styles.dividerText}>
+              <ThemedText variant="bodySmall" style={styles.dividerText}>
                 Or continue with
               </ThemedText>
               <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
             </View>
 
             <View style={styles.socialButtons}>
-              <TouchableOpacity
-                icon="logo-google"
+              <ThemedButton
                 variant="outline"
-                size="lg"
+                size="large"
                 style={styles.socialButton}
                 onPress={() => {
                   // TODO: Implement Google Sign-In
                   Alert.alert('Coming Soon', 'Google Sign-In will be available soon!');
                 }}
-              />
+              >
+                <Ionicons name="logo-google" size={20} color={colors.text} />
+              </ThemedButton>
               
-              <TouchableOpacity
-                icon="logo-apple"
+              <ThemedButton
                 variant="outline"
-                size="lg"
+                size="large"
                 style={styles.socialButton}
                 onPress={() => {
                   // TODO: Implement Apple Sign-In
                   Alert.alert('Coming Soon', 'Apple Sign-In will be available soon!');
                 }}
-              />
+              >
+                <Ionicons name="logo-apple" size={20} color={colors.text} />
+              </ThemedButton>
             </View>
           </MotiView>
         </ScrollView>

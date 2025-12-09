@@ -36,9 +36,9 @@ export function useMemoryOptimization(config: Partial<MemoryOptimizationConfig> 
   
   const [memoryUsage, setMemoryUsage] = useState<MemoryUsage | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const cleanupIntervalRef = useRef<ReturnType<typeof setInterval>>();
+  const cleanupIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const lastCleanupRef = useRef(0);
-  const appStateSubscription = useRef<NativeEventSubscription>();
+  const appStateSubscription = useRef<NativeEventSubscription | undefined>(undefined);
 
   // Get current memory usage
   const getMemoryUsage = useCallback(async (): Promise<MemoryUsage | null> => {
