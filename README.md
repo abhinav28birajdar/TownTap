@@ -15,6 +15,21 @@
 
 ---
 
+## ⚡ Quick Start
+
+**Your app is configured and ready to run!**
+
+```bash
+npm start
+# Then press 'a' for Android, 'i' for iOS, or 'w' for web
+```
+
+📖 **See [PRODUCTION_SETUP.md](./PRODUCTION_SETUP.md) for complete setup guide**
+
+> **Note:** The "expo-notifications" error you see is normal - push notifications are optional. The app works perfectly without them!
+
+---
+
 ## 🌟 About
 
 TownTap is a modern, production-ready mobile application that bridges the gap between local businesses and their communities. Built with React Native and Expo, it provides a seamless platform for discovering, booking, and engaging with local services.

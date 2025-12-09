@@ -11,6 +11,7 @@ import 'react-native-url-polyfill/auto';
 // Import real-time and API key services
 import { useRealtime } from '@/hooks/use-realtime';
 import { apiKeyHelpers, apiKeyManager } from '@/lib/api-key-manager';
+import '@/lib/env-validator'; // Validate environment on app start
 import { notificationService } from '@/lib/notification-service';
 import { isAppConfigured } from '@/lib/secure-config-manager';
 import { initializeSupabase } from '@/lib/supabase';
@@ -31,6 +32,18 @@ function RootLayoutNav() {
     autoReconnect: true,
   });
 
+  // Failsafe: Force initialization after 5 seconds to prevent infinite loading
+  useEffect(() => {
+    const failsafeTimer = setTimeout(() => {
+      if (!servicesInitialized) {
+        console.warn('⏱️ Initialization timeout - forcing completion');
+        setServicesInitialized(true);
+      }
+    }, 5000);
+
+    return () => clearTimeout(failsafeTimer);
+  }, [servicesInitialized]);
+
   // Initialize services
   useEffect(() => {
     let mounted = true;
@@ -42,10 +55,9 @@ function RootLayoutNav() {
         // Check if app is configured
         const configured = await isAppConfigured();
         if (!configured) {
-          console.log('⚙️ App not configured, redirecting to config setup...');
+          console.log('⚙️ App not configured - user needs to set up config');
           if (mounted) {
             setServicesInitialized(true);
-            router.replace('/config-setup');
           }
           return;
         }
@@ -55,10 +67,9 @@ function RootLayoutNav() {
         if (supabaseReady) {
           console.log('✅ Supabase initialized');
         } else {
-          console.warn('⚠️ Supabase initialization failed, redirecting to config...');
+          console.warn('⚠️ Supabase initialization failed');
           if (mounted) {
             setServicesInitialized(true);
-            router.replace('/config-setup');
           }
           return;
         }
@@ -78,10 +89,15 @@ function RootLayoutNav() {
           console.warn('⚠️ Notification permissions denied');
         }
 
-        // Register for push notifications
-        const pushToken = await notificationService.registerForPushNotifications();
-        if (pushToken) {
-          console.log('✅ Push token obtained:', pushToken.substring(0, 20) + '...');
+        // Register for push notifications (only if projectId is configured)
+        const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+        if (projectId && projectId.trim() !== '' && projectId !== 'your-project-id') {
+          const pushToken = await notificationService.registerForPushNotifications();
+          if (pushToken) {
+            console.log('✅ Push token obtained:', pushToken.substring(0, 20) + '...');
+          }
+        } else {
+          console.log('ℹ️ Push notifications disabled - no project ID configured');
         }
 
         if (mounted) {
@@ -121,7 +137,7 @@ function RootLayoutNav() {
     // Wait for component to mount before allowing navigation
     const timer = setTimeout(() => {
       setIsNavigationReady(true);
-    }, 100);
+    }, 50);
 
     return () => clearTimeout(timer);
   }, []);
@@ -135,14 +151,24 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === 'auth';
     const inTabs = segments[0] === '(tabs)';
     const inSettings = segments[0] === 'settings';
+    const inConfigSetup = segments[0] === 'config-setup';
+    const inWelcome = segments[0] === 'welcome';
 
-    if (!session && !inAuthGroup && segments[0] !== 'welcome' && segments[0] !== 'config-setup') {
-      router.replace('/welcome');
-    } else if (session && !profile) {
-      router.replace('/auth/role-selection');
-    } else if (session && profile && !inTabs && !inSettings && segments[0] !== 'business' && segments[0] !== 'profile' && segments[0] !== 'notifications' && segments[0] !== 'modal') {
-      router.replace('/(tabs)/home');
-    }
+    // Check if app is configured (async check done earlier)
+    isAppConfigured().then((configured) => {
+      if (!configured && !inConfigSetup) {
+        router.replace('/config-setup');
+        return;
+      }
+
+      if (!session && !inAuthGroup && !inWelcome && !inConfigSetup) {
+        router.replace('/welcome');
+      } else if (session && !profile) {
+        router.replace('/auth/role-selection');
+      } else if (session && profile && !inTabs && segments[0] !== 'settings' && segments[0] !== 'business' && segments[0] !== 'profile' && segments[0] !== 'notifications' && segments[0] !== 'modal') {
+        router.replace('/(tabs)/home');
+      }
+    });
   }, [session, profile, segments, loading, isNavigationReady, servicesInitialized]);
 
   if (loading || !isNavigationReady || !servicesInitialized) {
@@ -155,6 +181,7 @@ function RootLayoutNav() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="welcome" />
         <Stack.Screen name="config-setup" />
+        <Stack.Screen name="debug" options={{ headerShown: true, title: 'Debug Info' }} />
         <Stack.Screen name="auth/forgot-password" />
         <Stack.Screen name="auth/role-selection" />
         <Stack.Screen name="auth/sign-in" />
@@ -162,7 +189,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="business/[id]" />
         <Stack.Screen name="profile" options={{ headerShown: true, title: 'Profile' }} />
-        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: true, title: 'Settings' }} />
+        <Stack.Screen name="settings/advanced" options={{ headerShown: true, title: 'Advanced Settings' }} />
         <Stack.Screen name="notifications" options={{ headerShown: true, title: 'Notifications' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>

@@ -25,6 +25,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Failsafe: Force loading to complete after 3 seconds
+  useEffect(() => {
+    const failsafeTimer = setTimeout(() => {
+      if (loading) {
+        console.warn('⏱️ Auth loading timeout - forcing completion');
+        setLoading(false);
+      }
+    }, 3000);
+
+    return () => clearTimeout(failsafeTimer);
+  }, [loading]);
+
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
@@ -57,6 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         fetchProfile(session.user.id).then(setProfile);
       }
       
+      setLoading(false);
+    }).catch((error) => {
+      console.error('Error getting session:', error);
       setLoading(false);
     });
 

@@ -1,5 +1,4 @@
-import { Colors } from '@/constants/colors';
-import { Typography } from '@/constants/theme';
+import { Colors, Typography } from '@/constants/theme';
 import { secureConfigManager } from '@/lib/secure-config-manager';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -158,9 +157,9 @@ export default function ConfigSetupScreen() {
         text2: 'Your settings have been saved securely',
       });
 
-      // Navigate to onboarding or home
+      // Navigate to welcome screen for authentication
       setTimeout(() => {
-        router.replace('/(tabs)');
+        router.replace('/welcome');
       }, 1000);
     } catch (error) {
       throw error;

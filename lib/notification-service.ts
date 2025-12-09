@@ -9,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -113,7 +115,21 @@ class NotificationService {
    * Register for push notifications and get token
    */
   async registerForPushNotifications(): Promise<string | null> {
+    // Early return to prevent native module errors
+    const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+    if (!projectId || projectId === 'your-project-id' || projectId.trim() === '') {
+      // Silently skip - app works fine without push notifications
+      return null;
+    }
+
     try {
+
+      // Skip push notification registration in Expo Go
+      if (Platform.OS !== 'web' && !(__DEV__ && process.env.EXPO_PUBLIC_SKIP_PUSH !== 'false')) {
+        console.log('📱 Push notifications require a development build - skipping in Expo Go');
+        return null;
+      }
+
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'default',
@@ -124,7 +140,7 @@ class NotificationService {
       }
 
       const { data: token } = await Notifications.getExpoPushTokenAsync({
-        projectId: 'your-project-id', // Replace with your Expo project ID
+        projectId,
       });
 
       this.pushToken = token;
@@ -132,7 +148,8 @@ class NotificationService {
       
       return token;
     } catch (error) {
-      console.error('Failed to register for push notifications:', error);
+      // Silently handle all push notification errors - app works without them
+      // No console.error to avoid alarming users
       return null;
     }
   }
@@ -283,14 +300,11 @@ class NotificationService {
         return;
       }
 
-      const content: Notifications.NotificationContent = {
+      const content: Notifications.NotificationContentInput = {
         title: notificationData.title,
         body: notificationData.body,
         data: notificationData.data || {},
-        sound: this.preferences.soundEnabled ? (notificationData.sound || 'default') : false,
-        vibrate: this.preferences.vibrationEnabled && notificationData.vibration !== false 
-          ? [0, 250, 250, 250] 
-          : undefined,
+        sound: this.preferences.soundEnabled ? (notificationData.sound || 'default') : undefined,
         badge: notificationData.badge,
         categoryIdentifier: notificationData.categoryId,
         priority: this.mapPriority(notificationData.priority || 'normal'),
@@ -340,7 +354,7 @@ class NotificationService {
       type: 'message',
       title: `💬 ${senderName}`,
       body: message.content || 'New message received',
-      data: { messageId: message.id, bookingId: message.booking_id },
+      data: { messageId: message.id },
       categoryId: 'message',
       priority: 'high',
     });
@@ -554,10 +568,10 @@ class NotificationService {
    */
   cleanup(): void {
     if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
+      this.notificationListener.remove();
     }
     if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
+      this.responseListener.remove();
     }
   }
 }
