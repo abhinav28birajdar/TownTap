@@ -10,60 +10,68 @@ import {
     View,
 } from 'react-native';
 
-const MOCK_NOTIFICATIONS = [
+const MOCK_MESSAGES = [
   {
     id: '1',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
+    avatar: '👨',
   },
   {
     id: '2',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
+    avatar: '👨',
   },
   {
     id: '3',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
+    avatar: '👨',
   },
   {
     id: '4',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
+    avatar: '👨',
   },
   {
     id: '5',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
+    avatar: '👨',
   },
   {
     id: '6',
-    title: 'Your booking is confirmed!',
+    name: 'Aarav Sharma',
+    business: "Aarav Men's Salon",
     time: '11:00 PM',
-  },
-  {
-    id: '7',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '8',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
+    avatar: '👨',
   },
 ];
 
-export default function NotificationsScreen() {
-  const renderNotification = ({ item }: { item: typeof MOCK_NOTIFICATIONS[0] }) => (
-    <View style={styles.notificationCard}>
+export default function MessagesScreen() {
+  const renderMessage = ({ item }: { item: typeof MOCK_MESSAGES[0] }) => (
+    <TouchableOpacity style={styles.messageCard}>
       <View style={styles.avatar}>
-        <Ionicons name="checkmark-circle" size={24} color="#4A5F4E" />
+        <Text style={styles.avatarText}>{item.avatar}</Text>
       </View>
-      <View style={styles.notificationInfo}>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
+      <View style={styles.messageInfo}>
+        <Text style={styles.messageName}>{item.name}</Text>
+        <Text style={styles.messageBusiness}>{item.business}</Text>
       </View>
-      <Text style={styles.notificationTime}>{item.time}</Text>
-    </View>
+      <View style={styles.messageRight}>
+        <Text style={styles.messageTime}>{item.time}</Text>
+        <TouchableOpacity style={styles.cameraButton}>
+          <Ionicons name="camera" size={20} color="#4A5F4E" />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -73,16 +81,16 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <Text style={styles.headerTitle}>Messages</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Notifications List */}
+      {/* Messages List */}
       <FlatList
-        data={MOCK_NOTIFICATIONS}
-        renderItem={renderNotification}
+        data={MOCK_MESSAGES}
+        renderItem={renderMessage}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.notificationsList}
+        contentContainerStyle={styles.messagesList}
       />
 
       {/* See All Button */}
@@ -139,12 +147,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
   },
-  notificationsList: {
+  messagesList: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     gap: Spacing.md,
   },
-  notificationCard: {
+  messageCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#A8D5AB',
@@ -161,17 +169,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: Spacing.md,
   },
-  notificationInfo: {
+  avatarText: {
+    fontSize: 24,
+  },
+  messageInfo: {
     flex: 1,
   },
-  notificationTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+  messageName: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#333',
+    marginBottom: 2,
   },
-  notificationTime: {
+  messageBusiness: {
+    fontSize: 14,
+    color: '#555',
+  },
+  messageRight: {
+    alignItems: 'flex-end',
+  },
+  messageTime: {
     fontSize: 12,
     color: '#555',
+    marginBottom: 8,
+  },
+  cameraButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   seeAllButton: {
     alignItems: 'center',

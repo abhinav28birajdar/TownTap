@@ -1,69 +1,56 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { MotiView } from 'moti';
 import React, { useState } from 'react';
 import {
+    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
+    Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 
-// Import our modern UI components
-import { ThemedButton, ThemedCard, ThemedInput, ThemedText } from '@/components/ui';
-
-// Import form validation
-import { useFormWithValidation } from '@/hooks/use-form-validation';
-import { SignUpFormData, signUpSchema } from '@/lib/validation-schemas';
-
-// Import theme and auth
-import { Gradients, Shadows, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
-import { useColors } from '@/contexts/theme-context';
 
 export default function SignUpScreen() {
   const { role } = useLocalSearchParams<{ role: string }>();
   const { signUp } = useAuth();
-  const colors = useColors();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Enhanced form handling with validation
-  const form = useFormWithValidation(signUpSchema, {
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      phone: '',
-      termsAccepted: false,
-      marketingOptIn: false,
-    },
-    successMessage: 'Account created successfully! 🎉',
-  });
+  const [loading, setLoading] = useState(false);
 
   const userRole = (role as 'customer' | 'business_owner') || 'customer';
 
-  const handleSignUp = async (data: SignUpFormData) => {
+  const handleSignUp = async () => {
+    if (!fullName || !email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await signUp(
-        data.email,
-        data.password,
-        `${data.firstName} ${data.lastName}`,
-        data.phone || '',
-        userRole
-      );
-      
+      await signUp(email, password, fullName, '', userRole);
+      Alert.alert('Success', 'Account created successfully!');
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Sign up error:', error);
-      throw new Error(error.message || 'Failed to create account. Please try again.');
+      Alert.alert('Sign Up Failed', error.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -71,206 +58,110 @@ export default function SignUpScreen() {
     >
       <Stack.Screen
         options={{
-          title: 'Create Account',
-          headerTransparent: true,
-          headerTintColor: colors.textInverse,
+          headerShown: false,
         }}
       />
 
-      <LinearGradient
-        colors={Gradients.primary}
-        style={styles.gradient}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Animated Header */}
-          <MotiView
-            from={{ opacity: 0, scale: 0.8, translateY: -50 }}
-            animate={{ opacity: 1, scale: 1, translateY: 0 }}
-            transition={{ type: 'spring', delay: 200 }}
-            style={styles.header}
+        {/* Logo */}
+        <View style={styles.logoWrapper}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logo}>🏘️</Text>
+            <Text style={styles.logoText}>TownTap</Text>
+          </View>
+        </View>
+
+        {/* Title */}
+        <Text style={styles.title}>Sign up To Your Account.</Text>
+        <Text style={styles.subtitle}>
+          Access your account to manage settings{'\n'}explore features.
+        </Text>
+
+        {/* Form */}
+        <View style={styles.formCard}>
+          {/* Full Name Input */}
+          <TextInput
+            style={styles.input}
+            placeholder="your  name"
+            value={fullName}
+            onChangeText={setFullName}
+            autoCapitalize="words"
+            placeholderTextColor="#999"
+          />
+
+          {/* Email Input */}
+          <TextInput
+            style={styles.input}
+            placeholder="example@gmail.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            placeholderTextColor="#999"
+          />
+
+          {/* Password Input */}
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={[styles.input, styles.passwordInput]}
+              placeholder="password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={22}
+                color="#666"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Forgot Password Link */}
+          <TouchableOpacity 
+            style={styles.forgotPassword}
+            onPress={() => router.push('/auth/forgot-password')}
           >
-            <ThemedText style={styles.logo}>🏘️</ThemedText>
-            <ThemedText variant="displaySmall" style={styles.title}>
-              Create Account
-            </ThemedText>
-            <ThemedText variant="bodyLarge" style={styles.subtitle}>
-              Join TownTap as {userRole === 'business_owner' ? 'Business Owner' : 'Customer'}
-            </ThemedText>
-          </MotiView>
+            <Text style={styles.forgotText}>forgot password ?</Text>
+          </TouchableOpacity>
 
-          {/* Modern Form ThemedCard */}
-          <MotiView
-            from={{ opacity: 0, translateY: 50 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'spring', delay: 400 }}
+          {/* Sign Up Button */}
+          <TouchableOpacity
+            style={[styles.signUpButton, loading && styles.signUpButtonDisabled]}
+            onPress={handleSignUp}
+            disabled={loading}
           >
-            <ThemedCard variant="elevated" style={styles.formCard}>
-              <View style={styles.form}>
-                {/* Name Fields */}
-                <View style={styles.nameRow}>
-                  <ThemedInput
-                    label="First Name"
-                    placeholder="John"
-                    value={form.watch('firstName')}
-                    onChangeText={(text) => form.setValue('firstName', text)}
-                    onBlur={() => form.trigger('firstName')}
-                    leftIcon="person"
-                    error={form.isFieldInvalid('firstName') ? form.getFieldError('firstName') : undefined}
-                    helperText={form.getFieldError('firstName')}
-                    style={[styles.input, styles.nameInput]}
-                  />
-                  
-                  <ThemedInput
-                    label="Last Name"
-                    placeholder="Doe"
-                    value={form.watch('lastName')}
-                    onChangeText={(text) => form.setValue('lastName', text)}
-                    onBlur={() => form.trigger('lastName')}
-                    leftIcon="person"
-                    error={form.isFieldInvalid('lastName') ? form.getFieldError('lastName') : undefined}
-                    helperText={form.getFieldError('lastName')}
-                    style={[styles.input, styles.nameInput]}
-                  />
-                </View>
+            <Text style={styles.signUpButtonText}>
+              {loading ? 'Creating Account...' : 'Sign up'}
+            </Text>
+          </TouchableOpacity>
 
-                {/* Email ThemedInput */}
-                <ThemedInput
-                  label="Email Address"
-                  placeholder="john.doe@example.com"
-                  value={form.watch('email')}
-                  onChangeText={(text) => form.setValue('email', text)}
-                  onBlur={() => form.trigger('email')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  leftIcon="mail"
-                  error={form.isFieldInvalid('email') ? form.getFieldError('email') : undefined}
-                  helperText={form.getFieldError('email')}
-                  style={styles.input}
-                />
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
-                {/* Phone ThemedInput */}
-                <ThemedInput
-                  label="Phone Number (Optional)"
-                  placeholder="(555) 123-4567"
-                  value={form.watch('phone')}
-                  onChangeText={(text) => form.setValue('phone', text)}
-                  onBlur={() => form.trigger('phone')}
-                  keyboardType="phone-pad"
-                  autoComplete="tel"
-                  leftIcon="call"
-                  error={form.isFieldInvalid('phone') ? form.getFieldError('phone') : undefined}
-                  helperText={form.getFieldError('phone')}
-                  style={styles.input}
-                />
-
-                {/* Password Fields */}
-                <ThemedInput
-                  label="Password"
-                  placeholder="Create a strong password"
-                  value={form.watch('password')}
-                  onChangeText={(text) => form.setValue('password', text)}
-                  onBlur={() => form.trigger('password')}
-                  secureTextEntry={!showPassword}
-                  leftIcon="lock-closed"
-                  rightIcon={showPassword ? 'eye-off' : 'eye'}
-                  onRightIconPress={() => setShowPassword(!showPassword)}
-                  error={form.isFieldInvalid('password') ? form.getFieldError('password') : undefined}
-                  helperText={form.getFieldError('password') || 'Must be at least 8 characters with uppercase, lowercase, and number'}
-                  style={styles.input}
-                />
-
-                <ThemedInput
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
-                  value={form.watch('confirmPassword')}
-                  onChangeText={(text) => form.setValue('confirmPassword', text)}
-                  onBlur={() => form.trigger('confirmPassword')}
-                  secureTextEntry={!showConfirmPassword}
-                  leftIcon="lock-closed"
-                  rightIcon={showConfirmPassword ? 'eye-off' : 'eye'}
-                  onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  error={form.isFieldInvalid('confirmPassword') ? form.getFieldError('confirmPassword') : undefined}
-                  helperText={form.getFieldError('confirmPassword')}
-                  style={styles.input}
-                />
-
-                {/* Terms and Conditions */}
-                <View style={styles.checkboxContainer}>
-                  <TouchableOpacity
-                    style={styles.checkbox}
-                    onPress={() => form.setValue('termsAccepted', !form.watch('termsAccepted'))}
-                  >
-                    <View style={[
-                      styles.checkboxBox,
-                      form.watch('termsAccepted') && styles.checkboxChecked
-                    ]}>
-                      {form.watch('termsAccepted') && (
-                        <Ionicons name="checkmark" size={12} color={colors.textInverse} />
-                      )}
-                    </View>
-                    <ThemedText variant="bodySmall" style={styles.checkboxText}>
-                      I agree to the{' '}
-                      <ThemedText style={styles.linkText}>Terms of Service</ThemedText>
-                      {' '}and{' '}
-                      <ThemedText style={styles.linkText}>Privacy Policy</ThemedText>
-                    </ThemedText>
-                  </TouchableOpacity>
-                  {form.isFieldInvalid('termsAccepted') && (
-                    <ThemedText variant="bodySmall" style={styles.errorText}>
-                      {form.getFieldError('termsAccepted')}
-                    </ThemedText>
-                  )}
-                </View>
-
-                {/* Marketing Opt-in */}
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => form.setValue('marketingOptIn', !form.watch('marketingOptIn'))}
-                >
-                  <View style={[
-                    styles.checkboxBox,
-                    form.watch('marketingOptIn') && styles.checkboxChecked
-                  ]}>
-                    {form.watch('marketingOptIn') && (
-                      <Ionicons name="checkmark" size={12} color={colors.textInverse} />
-                    )}
-                  </View>
-                  <ThemedText variant="bodySmall" style={styles.checkboxText}>
-                    Send me updates and promotional offers
-                  </ThemedText>
-                </TouchableOpacity>
-
-                {/* Sign Up ThemedButton */}
-                <ThemedButton
-                  variant="primary"
-                  size="large"
-                  onPress={() => form.submitWithToast(handleSignUp)}
-                  disabled={form.isSubmitting}
-                  style={styles.signUpButton}
-                >
-                  {form.isSubmitting ? 'Creating Account...' : 'Create Account'}
-                </ThemedButton>
-
-                {/* Sign In Link */}
-                <View style={styles.signInContainer}>
-                  <ThemedText variant="bodyMedium" style={styles.signInText}>
-                    Already have an account?{' '}
-                  </ThemedText>
-                  <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-                    <ThemedText variant="bodyMedium" style={styles.signInLink}>
-                      Sign In
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ThemedCard>
-          </MotiView>
-        </ScrollView>
-      </LinearGradient>
+          {/* Already have account */}
+          <View style={styles.signInContainer}>
+            <Text style={styles.signInText}>Dont have an account ? </Text>
+            <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
+              <Text style={styles.signInLink}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -278,91 +169,133 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#C8E6C9',
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: Spacing.xl,
-    paddingTop: 80,
-  },
-  header: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl * 2,
+    paddingBottom: Spacing.xl,
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+  },
+  logoWrapper: {
+    marginBottom: Spacing.lg,
+  },
+  logoBox: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
   logo: {
-    fontSize: 60,
-    marginBottom: Spacing.sm,
+    fontSize: 42,
+  },
+  logoText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1B5E20',
+    marginTop: 4,
   },
   title: {
-    color: '#FFFFFF',
-    marginBottom: Spacing.xs,
-    textAlign: 'center',
+    fontSize: 26,
     fontWeight: '700',
+    color: '#1B5E20',
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
   },
   subtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+    color: '#424242',
+    marginBottom: Spacing.xxl,
     textAlign: 'center',
-  },
-  formCard: {
-    marginBottom: Spacing.xl,
-    ...Shadows.xl,
-  },
-  form: {
-    padding: Spacing.lg,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  nameInput: {
-    flex: 1,
-  },
-  input: {
-    marginBottom: Spacing.md,
-  },
-  checkboxContainer: {
-    marginBottom: Spacing.md,
-  },
-  checkbox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: Spacing.sm,
-  },
-  checkboxBox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#CBD5E1',
-    marginRight: Spacing.sm,
-    marginTop: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
-  },
-  checkboxText: {
-    flex: 1,
-    color: '#64748B',
     lineHeight: 20,
   },
-  linkText: {
-    color: '#2563EB',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
+  formCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: Spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  errorText: {
-    color: '#EF4444',
-    marginTop: Spacing.xs,
+  input: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md + 2,
+    fontSize: 15,
+    color: '#333',
+    marginBottom: Spacing.md,
+    borderWidth: 2,
+    borderColor: '#2E7D32',
+  },
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: Spacing.sm,
+  },
+  passwordInput: {
+    marginBottom: 0,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 14,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: Spacing.lg,
+  },
+  forgotText: {
+    color: '#1B5E20',
+    fontSize: 13,
+    fontWeight: '500',
   },
   signUpButton: {
-    marginTop: Spacing.lg,
+    backgroundColor: '#5B9BD5',
+    borderRadius: 16,
+    paddingVertical: Spacing.md + 4,
+    alignItems: 'center',
     marginBottom: Spacing.lg,
+    shadowColor: '#5B9BD5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  signUpButtonDisabled: {
+    opacity: 0.6,
+  },
+  signUpButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: Spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#BDBDBD',
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
+    color: '#757575',
+    fontSize: 14,
   },
   signInContainer: {
     flexDirection: 'row',
@@ -370,12 +303,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signInText: {
-    color: '#64748B',
+    color: '#616161',
+    fontSize: 14,
   },
   signInLink: {
-    color: '#2563EB',
+    color: '#2E7D32',
+    fontSize: 14,
     fontWeight: '600',
   },
 });
-
-

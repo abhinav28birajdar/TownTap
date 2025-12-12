@@ -30,8 +30,25 @@ class SecureConfigManager {
    */
   async isConfigured(): Promise<boolean> {
     try {
+      // Check SecureStore first
       const initialized = await AsyncStorage.getItem(CONFIG_KEYS.CONFIG_INITIALIZED);
-      return initialized === 'true';
+      if (initialized === 'true') {
+        return true;
+      }
+      
+      // Fallback: Check if .env has valid credentials
+      const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const envKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (envUrl && envKey && 
+          envUrl.startsWith('https://') && 
+          envUrl.includes('.supabase.co') &&
+          envKey.length > 100) {
+        console.log('✅ Using credentials from .env file');
+        return true;
+      }
+      
+      return false;
     } catch (error) {
       console.error('Error checking config status:', error);
       return false;
@@ -86,25 +103,43 @@ class SecureConfigManager {
         return null;
       }
 
-      // Load from SecureStore
+      // Try to load from SecureStore first
       const supabaseUrl = await SecureStore.getItemAsync(CONFIG_KEYS.SUPABASE_URL);
       const supabaseAnonKey = await SecureStore.getItemAsync(CONFIG_KEYS.SUPABASE_ANON_KEY);
 
-      if (!supabaseUrl || !supabaseAnonKey) {
-        return null;
+      // If SecureStore has values, use them
+      if (supabaseUrl && supabaseAnonKey) {
+        const config: AppConfig = {
+          supabaseUrl,
+          supabaseAnonKey,
+          googleMapsApiKey: (await SecureStore.getItemAsync(CONFIG_KEYS.GOOGLE_MAPS_API_KEY)) || undefined,
+          stripePublishableKey: (await SecureStore.getItemAsync(CONFIG_KEYS.STRIPE_PUBLISHABLE_KEY)) || undefined,
+        };
+
+        // Cache the config
+        this.configCache = { ...config };
+        return config;
       }
 
-      const config: AppConfig = {
-        supabaseUrl,
-        supabaseAnonKey,
-        googleMapsApiKey: (await SecureStore.getItemAsync(CONFIG_KEYS.GOOGLE_MAPS_API_KEY)) || undefined,
-        stripePublishableKey: (await SecureStore.getItemAsync(CONFIG_KEYS.STRIPE_PUBLISHABLE_KEY)) || undefined,
-      };
+      // Fallback to .env file
+      const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const envKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (envUrl && envKey) {
+        console.log('📄 Loading configuration from .env file');
+        const config: AppConfig = {
+          supabaseUrl: envUrl,
+          supabaseAnonKey: envKey,
+          googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+          stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        };
 
-      // Cache the config
-      this.configCache = { ...config };
+        // Cache the config
+        this.configCache = { ...config };
+        return config;
+      }
 
-      return config;
+      return null;
     } catch (error) {
       console.error('Error loading config:', error);
       return null;

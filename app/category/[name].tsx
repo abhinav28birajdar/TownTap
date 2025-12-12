@@ -1,9 +1,6 @@
 import { Spacing } from '@/constants/spacing';
-import { useAuth } from '@/contexts/auth-context';
-import { Database } from '@/lib/database.types';
-import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ScrollView,
@@ -14,62 +11,21 @@ import {
     View,
 } from 'react-native';
 
-type Category = Database['public']['Tables']['categories']['Row'];
-
-const SERVICE_DATA = [
-  { id: 'food', name: 'Food', subtitle: 'Meals, Snacks, Food Hub', icon: '🍔', color: '#A8D5AB' },
-  { id: 'doctor', name: 'Doctor', subtitle: 'Health, Medic Care', icon: '👨‍⚕️', color: '#A8D5AB' },
-  { id: 'shopkeeper', name: 'Shopkeeper', subtitle: 'General Store, Local Shop', icon: '👔', color: '#A8D5AB' },
-  { id: 'gardener', name: 'Gardener', subtitle: 'Garden Care, Green Work', icon: '👨‍🌾', color: '#A8D5AB' },
-  { id: 'carpenter', name: 'Carpenter', subtitle: 'Wood Work, Carpentry', icon: '👷', color: '#A8D5AB' },
-  { id: 'painter', name: 'Painter', subtitle: 'Wall Paint, Paint Pro', icon: '🎨', color: '#A8D5AB' },
-  { id: 'plumber', name: 'Plumber', subtitle: 'Water Fix, Pipe Care', icon: '🔧', color: '#A8D5AB' },
-  { id: 'house maid', name: 'House Maid', subtitle: 'Home Help, Maid Care', icon: '🧹', color: '#A8D5AB' },
-  { id: 'electronics', name: 'Electronics', subtitle: 'Tech Fix, Gadget Care', icon: '🔌', color: '#A8D5AB' },
-  { id: 'clothes shop', name: 'Clothes Shop', subtitle: 'Fashion, Apparel', icon: '👕', color: '#A8D5AB' },
-  { id: 'water supply', name: 'Water Supply', subtitle: 'Water Tank, Water Service', icon: '💧', color: '#A8D5AB' },
-  { id: 'stationery', name: 'Stationery', subtitle: 'Office Needs, Study Shop', icon: '📝', color: '#A8D5AB' },
+const MOCK_SHOPS = [
+  { id: '1', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '👨‍⚕️' },
+  { id: '2', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '🍔' },
+  { id: '3', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '👨‍⚕️' },
+  { id: '4', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '🍔' },
+  { id: '5', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '👨‍⚕️' },
+  { id: '6', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '🍔' },
+  { id: '7', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '👨‍⚕️' },
+  { id: '8', name: 'SpiceBite', category: 'MD Nasi Tantos', rating: 4.5, image: '🍔' },
 ];
 
-export default function ExploreScreen() {
-  const { profile } = useAuth();
+export default function ShopListingScreen() {
+  const params = useLocalSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  React.useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleServicePress = (serviceId: string) => {
-    router.push(`/customer/search?category=${serviceId}`);
-  };
-
-  const handleServicePress = (serviceId: string) => {
-    router.push(`/customer/search?category=${serviceId}`);
-  };
-
-  const filteredServices = SERVICE_DATA.filter(service =>
-    service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    service.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const categoryTitle = params.category as string || 'Shop';
 
   return (
     <View style={styles.container}>
@@ -94,7 +50,7 @@ export default function ExploreScreen() {
 
       <ScrollView style={styles.scrollView}>
         {/* Title */}
-        <Text style={styles.pageTitle}>Our Services</Text>
+        <Text style={styles.pageTitle}>{categoryTitle}</Text>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -110,20 +66,39 @@ export default function ExploreScreen() {
           </View>
         </View>
 
-        {/* Services Grid */}
-        <View style={styles.servicesGrid}>
-          {filteredServices.map((service) => (
+        {/* Shop Grid */}
+        <View style={styles.shopGrid}>
+          {MOCK_SHOPS.map((shop) => (
             <TouchableOpacity
-              key={service.id}
-              style={[styles.serviceCard, { backgroundColor: service.color }]}
-              onPress={() => handleServicePress(service.id)}
+              key={shop.id}
+              style={styles.shopCard}
+              onPress={() => router.push(`/business/${shop.id}`)}
             >
-              <View style={styles.serviceIconContainer}>
-                <Text style={styles.serviceIcon}>{service.icon}</Text>
+              {/* Favorite Button */}
+              <TouchableOpacity style={styles.favoriteButton}>
+                <Ionicons name="star" size={16} color="#FFA000" />
+                <Text style={styles.ratingText}>{shop.rating}</Text>
+              </TouchableOpacity>
+
+              {/* Shop Image/Icon */}
+              <View style={styles.shopImageContainer}>
+                <Text style={styles.shopIcon}>{shop.image}</Text>
               </View>
-              <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>{service.name}</Text>
-                <Text style={styles.serviceSubtitle}>{service.subtitle}</Text>
+
+              {/* Shop Info */}
+              <View style={styles.shopInfo}>
+                <Text style={styles.shopName}>{shop.name}</Text>
+                <Text style={styles.shopCategory}>{shop.category}</Text>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.actionButtons}>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Ionicons name="chatbubble" size={18} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Ionicons name="toggle" size={18} color="#fff" />
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           ))}
@@ -222,42 +197,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  servicesGrid: {
+  shopGrid: {
     paddingHorizontal: Spacing.lg,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.md,
   },
-  serviceCard: {
+  shopCard: {
+    width: '47%',
+    backgroundColor: '#A8D5AB',
+    borderRadius: 20,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  favoriteButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: 20,
-    marginBottom: Spacing.md,
-    minHeight: 100,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginBottom: Spacing.sm,
   },
-  serviceIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 4,
+  },
+  shopImageContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
+    marginVertical: Spacing.md,
   },
-  serviceIcon: {
-    fontSize: 32,
+  shopIcon: {
+    fontSize: 48,
   },
-  serviceInfo: {
-    flex: 1,
+  shopInfo: {
+    marginBottom: Spacing.sm,
   },
-  serviceName: {
-    fontSize: 18,
+  shopName: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#333',
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  serviceSubtitle: {
-    fontSize: 13,
+  shopCategory: {
+    fontSize: 12,
     color: '#555',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: '#4A5F4E',
+    borderRadius: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bottomNav: {
     position: 'absolute',

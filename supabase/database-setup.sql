@@ -1,6 +1,16 @@
--- TownTap Database Schema
--- This file contains all tables, relationships, indexes, and Row Level Security policies
--- Run this file to set up your Supabase database from scratch
+-- ============================================
+-- TOWNTAP DATABASE - COMPLETE SETUP
+-- ============================================
+-- This is the single comprehensive SQL file for TownTap
+-- Run this file in Supabase SQL Editor to set up the entire database
+-- 
+-- Instructions:
+-- 1. Go to Supabase Dashboard > SQL Editor
+-- 2. Create a new query
+-- 3. Paste this entire file
+-- 4. Click "Run"
+-- 5. Wait for completion (may take 30-60 seconds)
+-- ============================================
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -10,18 +20,42 @@ CREATE EXTENSION IF NOT EXISTS "postgis";
 -- ENUMS
 -- ============================================
 
-CREATE TYPE user_role AS ENUM ('customer', 'business_owner', 'admin');
-CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled');
-CREATE TYPE business_status AS ENUM ('pending', 'active', 'suspended', 'closed');
-CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'completed', 'failed', 'refunded');
-CREATE TYPE notification_type AS ENUM ('booking', 'payment', 'message', 'promotion', 'system');
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('customer', 'business_owner', 'admin');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE business_status AS ENUM ('pending', 'active', 'suspended', 'closed');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'completed', 'failed', 'refunded');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE notification_type AS ENUM ('booking', 'payment', 'message', 'promotion', 'system');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- ============================================
 -- TABLES
 -- ============================================
 
 -- User Profiles Table
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
@@ -48,7 +82,7 @@ CREATE TABLE profiles (
 );
 
 -- Business Categories Table
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
@@ -63,7 +97,7 @@ CREATE TABLE categories (
 );
 
 -- Businesses Table
-CREATE TABLE businesses (
+CREATE TABLE IF NOT EXISTS businesses (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   owner_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -97,6 +131,7 @@ CREATE TABLE businesses (
     "saturday": {"open": "10:00", "close": "16:00", "closed": false},
     "sunday": {"open": null, "close": null, "closed": true}
   }'::jsonb,
+  is_open BOOLEAN DEFAULT TRUE,
   
   -- Ratings & Stats
   rating NUMERIC(3, 2) DEFAULT 0.00,
@@ -115,7 +150,7 @@ CREATE TABLE businesses (
 );
 
 -- Services Table
-CREATE TABLE services (
+CREATE TABLE IF NOT EXISTS services (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -131,7 +166,7 @@ CREATE TABLE services (
 );
 
 -- Bookings Table
-CREATE TABLE bookings (
+CREATE TABLE IF NOT EXISTS bookings (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   customer_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE NOT NULL,
@@ -140,6 +175,7 @@ CREATE TABLE bookings (
   -- Booking Details
   scheduled_date DATE NOT NULL,
   scheduled_time TIME NOT NULL,
+  booking_date TIMESTAMP WITH TIME ZONE,
   duration_minutes INTEGER NOT NULL,
   notes TEXT,
   
@@ -167,7 +203,7 @@ CREATE TABLE bookings (
 );
 
 -- Reviews Table
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE NOT NULL,
   customer_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -186,7 +222,7 @@ CREATE TABLE reviews (
 );
 
 -- Favorites Table
-CREATE TABLE favorites (
+CREATE TABLE IF NOT EXISTS favorites (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE NOT NULL,
@@ -195,7 +231,7 @@ CREATE TABLE favorites (
 );
 
 -- Payments Table
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE NOT NULL,
   customer_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -213,7 +249,7 @@ CREATE TABLE payments (
 );
 
 -- Notifications Table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   type notification_type NOT NULL,
@@ -225,8 +261,8 @@ CREATE TABLE notifications (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Messages Table (for customer-business communication)
-CREATE TABLE messages (
+-- Messages Table
+CREATE TABLE IF NOT EXISTS messages (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   conversation_id UUID NOT NULL,
   sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -240,7 +276,7 @@ CREATE TABLE messages (
 );
 
 -- Business Analytics Table
-CREATE TABLE business_analytics (
+CREATE TABLE IF NOT EXISTS business_analytics (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE NOT NULL,
   date DATE NOT NULL,
@@ -260,55 +296,55 @@ CREATE TABLE business_analytics (
 -- ============================================
 
 -- Profiles indexes
-CREATE INDEX idx_profiles_role ON profiles(role);
-CREATE INDEX idx_profiles_email ON profiles(email);
-CREATE INDEX idx_profiles_location ON profiles USING GIST(location);
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_location ON profiles USING GIST(location);
 
 -- Businesses indexes
-CREATE INDEX idx_businesses_owner ON businesses(owner_id);
-CREATE INDEX idx_businesses_category ON businesses(category_id);
-CREATE INDEX idx_businesses_location ON businesses USING GIST(location);
-CREATE INDEX idx_businesses_status ON businesses(status);
-CREATE INDEX idx_businesses_rating ON businesses(rating DESC);
-CREATE INDEX idx_businesses_slug ON businesses(slug);
-CREATE INDEX idx_businesses_featured ON businesses(is_featured) WHERE is_featured = TRUE;
+CREATE INDEX IF NOT EXISTS idx_businesses_owner ON businesses(owner_id);
+CREATE INDEX IF NOT EXISTS idx_businesses_category ON businesses(category_id);
+CREATE INDEX IF NOT EXISTS idx_businesses_location ON businesses USING GIST(location);
+CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status);
+CREATE INDEX IF NOT EXISTS idx_businesses_rating ON businesses(rating DESC);
+CREATE INDEX IF NOT EXISTS idx_businesses_slug ON businesses(slug);
+CREATE INDEX IF NOT EXISTS idx_businesses_featured ON businesses(is_featured) WHERE is_featured = TRUE;
 
 -- Services indexes
-CREATE INDEX idx_services_business ON services(business_id);
-CREATE INDEX idx_services_active ON services(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_services_business ON services(business_id);
+CREATE INDEX IF NOT EXISTS idx_services_active ON services(is_active) WHERE is_active = TRUE;
 
 -- Bookings indexes
-CREATE INDEX idx_bookings_customer ON bookings(customer_id);
-CREATE INDEX idx_bookings_business ON bookings(business_id);
-CREATE INDEX idx_bookings_status ON bookings(status);
-CREATE INDEX idx_bookings_date ON bookings(scheduled_date);
-CREATE INDEX idx_bookings_created ON bookings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_business ON bookings(business_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_created ON bookings(created_at DESC);
 
 -- Reviews indexes
-CREATE INDEX idx_reviews_business ON reviews(business_id);
-CREATE INDEX idx_reviews_customer ON reviews(customer_id);
-CREATE INDEX idx_reviews_rating ON reviews(rating);
-CREATE INDEX idx_reviews_created ON reviews(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reviews_business ON reviews(business_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_customer ON reviews(customer_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
+CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at DESC);
 
 -- Favorites indexes
-CREATE INDEX idx_favorites_user ON favorites(user_id);
-CREATE INDEX idx_favorites_business ON favorites(business_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_business ON favorites(business_id);
 
 -- Notifications indexes
-CREATE INDEX idx_notifications_user ON notifications(user_id);
-CREATE INDEX idx_notifications_read ON notifications(read) WHERE read = FALSE;
-CREATE INDEX idx_notifications_created ON notifications(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read) WHERE read = FALSE;
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
 
 -- Messages indexes
-CREATE INDEX idx_messages_conversation ON messages(conversation_id);
-CREATE INDEX idx_messages_sender ON messages(sender_id);
-CREATE INDEX idx_messages_receiver ON messages(receiver_id);
-CREATE INDEX idx_messages_business ON messages(business_id);
-CREATE INDEX idx_messages_created ON messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_messages_business ON messages(business_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
 
 -- Analytics indexes
-CREATE INDEX idx_analytics_business ON business_analytics(business_id);
-CREATE INDEX idx_analytics_date ON business_analytics(date DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_business ON business_analytics(business_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_date ON business_analytics(date DESC);
 
 -- ============================================
 -- FUNCTIONS & TRIGGERS
@@ -324,37 +360,60 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply updated_at trigger to relevant tables
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_businesses_updated_at ON businesses;
 CREATE TRIGGER update_businesses_updated_at BEFORE UPDATE ON businesses
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_services_updated_at ON services;
 CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_bookings_updated_at ON bookings;
 CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_reviews_updated_at ON reviews;
 CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_payments_updated_at ON payments;
 CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON payments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Update business rating when review is added/updated/deleted
 CREATE OR REPLACE FUNCTION update_business_rating()
 RETURNS TRIGGER AS $$
+DECLARE
+  target_business_id UUID;
 BEGIN
+  -- Determine which business_id to update
+  IF TG_OP = 'DELETE' THEN
+    target_business_id := OLD.business_id;
+  ELSE
+    target_business_id := NEW.business_id;
+  END IF;
+
+  -- Update business rating and review count
   UPDATE businesses
   SET 
-    rating = (SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE business_id = COALESCE(NEW.business_id, OLD.business_id)),
-    total_reviews = (SELECT COUNT(*) FROM reviews WHERE business_id = COALESCE(NEW.business_id, OLD.business_id))
-  WHERE id = COALESCE(NEW.business_id, OLD.business_id);
-  RETURN COALESCE(NEW, OLD);
+    rating = COALESCE((SELECT AVG(rating)::numeric(3,2) FROM reviews WHERE business_id = target_business_id), 0),
+    total_reviews = (SELECT COUNT(*)::integer FROM reviews WHERE business_id = target_business_id)
+  WHERE id = target_business_id;
+
+  -- Return appropriate row
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_business_rating_trigger ON reviews;
 CREATE TRIGGER update_business_rating_trigger
 AFTER INSERT OR UPDATE OR DELETE ON reviews
 FOR EACH ROW EXECUTE FUNCTION update_business_rating();
@@ -372,9 +431,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_business_bookings_trigger ON bookings;
 CREATE TRIGGER update_business_bookings_trigger
 AFTER INSERT ON bookings
 FOR EACH ROW EXECUTE FUNCTION update_business_bookings();
+
+-- Handle new user signup - automatically create profile
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, phone, role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'phone', ''),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'customer')::user_role
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to automatically create profile on user signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
@@ -393,25 +475,37 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE business_analytics ENABLE ROW LEVEL SECURITY;
 
--- Profiles policies
-CREATE POLICY "Users can view their own profile"
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can view other profiles (limited info)" ON profiles;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON profiles;
+DROP POLICY IF EXISTS "Enable read access for all users" ON profiles;
+
+-- Profiles policies (allow trigger to insert, users to read/update own profile)
+CREATE POLICY "Enable read access for all users"
   ON profiles FOR SELECT
-  USING (auth.uid() = id);
+  USING (true);
 
 CREATE POLICY "Users can update their own profile"
   ON profiles FOR UPDATE
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can view other profiles (limited info)"
-  ON profiles FOR SELECT
-  USING (true); -- Everyone can see basic profile info
-
--- Categories policies (public read)
+-- Categories policies
+DROP POLICY IF EXISTS "Anyone can view categories" ON categories;
 CREATE POLICY "Anyone can view categories"
   ON categories FOR SELECT
   USING (is_active = TRUE);
 
 -- Businesses policies
+DROP POLICY IF EXISTS "Anyone can view active businesses" ON businesses;
+DROP POLICY IF EXISTS "Business owners can view their own businesses" ON businesses;
+DROP POLICY IF EXISTS "Business owners can create businesses" ON businesses;
+DROP POLICY IF EXISTS "Business owners can update their own businesses" ON businesses;
+DROP POLICY IF EXISTS "Business owners can delete their own businesses" ON businesses;
+
 CREATE POLICY "Anyone can view active businesses"
   ON businesses FOR SELECT
   USING (status = 'active');
@@ -433,6 +527,9 @@ CREATE POLICY "Business owners can delete their own businesses"
   USING (auth.uid() = owner_id);
 
 -- Services policies
+DROP POLICY IF EXISTS "Anyone can view active services" ON services;
+DROP POLICY IF EXISTS "Business owners can manage their services" ON services;
+
 CREATE POLICY "Anyone can view active services"
   ON services FOR SELECT
   USING (
@@ -447,6 +544,12 @@ CREATE POLICY "Business owners can manage their services"
   );
 
 -- Bookings policies
+DROP POLICY IF EXISTS "Customers can view their own bookings" ON bookings;
+DROP POLICY IF EXISTS "Business owners can view bookings for their businesses" ON bookings;
+DROP POLICY IF EXISTS "Customers can create bookings" ON bookings;
+DROP POLICY IF EXISTS "Customers can update their own bookings" ON bookings;
+DROP POLICY IF EXISTS "Business owners can update bookings for their businesses" ON bookings;
+
 CREATE POLICY "Customers can view their own bookings"
   ON bookings FOR SELECT
   USING (auth.uid() = customer_id);
@@ -472,6 +575,11 @@ CREATE POLICY "Business owners can update bookings for their businesses"
   );
 
 -- Reviews policies
+DROP POLICY IF EXISTS "Anyone can view reviews" ON reviews;
+DROP POLICY IF EXISTS "Customers can create reviews for their bookings" ON reviews;
+DROP POLICY IF EXISTS "Customers can update their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Business owners can respond to reviews" ON reviews;
+
 CREATE POLICY "Anyone can view reviews"
   ON reviews FOR SELECT
   USING (true);
@@ -494,6 +602,9 @@ CREATE POLICY "Business owners can respond to reviews"
   );
 
 -- Favorites policies
+DROP POLICY IF EXISTS "Users can view their own favorites" ON favorites;
+DROP POLICY IF EXISTS "Users can manage their own favorites" ON favorites;
+
 CREATE POLICY "Users can view their own favorites"
   ON favorites FOR SELECT
   USING (auth.uid() = user_id);
@@ -503,6 +614,9 @@ CREATE POLICY "Users can manage their own favorites"
   USING (auth.uid() = user_id);
 
 -- Payments policies
+DROP POLICY IF EXISTS "Customers can view their own payments" ON payments;
+DROP POLICY IF EXISTS "Business owners can view payments for their bookings" ON payments;
+
 CREATE POLICY "Customers can view their own payments"
   ON payments FOR SELECT
   USING (auth.uid() = customer_id);
@@ -518,6 +632,9 @@ CREATE POLICY "Business owners can view payments for their bookings"
   );
 
 -- Notifications policies
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
+
 CREATE POLICY "Users can view their own notifications"
   ON notifications FOR SELECT
   USING (auth.uid() = user_id);
@@ -527,6 +644,9 @@ CREATE POLICY "Users can update their own notifications"
   USING (auth.uid() = user_id);
 
 -- Messages policies
+DROP POLICY IF EXISTS "Users can view their own messages" ON messages;
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
+
 CREATE POLICY "Users can view their own messages"
   ON messages FOR SELECT
   USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
@@ -536,6 +656,8 @@ CREATE POLICY "Users can send messages"
   WITH CHECK (auth.uid() = sender_id);
 
 -- Business Analytics policies
+DROP POLICY IF EXISTS "Business owners can view their own analytics" ON business_analytics;
+
 CREATE POLICY "Business owners can view their own analytics"
   ON business_analytics FOR SELECT
   USING (
@@ -543,10 +665,10 @@ CREATE POLICY "Business owners can view their own analytics"
   );
 
 -- ============================================
--- INITIAL DATA (Optional)
+-- INITIAL DATA
 -- ============================================
 
--- Insert default categories
+-- Insert default categories (only if they don't exist)
 INSERT INTO categories (name, slug, description, icon) VALUES
   ('Restaurants', 'restaurants', 'Dining and food services', '🍽️'),
   ('Cafes & Coffee', 'cafes-coffee', 'Coffee shops and cafes', '☕'),
@@ -557,26 +679,31 @@ INSERT INTO categories (name, slug, description, icon) VALUES
   ('Home Services', 'home-services', 'Home repair and maintenance', '🏠'),
   ('Entertainment', 'entertainment', 'Fun and leisure activities', '🎭'),
   ('Education', 'education', 'Learning and tutoring services', '📚'),
-  ('Professional Services', 'professional-services', 'Business and legal services', '💼');
+  ('Professional Services', 'professional-services', 'Business and legal services', '💼')
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================
--- STORAGE BUCKETS
+-- COMPLETION MESSAGE
 -- ============================================
 
--- Create storage buckets (run these in Supabase Dashboard or via API)
--- INSERT INTO storage.buckets (id, name, public) VALUES
---   ('avatars', 'avatars', true),
---   ('business-logos', 'business-logos', true),
---   ('business-images', 'business-images', true),
---   ('service-images', 'service-images', true),
---   ('review-images', 'review-images', true);
-
--- ============================================
--- REAL-TIME SUBSCRIPTIONS
--- ============================================
-
--- Enable real-time for specific tables
-ALTER PUBLICATION supabase_realtime ADD TABLE bookings;
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE businesses;
+DO $$
+BEGIN
+  RAISE NOTICE '';
+  RAISE NOTICE '========================================';
+  RAISE NOTICE 'TOWNTAP DATABASE SETUP COMPLETED! ✅';
+  RAISE NOTICE '========================================';
+  RAISE NOTICE '';
+  RAISE NOTICE 'Database is ready with:';
+  RAISE NOTICE '  ✅ All tables created';
+  RAISE NOTICE '  ✅ Indexes optimized';
+  RAISE NOTICE '  ✅ Triggers configured';
+  RAISE NOTICE '  ✅ RLS policies enabled';
+  RAISE NOTICE '  ✅ Default categories added';
+  RAISE NOTICE '';
+  RAISE NOTICE 'Next steps:';
+  RAISE NOTICE '  1. Configure your app with Supabase URL and keys';
+  RAISE NOTICE '  2. Test user signup and authentication';
+  RAISE NOTICE '  3. Start using TownTap!';
+  RAISE NOTICE '';
+  RAISE NOTICE '========================================';
+END $$;

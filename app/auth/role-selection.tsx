@@ -1,11 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { BorderRadius, FontSize, Spacing } from '@/constants/spacing';
-import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { Spacing } from '@/constants/spacing';
 
 type Role = 'customer' | 'business_owner' | null;
 
@@ -21,81 +19,97 @@ export default function RoleSelectionScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Choose Your Role',
-          headerTransparent: true,
-          headerTintColor: Colors.card,
+          headerShown: false,
         }}
       />
 
-      <LinearGradient
-        colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
-        style={styles.gradient}
-      >
-        <View style={styles.content}>
-          <Text style={styles.title}>Join TownTap</Text>
-          <Text style={styles.subtitle}>How would you like to use TownTap?</Text>
-
-          <View style={styles.rolesContainer}>
-            <TouchableOpacity
-              style={[
-                styles.roleCard,
-                selectedRole === 'customer' && styles.roleCardSelected,
-              ]}
-              onPress={() => setSelectedRole('customer')}
-            >
-              <View style={styles.roleIcon}>
-                <Ionicons name="person" size={48} color={Colors.primary} />
-              </View>
-              <Text style={styles.roleTitle}>I'm a Customer</Text>
-              <Text style={styles.roleDescription}>
-                Book services from local businesses in your area
-              </Text>
-              {selectedRole === 'customer' && (
-                <View style={styles.checkmark}>
-                  <Ionicons name="checkmark-circle" size={32} color={Colors.success} />
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.roleCard,
-                selectedRole === 'business_owner' && styles.roleCardSelected,
-              ]}
-              onPress={() => setSelectedRole('business_owner')}
-            >
-              <View style={styles.roleIcon}>
-                <Ionicons name="briefcase" size={48} color={Colors.secondary} />
-              </View>
-              <Text style={styles.roleTitle}>I'm a Business Owner</Text>
-              <Text style={styles.roleDescription}>
-                Offer your services and grow your business
-              </Text>
-              {selectedRole === 'business_owner' && (
-                <View style={styles.checkmark}>
-                  <Ionicons name="checkmark-circle" size={32} color={Colors.success} />
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <Button
-            title="Continue"
-            onPress={handleContinue}
-            variant="secondary"
-            size="large"
-            disabled={!selectedRole}
-            style={styles.continueButton}
-          />
-
-          <View style={styles.signInContainer}>
-            <Text style={styles.signInText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-              <Text style={styles.signInLink}>Sign In</Text>
-            </TouchableOpacity>
+      <View style={styles.content}>
+        {/* Logo */}
+        <View style={styles.logoWrapper}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logo}>🏘️</Text>
+            <Text style={styles.logoText}>TownTap</Text>
           </View>
         </View>
-      </LinearGradient>
+
+        <Text style={styles.title}>Join TownTap</Text>
+        <Text style={styles.subtitle}>How would you like to use TownTap?</Text>
+
+        {/* Role Cards */}
+        <View style={styles.rolesContainer}>
+          {/* Customer Card */}
+          <TouchableOpacity
+            style={[
+              styles.roleCard,
+              selectedRole === 'customer' && styles.roleCardSelected,
+            ]}
+            onPress={() => setSelectedRole('customer')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.roleIconWrapper}>
+              <View style={[styles.roleIconCircle, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="person" size={48} color="#2196F3" />
+              </View>
+            </View>
+            <Text style={styles.roleTitle}>I'm a Customer</Text>
+            <Text style={styles.roleDescription}>
+              Book services from local businesses in your area
+            </Text>
+            {selectedRole === 'customer' && (
+              <View style={styles.checkmark}>
+                <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Business Owner Card */}
+          <TouchableOpacity
+            style={[
+              styles.roleCard,
+              selectedRole === 'business_owner' && styles.roleCardSelected,
+            ]}
+            onPress={() => setSelectedRole('business_owner')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.roleIconWrapper}>
+              <View style={[styles.roleIconCircle, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="briefcase" size={48} color="#FF9800" />
+              </View>
+            </View>
+            <Text style={styles.roleTitle}>I'm a Business Owner</Text>
+            <Text style={styles.roleDescription}>
+              Offer your services and grow your business
+            </Text>
+            {selectedRole === 'business_owner' && (
+              <View style={styles.checkmark}>
+                <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Continue Button */}
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            !selectedRole && styles.continueButtonDisabled,
+          ]}
+          onPress={handleContinue}
+          disabled={!selectedRole}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.continueButtonText}>Continue</Text>
+          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Sign In Link */}
+        <View style={styles.signInContainer}>
+          <Text style={styles.signInText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
+            <Text style={styles.signInLink}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -103,64 +117,99 @@ export default function RoleSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#C8E6C9',
   },
   content: {
     flex: 1,
-    padding: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl * 2,
+    paddingBottom: Spacing.xl,
+    alignItems: 'center',
+  },
+  logoWrapper: {
+    marginBottom: Spacing.xl,
+  },
+  logoBox: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  logo: {
+    fontSize: 42,
+  },
+  logoText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1B5E20',
+    marginTop: 4,
   },
   title: {
-    fontSize: FontSize.xxxl,
+    fontSize: 28,
     fontWeight: '700',
-    color: Colors.card,
-    textAlign: 'center',
+    color: '#1B5E20',
     marginBottom: Spacing.sm,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: FontSize.md,
-    color: Colors.card,
-    textAlign: 'center',
-    opacity: 0.9,
+    fontSize: 16,
+    color: '#424242',
     marginBottom: Spacing.xxl,
+    textAlign: 'center',
   },
   rolesContainer: {
+    width: '100%',
+    maxWidth: 380,
     gap: Spacing.lg,
     marginBottom: Spacing.xxl,
   },
   roleCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: Spacing.xl,
     alignItems: 'center',
     borderWidth: 3,
     borderColor: 'transparent',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   roleCardSelected: {
-    borderColor: Colors.success,
-    backgroundColor: Colors.card,
+    borderColor: '#4CAF50',
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.3,
   },
-  roleIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.backgroundGray,
-    justifyContent: 'center',
-    alignItems: 'center',
+  roleIconWrapper: {
     marginBottom: Spacing.md,
   },
+  roleIconCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   roleTitle: {
-    fontSize: FontSize.xl,
+    fontSize: 20,
     fontWeight: '700',
-    color: Colors.text,
-    marginBottom: Spacing.xs,
+    color: '#1B5E20',
+    marginBottom: Spacing.sm,
   },
   roleDescription: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
+    fontSize: 14,
+    color: '#616161',
     textAlign: 'center',
+    lineHeight: 20,
   },
   checkmark: {
     position: 'absolute',
@@ -168,7 +217,29 @@ const styles = StyleSheet.create({
     right: Spacing.md,
   },
   continueButton: {
-    marginBottom: Spacing.md,
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#5B9BD5',
+    borderRadius: 16,
+    paddingVertical: Spacing.md + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+    shadowColor: '#5B9BD5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  continueButtonDisabled: {
+    opacity: 0.5,
+  },
+  continueButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   signInContainer: {
     flexDirection: 'row',
@@ -176,13 +247,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signInText: {
-    color: Colors.card,
-    fontSize: FontSize.md,
+    color: '#616161',
+    fontSize: 14,
   },
   signInLink: {
-    color: Colors.card,
-    fontSize: FontSize.md,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
+    color: '#2E7D32',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

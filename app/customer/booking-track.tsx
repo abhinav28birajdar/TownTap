@@ -3,69 +3,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
 import {
-    FlatList,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '2',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '3',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '4',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '5',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '6',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '7',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '8',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-];
-
-export default function NotificationsScreen() {
-  const renderNotification = ({ item }: { item: typeof MOCK_NOTIFICATIONS[0] }) => (
-    <View style={styles.notificationCard}>
-      <View style={styles.avatar}>
-        <Ionicons name="checkmark-circle" size={24} color="#4A5F4E" />
-      </View>
-      <View style={styles.notificationInfo}>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
-      </View>
-      <Text style={styles.notificationTime}>{item.time}</Text>
-    </View>
-  );
-
+export default function BookingsScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -73,22 +18,41 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Notifications List */}
-      <FlatList
-        data={MOCK_NOTIFICATIONS}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.notificationsList}
-      />
+      <ScrollView style={styles.scrollView}>
+        {/* Title and Icon */}
+        <View style={styles.topSection}>
+          <View style={styles.iconContainer}>
+            <Text style={styles.iconText}>🗺️</Text>
+          </View>
+          <Text style={styles.title}>Book. Track. Relax.</Text>
+        </View>
 
-      {/* See All Button */}
-      <TouchableOpacity style={styles.seeAllButton}>
-        <Text style={styles.seeAllText}>See All</Text>
-      </TouchableOpacity>
+        {/* Main Content Area - Large Card */}
+        <View style={styles.mainCard}>
+          {/* This will contain booking details */}
+          <View style={styles.expandIcon}>
+            <Ionicons name="expand" size={24} color="#333" />
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#E57373' }]}>
+            <Text style={styles.actionButtonText}>Cancel{'\n'}Task</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#4A5F4E' }]}>
+            <Text style={styles.actionButtonText}>Online{'\n'}Pay</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#4A5F4E' }]}>
+            <Text style={styles.actionButtonText}>contact{'\n'}delivery</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -134,53 +98,63 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: Spacing.md,
   },
-  headerTitle: {
-    fontSize: 20,
+  scrollView: {
+    flex: 1,
+  },
+  topSection: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xl,
+  },
+  iconContainer: {
+    marginBottom: Spacing.md,
+  },
+  iconText: {
+    fontSize: 48,
+  },
+  title: {
+    fontSize: 24,
     fontWeight: '700',
     color: '#333',
   },
-  notificationsList: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.md,
-  },
-  notificationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  mainCard: {
+    marginHorizontal: Spacing.xl,
     backgroundColor: '#A8D5AB',
-    borderRadius: 20,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
+    borderRadius: 30,
+    minHeight: 400,
+    marginBottom: Spacing.xl,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    padding: Spacing.lg,
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#4A5F4E',
+  expandIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
   },
-  notificationInfo: {
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: 100,
+    gap: Spacing.md,
+  },
+  actionButton: {
     flex: 1,
-  },
-  notificationTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  notificationTime: {
-    fontSize: 12,
-    color: '#555',
-  },
-  seeAllButton: {
-    alignItems: 'center',
+    borderRadius: 16,
     paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
   },
-  seeAllText: {
-    fontSize: 16,
+  actionButtonText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#5B9FD7',
+    color: '#fff',
+    textAlign: 'center',
   },
   bottomNav: {
     position: 'absolute',

@@ -116,21 +116,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+          phone: phone,
+          role: role,
+        },
+      },
     });
 
     if (error) throw error;
 
-    if (data.user) {
-      // @ts-ignore
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: data.user.id,
-        full_name: fullName,
-        phone,
-        role,
-      });
-
-      if (profileError) throw profileError;
+    // Check if email confirmation is required
+    if (data?.user && !data.session) {
+      throw new Error('Please check your email to confirm your account before signing in.');
     }
+
+    // Profile will be created automatically by database trigger
+    console.log('✅ User signed up successfully:', data.user?.email);
   };
 
   const signOut = async () => {

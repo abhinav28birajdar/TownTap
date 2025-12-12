@@ -1,7 +1,7 @@
 import { Colors, Typography } from '@/constants/theme';
 import { secureConfigManager } from '@/lib/secure-config-manager';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -20,16 +20,55 @@ export default function ConfigSetupScreen() {
   const [validating, setValidating] = useState(false);
 
   const [config, setConfig] = useState({
-    supabaseUrl: '',
-    supabaseAnonKey: '',
-    googleMapsApiKey: '',
-    stripePublishableKey: '',
+    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || '',
+    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
   });
 
   const [errors, setErrors] = useState({
     supabaseUrl: '',
     supabaseAnonKey: '',
   });
+
+  // Auto-save if .env has valid credentials
+  useEffect(() => {
+    const autoSaveFromEnv = async () => {
+      const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const envKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (envUrl && envKey && 
+          envUrl.startsWith('https://') && 
+          envUrl.includes('.supabase.co') &&
+          envKey.length > 100) {
+        
+        console.log('✅ Valid credentials found in .env file - auto-configuring...');
+        
+        try {
+          await secureConfigManager.saveConfig({
+            supabaseUrl: envUrl,
+            supabaseAnonKey: envKey,
+            googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+            stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+          });
+          
+          Toast.show({
+            type: 'success',
+            text1: 'Auto-configured from .env',
+            text2: 'Redirecting to welcome screen...',
+          });
+          
+          setTimeout(() => {
+            router.replace('/welcome');
+          }, 1500);
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        }
+      }
+    };
+    
+    autoSaveFromEnv();
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors = {
