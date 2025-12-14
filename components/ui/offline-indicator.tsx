@@ -8,7 +8,7 @@ import Animated, {
     withSpring,
     withTiming,
 } from 'react-native-reanimated';
-import { ThemedText } from './themed-text-enhanced';
+import { ThemedText } from '../themed-text';
 
 export function OfflineIndicator() {
   const colors = useColors();
@@ -49,7 +49,7 @@ export function OfflineIndicator() {
         animatedStyle,
       ]}
     >
-      <ThemedText variant="labelMedium" color="inverse">
+      <ThemedText type="caption" style={{ color: '#FFFFFF' }}>
         ⚠️ No internet connection
       </ThemedText>
     </Animated.View>

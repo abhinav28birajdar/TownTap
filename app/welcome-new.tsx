@@ -1,5 +1,5 @@
+import { ThemedText } from '@/components/themed-text';
 import { ThemedButton } from '@/components/ui/themed-button';
-import { ThemedText } from '@/components/ui/themed-text-enhanced';
 import { Spacing } from '@/constants/spacing';
 import { router } from 'expo-router';
 import React from 'react';
@@ -20,22 +20,22 @@ export default function WelcomeScreen() {
         {/* Logo Container */}
         <View style={styles.logoWrapper}>
           <View style={styles.logoBox}>
-            <ThemedText variant="displayLarge" style={styles.logo}>🏘️</ThemedText>
+            <ThemedText type="h1" style={styles.logo}>🏘️</ThemedText>
           </View>
         </View>
 
         {/* Title */}
-        <ThemedText variant="displayMedium" weight="bold" style={styles.appName}>
+        <ThemedText type="h2" weight="bold" style={styles.appName}>
           Welcome to TownTap
         </ThemedText>
 
         {/* Subtitle */}
-        <ThemedText variant="titleMedium" style={styles.tagline}>
+        <ThemedText type="subtitle" style={styles.tagline}>
           Connect With Your Local Businesses
         </ThemedText>
 
         {/* Description */}
-        <ThemedText variant="bodyMedium" style={styles.description}>
+        <ThemedText type="body1" style={styles.description}>
           Discover trusted shops, services, and professionals right in your neighborhood.
         </ThemedText>
 
@@ -81,12 +81,12 @@ export default function WelcomeScreen() {
 
 const FeatureItem = ({ emoji, title, subtitle }: { emoji: string; title: string; subtitle: string }) => (
   <View style={styles.featureItem}>
-    <ThemedText variant="headlineMedium" style={styles.featureEmoji}>{emoji}</ThemedText>
+    <ThemedText type="h3" style={styles.featureEmoji}>{emoji}</ThemedText>
     <View style={styles.featureTextContainer}>
-      <ThemedText variant="titleMedium" weight="semibold" style={styles.featureTitle}>
+      <ThemedText type="subtitle" weight="semibold" style={styles.featureTitle}>
         {title} —
       </ThemedText>
-      <ThemedText variant="bodySmall" style={styles.featureSubtitle}>
+      <ThemedText type="caption" style={styles.featureSubtitle}>
         {subtitle}
       </ThemedText>
     </View>

@@ -3,6 +3,8 @@
  * Includes comprehensive color palette for light and dark modes
  */
 
+export type ColorScheme = 'light' | 'dark';
+
 const BaseColors = {
   light: {
     // Primary brand colors
@@ -303,11 +305,11 @@ export const ExtendedColors = {
   },
 } as const;
 
-// Merge extended colors with base colors for complete palette
-export const Colors = {
-  ...BaseColors,
-  ...ExtendedColors,
-} as const;
+// Export the base colors with light/dark themes
+export const Colors = BaseColors;
+
+// Type for theme colors
+export type ThemeColors = typeof Colors.light;
 
 // Category Colors
 export const CategoryColors = {

@@ -1,17 +1,31 @@
-import { Colors } from '@/constants/colors';
+import { useAuth } from '@/contexts/auth-context';
+import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
+  const colors = useColors();
+  const { profile } = useAuth();
+  
+  // Show different tabs based on user role
+  const isBusinessOwner = profile?.role === 'business_owner';
+  
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.card,
-          borderTopColor: Colors.border,
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
         },
       }}
     >
@@ -30,6 +44,33 @@ export default function TabsLayout() {
           title: 'Explore',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="receipt" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: 'Messages',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
           ),
         }}
       />

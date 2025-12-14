@@ -153,6 +153,8 @@ function RootLayoutNav() {
     const inSettings = segments[0] === 'settings';
     const inConfigSetup = segments[0] === 'config-setup';
     const inWelcome = segments[0] === 'welcome';
+    const inBusinessOwner = segments[0] === 'business-owner';
+    const inCustomer = segments[0] === 'customer';
 
     // Check if app is configured (async check done earlier)
     isAppConfigured().then((configured) => {
@@ -161,11 +163,12 @@ function RootLayoutNav() {
         return;
       }
 
-      if (!session && !inAuthGroup && !inWelcome && !inConfigSetup) {
+      // Allow access to tabs, business-owner, and customer routes even without session (for demo mode)
+      if (!session && !inAuthGroup && !inWelcome && !inConfigSetup && !inTabs && !inBusinessOwner && !inCustomer) {
         router.replace('/welcome');
-      } else if (session && !profile) {
+      } else if (session && !profile && !inAuthGroup) {
         router.replace('/auth/role-selection');
-      } else if (session && profile && !inTabs && segments[0] !== 'settings' && segments[0] !== 'business' && segments[0] !== 'profile' && segments[0] !== 'notifications' && segments[0] !== 'modal') {
+      } else if (session && profile && !inTabs && segments[0] !== 'settings' && segments[0] !== 'business' && segments[0] !== 'business-owner' && segments[0] !== 'customer' && segments[0] !== 'profile' && segments[0] !== 'notifications' && segments[0] !== 'modal') {
         router.replace('/(tabs)/home');
       }
     });
@@ -188,6 +191,37 @@ function RootLayoutNav() {
         <Stack.Screen name="auth/sign-up" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="business/[id]" />
+        
+        {/* Business Owner Routes */}
+        <Stack.Screen name="business-owner/dashboard" />
+        <Stack.Screen name="business-owner/notifications" />
+        <Stack.Screen name="business-owner/profile" />
+        <Stack.Screen name="business-owner/add-product" />
+        <Stack.Screen name="business-owner/orders" />
+        <Stack.Screen name="business-owner/services" />
+        <Stack.Screen name="business-owner/analytics" />
+        <Stack.Screen name="business-owner/customers" />
+        
+        {/* Customer Routes */}
+        <Stack.Screen name="customer/dashboard" />
+        <Stack.Screen name="customer/search" />
+        <Stack.Screen name="customer/bookings" />
+        <Stack.Screen name="customer/favorites" />
+        <Stack.Screen name="customer/notifications" />
+        <Stack.Screen name="customer/profile" />
+        <Stack.Screen name="customer/orders" />
+        <Stack.Screen name="customer/history" />
+        <Stack.Screen name="customer/booking" />
+        <Stack.Screen name="customer/location" />
+        <Stack.Screen name="customer/tracking" />
+        
+        {/* Category Routes */}
+        <Stack.Screen name="category/[category]" />
+        
+        {/* Messages Routes */}
+        <Stack.Screen name="messages/index" />
+        <Stack.Screen name="messages/chat/[id]" />
+        
         <Stack.Screen name="profile" options={{ headerShown: true, title: 'Profile' }} />
         <Stack.Screen name="settings/index" options={{ headerShown: true, title: 'Settings' }} />
         <Stack.Screen name="settings/advanced" options={{ headerShown: true, title: 'Advanced Settings' }} />

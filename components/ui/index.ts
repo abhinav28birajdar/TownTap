@@ -24,13 +24,13 @@ export { Avatar, AvatarGroup } from './Avatar';
 export { Badge, BadgeGroup, NotificationBadge, StatusBadge } from './Badge';
 
 // Modern Themed Components (New)
+export { ThemedText } from '../themed-text';
 export { ThemedButton } from './themed-button';
 export { ThemedCard } from './themed-card';
 export { ThemedInput } from './themed-input';
-export { ThemedText } from './themed-text-enhanced';
 
 // Utility Components
-export { ErrorBoundary } from './error-boundary-enhanced';
+export { ErrorBoundary } from './error-boundary';
 export { OfflineIndicator } from './offline-indicator';
 export { SkeletonLoader } from './skeleton-loader';
 

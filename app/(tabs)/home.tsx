@@ -1,5 +1,6 @@
 import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
+import { useColors } from '@/contexts/theme-context';
 import { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +32,7 @@ const CATEGORY_ICONS: { [key: string]: any } = {
 
 export default function HomeScreen() {
   const { user, profile } = useAuth();
+  const colors = useColors();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -69,7 +71,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -77,28 +79,37 @@ export default function HomeScreen() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
           <TouchableOpacity
             style={styles.profileButton}
-            onPress={() => router.push('/profile')}
+            onPress={() => router.push('/customer/profile')}
           >
-            <View style={styles.avatar}>
+            <View style={[styles.avatar, { backgroundColor: colors.primaryDark }]}>
               <Ionicons name="person" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.notificationButton}
-            onPress={() => router.push('/notifications')}
-          >
-            <Ionicons name="notifications" size={24} color="#4A5F4E" />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={[styles.iconButton, { backgroundColor: colors.surface }]}
+              onPress={() => router.push('/messages')}
+            >
+              <Ionicons name="chatbubbles" size={22} color={colors.primary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.iconButton, { backgroundColor: colors.surface }]}
+              onPress={() => router.push('/customer/notifications')}
+            >
+              <Ionicons name="notifications" size={22} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Local Business Heroes Banner */}
-        <View style={styles.heroBanner}>
+        <View style={[styles.heroBanner, { backgroundColor: colors.muted }]}>
           <View style={styles.heroHeader}>
-            <Text style={styles.heroRibbon}>LOCAL BUSINESS HEROES</Text>
+            <Text style={[styles.heroRibbon, { color: colors.text }]}>LOCAL BUSINESS HEROES</Text>
           </View>
           <Image
             source={require('@/assets/images/react-logo.png')}
@@ -110,9 +121,9 @@ export default function HomeScreen() {
         {/* Categories Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>categories</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>categories</Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/explore')}>
-              <Text style={styles.viewAll}>View All</Text>
+              <Text style={[styles.viewAll, { color: colors.primary }]}>View All</Text>
             </TouchableOpacity>
           </View>
 
@@ -120,8 +131,8 @@ export default function HomeScreen() {
             {categories.slice(0, 4).map((category, index) => (
               <TouchableOpacity
                 key={category.id}
-                style={styles.categoryCard}
-                onPress={() => router.push(`/customer/search?category=${category.id}`)}
+                style={[styles.categoryCard, { backgroundColor: colors.primary }]}
+                onPress={() => router.push(`/category/${category.name.toLowerCase()}`)}
               >
                 <View style={styles.categoryIcon}>
                   <Text style={styles.categoryEmoji}>
@@ -133,8 +144,8 @@ export default function HomeScreen() {
             {categories.slice(4, 8).map((category, index) => (
               <TouchableOpacity
                 key={category.id}
-                style={styles.categoryCard}
-                onPress={() => router.push(`/customer/search?category=${category.id}`)}
+                style={[styles.categoryCard, { backgroundColor: colors.primary }]}
+                onPress={() => router.push(`/category/${category.name.toLowerCase()}`)}
               >
                 <View style={styles.categoryIcon}>
                   <Text style={styles.categoryEmoji}>
@@ -148,25 +159,25 @@ export default function HomeScreen() {
 
         {/* Quick Actions Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick</Text>
           <View style={styles.quickActions}>
             <TouchableOpacity
-              style={[styles.quickActionCard, { backgroundColor: '#6B8E6F' }]}
-              onPress={() => router.push('/customer/search')}
+              style={[styles.quickActionCard, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/customer/orders')}
             >
               <Text style={styles.quickActionText}>Order</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionCard, { backgroundColor: '#6B8E6F' }]}
-              onPress={() => router.push('/customer/bookings')}
+              style={[styles.quickActionCard, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/customer/history')}
             >
               <Text style={styles.quickActionText}>History</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionCard, { backgroundColor: '#6B8E6F' }]}
-              onPress={() => router.push('/customer/bookings')}
+              style={[styles.quickActionCard, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/customer/booking')}
             >
               <Text style={styles.quickActionText}>Book</Text>
             </TouchableOpacity>
@@ -177,7 +188,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.push('/(tabs)/home')}
@@ -186,7 +197,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => router.push('/customer/search')}
+          onPress={() => router.push('/customer/location')}
         >
           <Ionicons name="location" size={24} color="#fff" />
         </TouchableOpacity>
@@ -198,7 +209,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => router.push('/customer/bookings')}
+          onPress={() => router.push('/customer/orders')}
         >
           <Ionicons name="receipt" size={24} color="#fff" />
         </TouchableOpacity>
@@ -210,7 +221,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4E7D4',
   },
   scrollView: {
     flex: 1,
@@ -228,7 +238,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4A5F4E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -236,13 +256,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroBanner: {
     marginHorizontal: Spacing.lg,
-    backgroundColor: '#E8E8E8',
     borderRadius: 24,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
@@ -255,7 +273,6 @@ const styles = StyleSheet.create({
   heroRibbon: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#333',
     letterSpacing: 1,
   },
   heroImage: {
@@ -275,11 +292,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
   },
   viewAll: {
     fontSize: 14,
-    color: '#5B9FD7',
     fontWeight: '500',
   },
   categoriesGrid: {
@@ -290,7 +305,6 @@ const styles = StyleSheet.create({
   categoryCard: {
     width: '22%',
     aspectRatio: 1,
-    backgroundColor: '#6B8E6F',
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -324,7 +338,6 @@ const styles = StyleSheet.create({
     left: 50,
     right: 50,
     flexDirection: 'row',
-    backgroundColor: '#6B8E6F',
     borderRadius: 30,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,

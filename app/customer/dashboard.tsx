@@ -19,10 +19,10 @@ const { width: screenWidth } = Dimensions.get('window');
 
 // Quick action items
 const quickActions = [
-  { id: 1, title: 'Find Services', icon: 'search-outline', route: '/customer/search' },
+  { id: 1, title: 'Find Services', icon: 'search-outline', route: '/category/plumber' },
   { id: 2, title: 'Book Now', icon: 'calendar-outline', route: '/customer/booking' },
-  { id: 3, title: 'My Bookings', icon: 'list-outline', route: '/customer/bookings' },
-  { id: 4, title: 'Favorites', icon: 'heart-outline', route: '/customer/favorites' },
+  { id: 3, title: 'My Orders', icon: 'list-outline', route: '/customer/orders' },
+  { id: 4, title: 'History', icon: 'time-outline', route: '/customer/history' },
 ];
 
 // Featured categories

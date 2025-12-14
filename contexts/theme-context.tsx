@@ -1,5 +1,5 @@
-import { ColorScheme, ColorsEnhanced, ThemeColors } from '@/constants/colors-enhanced';
-import { ThemeMode, useThemeMode } from '@/hooks/use-theme-mode';
+import { ColorScheme, ThemeColors } from '@/constants/colors';
+import { Theme as ThemeMode, useTheme } from '@/hooks/use-theme';
 import React, { createContext, useContext } from 'react';
 
 interface ThemeContextType {
@@ -7,17 +7,26 @@ interface ThemeContextType {
   colorScheme: ColorScheme;
   colors: ThemeColors;
   isDark: boolean;
-  setThemeMode: (mode: ThemeMode) => Promise<void>;
+  setThemeMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useThemeMode();
+  const { theme, colorScheme, colors, setTheme, toggleTheme, isDark } = useTheme();
+
+  const value: ThemeContextType = {
+    themeMode: theme,
+    colorScheme,
+    colors,
+    isDark,
+    setThemeMode: setTheme,
+    toggleTheme,
+  };
 
   return (
-    <ThemeContext.Provider value={theme}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

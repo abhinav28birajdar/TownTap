@@ -73,8 +73,15 @@ export default function BusinessOwnerDashboard() {
             
             <View style={styles.headerActions}>
               <TouchableOpacity 
+                style={styles.iconButton}
+                onPress={() => router.push('/messages')}
+              >
+                <Ionicons name="chatbubbles-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
                 style={styles.notificationButton}
-                onPress={() => router.push('/notifications' as any)}
+                onPress={() => router.push('/business-owner/notifications')}
               >
                 <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
                 <View style={styles.notificationBadge}>
@@ -84,9 +91,16 @@ export default function BusinessOwnerDashboard() {
               
               <TouchableOpacity 
                 style={styles.profileButton}
-                onPress={() => router.push('/profile' as any)}
+                onPress={() => router.push('/business-owner/profile')}
               >
                 <Ionicons name="person-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.profileButton}
+                onPress={() => router.push('/business-owner/add-product')}
+              >
+                <Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -311,6 +325,10 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  iconButton: {
+    padding: 8,
   },
   notificationButton: {
     position: 'relative',

@@ -1,5 +1,6 @@
 import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
+import { useColors } from '@/contexts/theme-context';
 import { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,6 +34,7 @@ const SERVICE_DATA = [
 
 export default function ExploreScreen() {
   const { profile } = useAuth();
+  const colors = useColors();
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,11 +61,7 @@ export default function ExploreScreen() {
   };
 
   const handleServicePress = (serviceId: string) => {
-    router.push(`/customer/search?category=${serviceId}`);
-  };
-
-  const handleServicePress = (serviceId: string) => {
-    router.push(`/customer/search?category=${serviceId}`);
+    router.push(`/category/${serviceId}`);
   };
 
   const filteredServices = SERVICE_DATA.filter(service =>
@@ -72,41 +70,50 @@ export default function ExploreScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
           style={styles.profileButton}
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push('/customer/profile')}
         >
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: colors.primaryDark }]}>
             <Ionicons name="person" size={24} color="#fff" />
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => router.push('/notifications')}
-        >
-          <Ionicons name="notifications" size={24} color="#4A5F4E" />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+            onPress={() => router.push('/messages')}
+          >
+            <Ionicons name="chatbubbles" size={22} color={colors.primary} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+            onPress={() => router.push('/customer/notifications')}
+          >
+            <Ionicons name="notifications" size={22} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
         {/* Title */}
-        <Text style={styles.pageTitle}>Our Services</Text>
+        <Text style={[styles.pageTitle, { color: colors.text }]}>Our Services</Text>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
+          <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder="search.."
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textTertiary}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-            <Ionicons name="search" size={20} color="#999" />
+            <Ionicons name="search" size={20} color={colors.textSecondary} />
           </View>
         </View>
 
@@ -115,15 +122,15 @@ export default function ExploreScreen() {
           {filteredServices.map((service) => (
             <TouchableOpacity
               key={service.id}
-              style={[styles.serviceCard, { backgroundColor: service.color }]}
+              style={[styles.serviceCard, { backgroundColor: colors.primary }]}
               onPress={() => handleServicePress(service.id)}
             >
               <View style={styles.serviceIconContainer}>
                 <Text style={styles.serviceIcon}>{service.icon}</Text>
               </View>
               <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>{service.name}</Text>
-                <Text style={styles.serviceSubtitle}>{service.subtitle}</Text>
+                <Text style={[styles.serviceName, { color: colors.surface }]}>{service.name}</Text>
+                <Text style={[styles.serviceSubtitle, { color: colors.surface }]}>{service.subtitle}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -133,7 +140,7 @@ export default function ExploreScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.push('/(tabs)/home')}
@@ -166,7 +173,6 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4E7D4',
   },
   header: {
     flexDirection: 'row',
@@ -181,7 +187,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4A5F4E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -189,7 +205,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -199,7 +214,6 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#333',
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
@@ -210,17 +224,14 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 25,
     paddingHorizontal: Spacing.md,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#333',
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
   },
   servicesGrid: {
     paddingHorizontal: Spacing.lg,
@@ -252,12 +263,10 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333',
     marginBottom: 4,
   },
   serviceSubtitle: {
     fontSize: 13,
-    color: '#555',
   },
   bottomNav: {
     position: 'absolute',
@@ -265,7 +274,6 @@ const styles = StyleSheet.create({
     left: 50,
     right: 50,
     flexDirection: 'row',
-    backgroundColor: '#6B8E6F',
     borderRadius: 30,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,

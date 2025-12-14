@@ -86,19 +86,19 @@ export const ThemedButton = memo(({
         return {
           backgroundColor: isDisabled ? colors.textTertiary : colors.primary,
           borderWidth: 0,
-          textColor: colors.textInverse,
+          textColor: colors.primaryForeground,
         };
       case 'secondary':
         return {
           backgroundColor: isDisabled ? colors.textTertiary : colors.secondary,
           borderWidth: 0,
-          textColor: colors.textInverse,
+          textColor: colors.secondaryForeground,
         };
       case 'outline':
         return {
           backgroundColor: 'transparent',
           borderWidth: 1.5,
-          borderColor: isDisabled ? colors.borderLight : colors.border,
+          borderColor: isDisabled ? colors.border : colors.border,
           textColor: isDisabled ? colors.textTertiary : colors.text,
         };
       case 'ghost':
@@ -111,7 +111,7 @@ export const ThemedButton = memo(({
         return {
           backgroundColor: isDisabled ? colors.textTertiary : colors.error,
           borderWidth: 0,
-          textColor: colors.textInverse,
+          textColor: colors.errorForeground,
         };
     }
   };

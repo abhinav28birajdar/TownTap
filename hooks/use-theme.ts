@@ -71,10 +71,12 @@ export const useThemeStore = create<ThemeState>()(
 // Hook for easy theme access
 export const useTheme = () => {
   const { theme, colorScheme, setTheme, toggleTheme } = useThemeStore();
+  const Colors = require('../constants/colors').Colors;
   
   return {
     theme,
     colorScheme,
+    colors: Colors[colorScheme],
     setTheme,
     toggleTheme,
     isDark: colorScheme === 'dark',

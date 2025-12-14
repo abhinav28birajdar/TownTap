@@ -1,5 +1,5 @@
+import { ThemedText } from '@/components/themed-text';
 import { ThemedButton } from '@/components/ui/themed-button';
-import { ThemedText } from '@/components/ui/themed-text-enhanced';
 import { Spacing } from '@/constants/spacing';
 import { BorderRadius, FontSize } from '@/constants/theme';
 import { useColors } from '@/contexts/theme-context';
@@ -19,6 +19,14 @@ export default function WelcomeScreen() {
     router.push('/auth/sign-in');
   };
 
+  const handleDemoCustomer = () => {
+    router.replace('/(tabs)/home');
+  };
+
+  const handleDemoOwner = () => {
+    router.replace('/business-owner/dashboard');
+  };
+
   return (
     <LinearGradient
       colors={[colors.primary, colors.primaryDark, colors.secondary]}
@@ -29,11 +37,11 @@ export default function WelcomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.logoContainer}>
-          <ThemedText variant="displayLarge" style={styles.logo}>🏘️</ThemedText>
-          <ThemedText variant="displayMedium" color="inverse" weight="bold" style={styles.appName}>
+          <ThemedText type="h1" style={styles.logo}>🏘️</ThemedText>
+          <ThemedText type="h2" weight="bold" style={styles.appName}>
             TownTap
           </ThemedText>
-          <ThemedText variant="titleLarge" color="inverse" style={styles.tagline}>
+          <ThemedText type="subtitle" style={styles.tagline}>
             Your Local Service Marketplace
           </ThemedText>
         </View>
@@ -78,6 +86,30 @@ export default function WelcomeScreen() {
             fullWidth
             style={styles.button}
           />
+          
+          {/* Demo Buttons */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <ThemedText style={styles.dividerText}>OR TRY DEMO</ThemedText>
+            <View style={styles.dividerLine} />
+          </View>
+          
+          <ThemedButton
+            title="🛍️ Demo as Customer"
+            onPress={handleDemoCustomer}
+            variant="outline"
+            size="large"
+            fullWidth
+            style={[styles.button, styles.demoButton]}
+          />
+          <ThemedButton
+            title="🏪 Demo as Business Owner"
+            onPress={handleDemoOwner}
+            variant="outline"
+            size="large"
+            fullWidth
+            style={[styles.button, styles.demoButton]}
+          />
         </View>
       </ScrollView>
     </LinearGradient>
@@ -86,8 +118,8 @@ export default function WelcomeScreen() {
 
 const FeatureItem = ({ emoji, text }: { emoji: string; text: string }) => (
   <View style={styles.featureItem}>
-    <ThemedText variant="headlineMedium" style={styles.featureEmoji}>{emoji}</ThemedText>
-    <ThemedText variant="bodyLarge" color="inverse" style={styles.featureText}>{text}</ThemedText>
+    <ThemedText type="h3" style={styles.featureEmoji}>{emoji}</ThemedText>
+    <ThemedText type="body1" style={styles.featureText}>{text}</ThemedText>
   </View>
 );
 
@@ -148,5 +180,26 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  demoButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
 });

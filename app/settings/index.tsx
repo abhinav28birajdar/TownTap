@@ -1,6 +1,6 @@
+import { ThemedText } from '@/components/themed-text';
 import { ThemedButton } from '@/components/ui/themed-button';
 import { ThemedCard } from '@/components/ui/themed-card';
-import { ThemedText } from '@/components/ui/themed-text-enhanced';
 import { Spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/auth-context';
 import { useColors, useThemeContext } from '@/contexts/theme-context';
@@ -9,13 +9,13 @@ import * as Application from 'expo-application';
 import { Stack, router } from 'expo-router';
 import React from 'react';
 import {
-  Alert,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  View
+    Alert,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    View
 } from 'react-native';
 
 type SettingItemProps = {
@@ -37,20 +37,20 @@ function SettingItem({ icon, title, subtitle, onPress, rightElement, variant = '
       onPress={onPress}
       style={({ pressed }) => [
         styles.settingItem,
-        { backgroundColor: pressed ? colors.backgroundTertiary : colors.surface },
+        { backgroundColor: pressed ? colors.surfaceTertiary : colors.surface },
       ]}
       disabled={!onPress && !rightElement}
     >
-      <View style={[styles.iconContainer, { backgroundColor: colors.backgroundTertiary }]}>
+      <View style={[styles.iconContainer, { backgroundColor: colors.surfaceTertiary }]}>
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       
       <View style={styles.settingContent}>
-        <ThemedText variant="bodyMedium" weight="medium" style={{ color: titleColor }}>
+        <ThemedText type="default" weight="medium" style={{ color: titleColor }}>
           {title}
         </ThemedText>
         {subtitle && (
-          <ThemedText variant="bodySmall" color="secondary" style={styles.subtitle}>
+          <ThemedText type="caption" style={[styles.subtitle, { color: colors.textSecondary }]}>
             {subtitle}
           </ThemedText>
         )}
@@ -149,18 +149,18 @@ export default function SettingsScreen() {
           <ThemedCard variant="elevated" style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-                <ThemedText variant="headlineMedium" color="inverse">
+                <ThemedText type="h3" style={{ color: colors.primaryForeground }}>
                   {profile.full_name?.charAt(0).toUpperCase() || 'U'}
                 </ThemedText>
               </View>
               <View style={styles.profileInfo}>
-                <ThemedText variant="titleLarge" weight="semibold">
+                <ThemedText type="title" weight="semibold">
                   {profile.full_name || 'User'}
                 </ThemedText>
-                <ThemedText variant="bodySmall" color="secondary">
+                <ThemedText type="caption" style={{ color: colors.textSecondary }}>
                   {user?.email || 'No email'}
                 </ThemedText>
-                <ThemedText variant="labelSmall" color="secondary" style={styles.roleTag}>
+                <ThemedText type="caption" style={[styles.roleTag, { color: colors.textSecondary }]}>
                   {profile.role.replace('_', ' ').toUpperCase()}
                 </ThemedText>
               </View>
@@ -179,7 +179,7 @@ export default function SettingsScreen() {
 
         {/* Appearance */}
         <View style={styles.section}>
-          <ThemedText variant="titleSmall" color="secondary" style={styles.sectionTitle}>
+          <ThemedText type="overline" style={[styles.sectionTitle, { color: colors.textSecondary }]}>
             Appearance
           </ThemedText>
           <ThemedCard variant="outlined" padding={0}>
@@ -194,7 +194,7 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <View style={styles.section}>
-          <ThemedText variant="titleSmall" color="secondary" style={styles.sectionTitle}>
+          <ThemedText type="overline" style={[styles.sectionTitle, { color: colors.textSecondary }]}>
             Preferences
           </ThemedText>
           <ThemedCard variant="outlined" padding={0}>
@@ -206,7 +206,7 @@ export default function SettingsScreen() {
                 <Switch
                   value={notificationsEnabled}
                   onValueChange={setNotificationsEnabled}
-                  trackColor={{ false: colors.borderLight, true: colors.primaryLight }}
+                  trackColor={{ false: colors.border, true: colors.primaryLight }}
                   thumbColor={colors.surface}
                 />
               }
@@ -220,7 +220,7 @@ export default function SettingsScreen() {
                 <Switch
                   value={locationEnabled}
                   onValueChange={setLocationEnabled}
-                  trackColor={{ false: colors.borderLight, true: colors.primaryLight }}
+                  trackColor={{ false: colors.border, true: colors.primaryLight }}
                   thumbColor={colors.surface}
                 />
               }
@@ -230,7 +230,7 @@ export default function SettingsScreen() {
 
         {/* Account */}
         <View style={styles.section}>
-          <ThemedText variant="titleSmall" color="secondary" style={styles.sectionTitle}>
+          <ThemedText type="overline" style={[styles.sectionTitle, { color: colors.textSecondary }]}>
             Account
           </ThemedText>
           <ThemedCard variant="outlined" padding={0}>
@@ -250,7 +250,7 @@ export default function SettingsScreen() {
 
         {/* About */}
         <View style={styles.section}>
-          <ThemedText variant="titleSmall" color="secondary" style={styles.sectionTitle}>
+          <ThemedText type="overline" style={[styles.sectionTitle, { color: colors.textSecondary }]}>
             About
           </ThemedText>
           <ThemedCard variant="outlined" padding={0}>
@@ -287,10 +287,10 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <ThemedText variant="bodySmall" color="tertiary" align="center">
+          <ThemedText type="caption" style={{ color: colors.textTertiary, textAlign: 'center' }}>
             TownTap © 2025
           </ThemedText>
-          <ThemedText variant="bodySmall" color="tertiary" align="center">
+          <ThemedText type="caption" style={{ color: colors.textTertiary, textAlign: 'center' }}>
             Made with ❤️ for local businesses
           </ThemedText>
         </View>

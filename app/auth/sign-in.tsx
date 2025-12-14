@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Import our modern UI components
@@ -45,6 +45,14 @@ export default function SignInScreen() {
     }
   };
 
+  const handleDemoCustomer = () => {
+    router.replace('/(tabs)/home');
+  };
+
+  const handleDemoOwner = () => {
+    router.replace('/business-owner/dashboard');
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -58,17 +66,17 @@ export default function SignInScreen() {
         {/* Logo Container */}
         <View style={styles.logoWrapper}>
           <View style={styles.logoBox}>
-            <ThemedText variant="displayLarge" style={styles.logo}>🏘️</ThemedText>
+            <ThemedText type="h1" style={styles.logo}>🏘️</ThemedText>
           </View>
         </View>
 
         {/* Title */}
-        <ThemedText variant="displayMedium" weight="bold" style={styles.title}>
+        <ThemedText type="h2" weight="bold" style={styles.title}>
           Hello Again
         </ThemedText>
 
         {/* Subtitle */}
-        <ThemedText variant="bodyLarge" style={styles.subtitle}>
+        <ThemedText type="body1" style={styles.subtitle}>
           Welcome Back You've Been Missed!
         </ThemedText>
 
@@ -76,7 +84,7 @@ export default function SignInScreen() {
         <View style={styles.formCard}>
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="bodyMedium" style={styles.label}>
+            <ThemedText type="default" style={styles.label}>
               Email
             </ThemedText>
             <ThemedInput
@@ -94,7 +102,7 @@ export default function SignInScreen() {
 
           {/* Password Input */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="bodyMedium" style={styles.label}>
+            <ThemedText type="default" style={styles.label}>
               Password
             </ThemedText>
             <ThemedInput
@@ -124,7 +132,7 @@ export default function SignInScreen() {
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <ThemedText variant="bodySmall" style={styles.dividerText}>
+            <ThemedText type="caption" style={styles.dividerText}>
               or
             </ThemedText>
             <View style={styles.dividerLine} />
@@ -143,14 +151,43 @@ export default function SignInScreen() {
 
         {/* Sign Up Link */}
         <View style={styles.signUpContainer}>
-          <ThemedText variant="bodyMedium" style={styles.signUpText}>
+          <ThemedText type="default" style={styles.signUpText}>
             Don't have an account?{' '}
           </ThemedText>
           <TouchableOpacity onPress={() => router.push('/auth/role-selection')}>
-            <ThemedText variant="bodyMedium" style={styles.signUpLink}>
+            <ThemedText type="default" style={styles.signUpLink}>
               Sign up
             </ThemedText>
           </TouchableOpacity>
+        </View>
+
+        {/* Demo Buttons Section */}
+        <View style={styles.demoSection}>
+          <View style={styles.demoDivider}>
+            <View style={styles.demoDividerLine} />
+            <ThemedText style={styles.demoDividerText}>TRY DEMO</ThemedText>
+            <View style={styles.demoDividerLine} />
+          </View>
+
+          <View style={styles.demoButtons}>
+            <TouchableOpacity 
+              style={styles.demoButton}
+              onPress={handleDemoCustomer}
+              activeOpacity={0.7}
+            >
+              <ThemedText style={styles.demoButtonIcon}>🛍️</ThemedText>
+              <ThemedText style={styles.demoButtonText}>Customer</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.demoButton}
+              onPress={handleDemoOwner}
+              activeOpacity={0.7}
+            >
+              <ThemedText style={styles.demoButtonIcon}>🏪</ThemedText>
+              <ThemedText style={styles.demoButtonText}>Business</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -284,6 +321,50 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     color: '#2E7D32',
+    fontWeight: '600',
+  },
+  demoSection: {
+    width: '100%',
+    maxWidth: 380,
+    marginTop: Spacing.xl,
+  },
+  demoDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  demoDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  demoDividerText: {
+    marginHorizontal: Spacing.md,
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+    opacity: 0.8,
+  },
+  demoButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  demoButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  demoButtonIcon: {
+    fontSize: 32,
+    marginBottom: Spacing.xs,
+  },
+  demoButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

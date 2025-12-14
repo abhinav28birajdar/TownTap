@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Spacing } from '@/constants/spacing';
 
@@ -15,6 +15,14 @@ export default function RoleSelectionScreen() {
     router.push(`/auth/sign-up?role=${selectedRole}`);
   };
 
+  const handleDemoCustomer = () => {
+    router.replace('/(tabs)/home');
+  };
+
+  const handleDemoOwner = () => {
+    router.replace('/business-owner/dashboard');
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen
@@ -23,7 +31,11 @@ export default function RoleSelectionScreen() {
         }}
       />
 
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Logo */}
         <View style={styles.logoWrapper}>
           <View style={styles.logoBox}>
@@ -109,7 +121,34 @@ export default function RoleSelectionScreen() {
             <Text style={styles.signInLink}>Sign In</Text>
           </TouchableOpacity>
         </View>
-      </View>
+
+        {/* Demo Section */}
+        <View style={styles.demoSection}>
+          <View style={styles.demoDivider}>
+            <View style={styles.demoDividerLine} />
+            <Text style={styles.demoDividerText}>TRY DEMO</Text>
+            <View style={styles.demoDividerLine} />
+          </View>
+          <View style={styles.demoButtons}>
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={handleDemoCustomer}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.demoButtonIcon}>🛍️</Text>
+              <Text style={styles.demoButtonText}>Customer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={handleDemoOwner}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.demoButtonIcon}>🏪</Text>
+              <Text style={styles.demoButtonText}>Business</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -119,8 +158,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#C8E6C9',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xxl * 2,
     paddingBottom: Spacing.xl,
@@ -252,6 +294,51 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     color: '#2E7D32',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  demoSection: {
+    width: '100%',
+    maxWidth: 380,
+    marginTop: Spacing.lg,
+  },
+  demoDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  demoDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(27, 94, 32, 0.3)',
+  },
+  demoDividerText: {
+    color: '#1B5E20',
+    fontSize: 12,
+    fontWeight: '700',
+    marginHorizontal: Spacing.md,
+    letterSpacing: 1,
+  },
+  demoButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  demoButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderWidth: 2,
+    borderColor: 'rgba(27, 94, 32, 0.3)',
+    borderRadius: 16,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  demoButtonIcon: {
+    fontSize: 32,
+    marginBottom: 4,
+  },
+  demoButtonText: {
+    color: '#1B5E20',
     fontSize: 14,
     fontWeight: '600',
   },

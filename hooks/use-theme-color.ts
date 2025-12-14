@@ -1,10 +1,10 @@
 /**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
+ * Hook to get theme-aware colors
+ * Learn more: https://docs.expo.dev/develop/user-interface/color-themes/
  */
 
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/colors';
+import { useColorScheme } from 'react-native';
 
 export function useThemeColor(
   props: { light?: string; dark?: string },

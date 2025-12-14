@@ -1,18 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { BookingRow, BusinessRow, MessageRow, ReviewRow } from './realtime-service';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Check if running in Expo Go (push notifications not supported in Expo Go SDK 53+)
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// Configure notification behavior (only if not in Expo Go)
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export interface NotificationData {
   type: 'booking' | 'message' | 'review' | 'business_update' | 'system';
@@ -65,6 +71,12 @@ class NotificationService {
    */
   private async initializeNotifications(): Promise<void> {
     try {
+      // Skip initialization in Expo Go (push notifications not supported)
+      if (isExpoGo) {
+        console.log('⚠️ Push notifications are not available in Expo Go. Use a development build for full notification support.');
+        return;
+      }
+
       // Load preferences
       await this.loadPreferences();
 
@@ -90,6 +102,11 @@ class NotificationService {
    */
   async requestPermissions(): Promise<boolean> {
     try {
+      // Skip in Expo Go
+      if (isExpoGo) {
+        return false;
+      }
+
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       
       let finalStatus = existingStatus;

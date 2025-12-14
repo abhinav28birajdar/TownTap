@@ -1,113 +1,82 @@
-<div align="center">
-  <img src="./assets/images/icon.png" alt="TownTap Logo" width="120" height="120" />
-  
-  # TownTap
-  
-  **Your Local Business Marketplace**
-  
-  *Connecting communities with local businesses through seamless mobile experiences*
-  
-  ![React Native](https://img.shields.io/badge/React_Native-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
-  ![Expo](https://img.shields.io/badge/Expo-000020?style=flat-square&logo=expo&logoColor=white)
-  ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
-</div>
+# TownTap - Local Services Booking App
 
----
+## 🚀 Quick Setup (3 Steps Only!)
 
-## ⚡ Quick Start
-
-**Your app is configured and ready to run!**
-
+### Step 1: Install Dependencies
 ```bash
-npm start
-# Then press 'a' for Android, 'i' for iOS, or 'w' for web
+npm install
 ```
 
-📖 **See [PRODUCTION_SETUP.md](./PRODUCTION_SETUP.md) for complete setup guide**
+### Step 2: Setup Database (REQUIRED)
+**This fixes the "Database error saving new user" error!**
 
-> **Note:** The "expo-notifications" error you see is normal - push notifications are optional. The app works perfectly without them!
+1. Open https://app.supabase.com
+2. Select your project
+3. Click **SQL Editor** (left sidebar)
+4. Click **New Query**
+5. **Paste** (Ctrl+V) - The SQL is already in your clipboard!
+6. Click **RUN** (takes 30-60 seconds)
 
----
+File: `COMPLETE_DATABASE_SETUP.sql` ✅ Already copied!
 
-## 🌟 About
+### Step 3: Run App
+```bash
+npm start
+# Press 'a' for Android or 'i' for iOS
+```
 
-TownTap is a modern, production-ready mobile application that bridges the gap between local businesses and their communities. Built with React Native and Expo, it provides a seamless platform for discovering, booking, and engaging with local services.
+## ✅ What's Included
 
-## ✨ Key Features
+- 🔐 **Authentication** - Secure signup/login with Supabase
+- 📱 **11 Database Tables** - Complete schema with RLS security
+- 🎨 **Modern UI** - Green nature-themed design
+- ⚡ **Real-time** - Chat & notifications
+- 📍 **Location Search** - GPS-based business discovery
+- ⭐ **Reviews & Ratings** - Customer feedback system
+- 📅 **Bookings** - Complete booking management
+- 💳 **Payments** - Stripe integration ready
 
-### For Customers
-- **🔍 Smart Discovery** - Find local businesses by category, location, and ratings
-- **📅 Easy Booking** - Schedule appointments with real-time availability
-- **⭐ Reviews & Ratings** - Share experiences and read authentic reviews
-- **❤️ Favorites** - Save and quickly access your preferred businesses
-- **🔔 Real-time Updates** - Stay informed with instant booking notifications
-- **📍 Location Services** - Discover businesses near you with GPS integration
+## 🐛 Troubleshooting
 
-### For Business Owners
-- **📊 Business Dashboard** - Comprehensive management and analytics
-- **🛍️ Service Management** - Create and manage your service catalog
-- **📆 Booking Management** - Handle appointments and customer requests
-- **💬 Customer Engagement** - Respond to reviews and communicate directly
-- **📈 Performance Insights** - Track views, bookings, and revenue
+### Error: "Database error saving new user"
+**Solution:** Run `COMPLETE_DATABASE_SETUP.sql` in Supabase (Step 2 above)
 
-### User Experience
-- **🎨 Modern Design** - Beautiful, intuitive interface with Material Design principles
-- **🌓 Dark Mode** - Full light/dark theme support with system integration
-- **✨ Smooth Animations** - Fluid transitions powered by Reanimated and Moti
-- **📱 Responsive** - Optimized for all device sizes and orientations
-- **🔒 Secure** - End-to-end encryption with biometric authentication
-- **⚡ Fast** - Optimized performance with smart caching and lazy loading
-- **🌐 Offline Ready** - Queue actions when offline, sync when connected
+### App won't start
+```bash
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
 
-## 🎯 Use Cases
+## 📁 Project Structure
 
-- **Local Service Discovery**: Find plumbers, electricians, salons, restaurants, and more
-- **Appointment Booking**: Schedule services with instant confirmation
-- **Business Promotion**: Local businesses can showcase their services and build reputation
-- **Community Building**: Connect neighborhoods with trusted local service providers
-- **Review Platform**: Share and discover authentic customer experiences
+```
+TownTap/
+├── app/                          # Screens (Expo Router)
+│   ├── (tabs)/                   # Main tabs (Home, Explore)
+│   ├── auth/                     # Sign in/up screens
+│   ├── customer/                 # Customer features
+│   └── business-owner/           # Business owner features
+├── components/ui/                # Reusable UI components
+├── lib/                          # Services (Supabase, etc.)
+├── stores/                       # State management (Zustand)
+└── COMPLETE_DATABASE_SETUP.sql   # 👈 Run this in Supabase!
+```
 
-## 🛠️ Technology Stack
+## 📚 Key Files
 
-**Frontend**
-- React Native 0.81 with Expo SDK 54
-- TypeScript for comprehensive type safety
-- Reanimated & Moti for 60fps animations
-- React Hook Form + Zod for form validation
+- **COMPLETE_DATABASE_SETUP.sql** - Single SQL file for entire database
+- **CHANGELOG.md** - Complete list of features and changes
+- **.env** - Your Supabase credentials (already configured)
 
-**Backend & Services**
-- Supabase (PostgreSQL, Auth, Storage, Real-time)
-- Row Level Security (RLS) policies
-- Real-time subscriptions for live updates
-- Expo SecureStore for encrypted credential storage
+## 🎯 Next Steps After Setup
 
-**State & Performance**
-- Zustand for efficient state management
-- React Query for server state caching
-- FlashList for optimized large lists
-- Image caching and lazy loading
-
-**Developer Experience**
-- Full TypeScript coverage
-- ESLint & Prettier configuration
-- Jest for unit testing
-- Performance monitoring
-
-## 🚀 Built For
-
-- **Customers** seeking trusted local services
-- **Business Owners** wanting to grow their local presence
-- **Communities** building stronger local economies
+1. ✅ Run SQL in Supabase
+2. ✅ Create test account (signup in app)
+3. ✅ Browse categories and businesses
+4. ✅ Create a booking
+5. ✅ Test real-time chat
 
 ---
 
-<div align="center">
-  
-  **TownTap** - Empowering Local Communities
-  
-  Built with ❤️ using React Native & Expo
-  
-  © 2025 TownTap. All rights reserved.
-  
-</div> 
+**Built with:** React Native, Expo, Supabase, TypeScript

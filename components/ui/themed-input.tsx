@@ -11,7 +11,7 @@ import {
     TextInputProps,
     View,
 } from 'react-native';
-import { ThemedText } from './themed-text-enhanced';
+import { ThemedText } from '../themed-text';
 
 interface ThemedInputProps extends TextInputProps {
   label?: string;
@@ -72,9 +72,8 @@ export const ThemedInput = memo(({
     <View style={[fullWidth && styles.fullWidth, containerStyle]}>
       {label && (
         <ThemedText
-          variant="labelMedium"
-          color="secondary"
-          style={styles.label}
+          type="caption"
+          style={[styles.label, { color: colors.textSecondary }]}
         >
           {label}
         </ThemedText>
@@ -131,9 +130,8 @@ export const ThemedInput = memo(({
       
       {(error || helperText) && (
         <ThemedText
-          variant="labelSmall"
-          color={error ? 'error' : 'secondary'}
-          style={styles.helperText}
+          type="caption"
+          style={[styles.helperText, { color: error ? colors.error : colors.textSecondary }]}
         >
           {error || helperText}
         </ThemedText>

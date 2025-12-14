@@ -96,8 +96,11 @@ class APIKeyManager {
       const timestamp = Date.now().toString();
       const randomBytes = await Crypto.getRandomBytesAsync(32);
       
+      // Convert Uint8Array to base64 string without using Buffer
+      const base64Random = btoa(String.fromCharCode(...randomBytes));
+      
       // Create master key from device info and random data
-      const keyMaterial = `${deviceId}-${timestamp}-${Buffer.from(randomBytes).toString('base64')}`;
+      const keyMaterial = `${deviceId}-${timestamp}-${base64Random}`;
       this.masterKey = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         keyMaterial
