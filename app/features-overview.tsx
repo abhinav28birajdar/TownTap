@@ -328,7 +328,7 @@ export default function FeaturesOverviewScreen() {
 
   return (
     <LinearGradient
-      colors={[colors.background, colors.backgroundSecondary]}
+      colors={[colors.background, colors.muted]}
       style={styles.container}
     >
       <Stack.Screen
