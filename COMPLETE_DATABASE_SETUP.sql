@@ -202,6 +202,100 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 12. Addresses (for saved customer addresses)
+CREATE TABLE IF NOT EXISTS addresses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  label TEXT NOT NULL,
+  address_line1 TEXT NOT NULL,
+  address_line2 TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  pincode TEXT NOT NULL,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Payment Methods
+CREATE TABLE IF NOT EXISTS payment_methods (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- 'card', 'upi', 'wallet'
+  provider TEXT, -- 'visa', 'mastercard', 'paytm', etc.
+  last_four TEXT,
+  expiry_month INTEGER,
+  expiry_year INTEGER,
+  cardholder_name TEXT,
+  upi_id TEXT,
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 14. Wallet Transactions
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  amount DECIMAL(10,2) NOT NULL,
+  type TEXT NOT NULL, -- 'credit', 'debit'
+  description TEXT,
+  reference_id UUID, -- booking_id or other reference
+  balance_after DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 15. Promotions/Coupons
+CREATE TABLE IF NOT EXISTS promotions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code TEXT NOT NULL UNIQUE,
+  description TEXT,
+  discount_type TEXT NOT NULL, -- 'percentage', 'fixed'
+  discount_value DECIMAL(10,2) NOT NULL,
+  min_order_value DECIMAL(10,2),
+  max_discount DECIMAL(10,2),
+  valid_from TIMESTAMPTZ NOT NULL,
+  valid_until TIMESTAMPTZ NOT NULL,
+  usage_limit INTEGER,
+  usage_count INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 16. User Promotions (track user-specific promotion usage)
+CREATE TABLE IF NOT EXISTS user_promotions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  promotion_id UUID NOT NULL REFERENCES promotions(id) ON DELETE CASCADE,
+  used_at TIMESTAMPTZ DEFAULT NOW(),
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+  UNIQUE(user_id, promotion_id, booking_id)
+);
+
+-- 17. Business Images (gallery for businesses)
+CREATE TABLE IF NOT EXISTS business_images (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  caption TEXT,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 18. Booking Tracking (real-time location tracking)
+CREATE TABLE IF NOT EXISTS booking_tracking (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  latitude DOUBLE PRECISION NOT NULL,
+  longitude DOUBLE PRECISION NOT NULL,
+  status TEXT, -- 'on_the_way', 'reached', 'in_progress'
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(booking_id)
+);
+
 -- ============================================
 -- INDEXES
 -- ============================================
@@ -243,6 +337,27 @@ CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
 
+CREATE INDEX IF NOT EXISTS idx_addresses_user ON addresses(user_id);
+CREATE INDEX IF NOT EXISTS idx_addresses_default ON addresses(is_default);
+
+CREATE INDEX IF NOT EXISTS idx_payment_methods_user ON payment_methods(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_methods_default ON payment_methods(is_default);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user ON wallet_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_created ON wallet_transactions(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_promotions_code ON promotions(code);
+CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active);
+CREATE INDEX IF NOT EXISTS idx_promotions_valid ON promotions(valid_from, valid_until);
+
+CREATE INDEX IF NOT EXISTS idx_user_promotions_user ON user_promotions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_promotions_promotion ON user_promotions(promotion_id);
+
+CREATE INDEX IF NOT EXISTS idx_business_images_business ON business_images(business_id);
+CREATE INDEX IF NOT EXISTS idx_business_images_order ON business_images(display_order);
+
+CREATE INDEX IF NOT EXISTS idx_booking_tracking_booking ON booking_tracking(booking_id);
+
 -- ============================================
 -- TRIGGERS
 -- ============================================
@@ -278,6 +393,14 @@ CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings
 
 DROP TRIGGER IF EXISTS update_reviews_updated_at ON reviews;
 CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_addresses_updated_at ON addresses;
+CREATE TRIGGER update_addresses_updated_at BEFORE UPDATE ON addresses
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_payment_methods_updated_at ON payment_methods;
+CREATE TRIGGER update_payment_methods_updated_at BEFORE UPDATE ON payment_methods
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Auto-create profile when user signs up
@@ -350,6 +473,13 @@ ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_methods ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE promotions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_promotions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE booking_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
@@ -467,19 +597,81 @@ CREATE POLICY "Users can view own notifications" ON notifications FOR SELECT USI
 DROP POLICY IF EXISTS "Users can update own notifications" ON notifications;
 CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (auth.uid() = user_id);
 
+-- Addresses policies
+DROP POLICY IF EXISTS "Users can view own addresses" ON addresses;
+CREATE POLICY "Users can view own addresses" ON addresses FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own addresses" ON addresses;
+CREATE POLICY "Users can manage own addresses" ON addresses FOR ALL USING (auth.uid() = user_id);
+
+-- Payment Methods policies
+DROP POLICY IF EXISTS "Users can view own payment methods" ON payment_methods;
+CREATE POLICY "Users can view own payment methods" ON payment_methods FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own payment methods" ON payment_methods;
+CREATE POLICY "Users can manage own payment methods" ON payment_methods FOR ALL USING (auth.uid() = user_id);
+
+-- Wallet Transactions policies
+DROP POLICY IF EXISTS "Users can view own transactions" ON wallet_transactions;
+CREATE POLICY "Users can view own transactions" ON wallet_transactions FOR SELECT USING (auth.uid() = user_id);
+
+-- Promotions policies
+DROP POLICY IF EXISTS "Anyone can view active promotions" ON promotions;
+CREATE POLICY "Anyone can view active promotions" ON promotions FOR SELECT USING (is_active = true AND NOW() BETWEEN valid_from AND valid_until);
+
+-- User Promotions policies
+DROP POLICY IF EXISTS "Users can view own promotion usage" ON user_promotions;
+CREATE POLICY "Users can view own promotion usage" ON user_promotions FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create promotion usage" ON user_promotions;
+CREATE POLICY "Users can create promotion usage" ON user_promotions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Business Images policies
+DROP POLICY IF EXISTS "Anyone can view business images" ON business_images;
+CREATE POLICY "Anyone can view business images" ON business_images FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Owners can manage business images" ON business_images;
+CREATE POLICY "Owners can manage business images" ON business_images FOR ALL USING (
+  EXISTS (SELECT 1 FROM businesses WHERE id = business_images.business_id AND owner_id = auth.uid())
+);
+
+-- Booking Tracking policies
+DROP POLICY IF EXISTS "Customers can view own booking tracking" ON booking_tracking;
+CREATE POLICY "Customers can view own booking tracking" ON booking_tracking FOR SELECT USING (
+  EXISTS (SELECT 1 FROM bookings WHERE id = booking_tracking.booking_id AND customer_id = auth.uid())
+);
+
+DROP POLICY IF EXISTS "Owners can view business booking tracking" ON booking_tracking;
+CREATE POLICY "Owners can view business booking tracking" ON booking_tracking FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM bookings b 
+    JOIN businesses bus ON b.business_id = bus.id 
+    WHERE b.id = booking_tracking.booking_id AND bus.owner_id = auth.uid()
+  )
+);
+
+DROP POLICY IF EXISTS "Owners can update booking tracking" ON booking_tracking;
+CREATE POLICY "Owners can update booking tracking" ON booking_tracking FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM bookings b 
+    JOIN businesses bus ON b.business_id = bus.id 
+    WHERE b.id = booking_tracking.booking_id AND bus.owner_id = auth.uid()
+  )
+);
+
 -- ============================================
--- SEED DATA (Optional sample categories)
+-- SEED DATA (Sample categories matching app)
 -- ============================================
 
 INSERT INTO categories (name, description, icon_name, display_order) VALUES
-  ('Food & Dining', 'Restaurants, cafes, and food delivery', 'restaurant', 1),
-  ('Beauty & Spa', 'Salons, spas, and beauty services', 'cut', 2),
-  ('Health & Fitness', 'Gyms, clinics, and wellness', 'fitness', 3),
-  ('Home Services', 'Cleaning, repairs, and maintenance', 'home', 4),
-  ('Auto Services', 'Car wash, repairs, and maintenance', 'car', 5),
-  ('Education', 'Tutoring and training services', 'school', 6),
-  ('Entertainment', 'Events, parties, and activities', 'star', 7),
-  ('Professional Services', 'Legal, accounting, consulting', 'briefcase', 8)
+  ('Plumbing', 'Plumbing repairs and installations', 'water', 1),
+  ('Electrical', 'Electrical work and repairs', 'flash', 2),
+  ('AC Repair', 'Air conditioning repair and maintenance', 'snow', 3),
+  ('Cleaning', 'Home and office cleaning services', 'sparkles', 4),
+  ('Painting', 'Interior and exterior painting', 'color-palette', 5),
+  ('Carpentry', 'Wood work and furniture repair', 'hammer', 6),
+  ('Pest Control', 'Pest control and fumigation', 'bug', 7),
+  ('Appliance Repair', 'Appliance repair services', 'construct', 8)
 ON CONFLICT (name) DO NOTHING;
 
 -- ============================================

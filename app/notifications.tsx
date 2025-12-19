@@ -14,56 +14,90 @@ const MOCK_NOTIFICATIONS = [
   {
     id: '1',
     title: 'Your booking is confirmed!',
+    message: 'Your plumbing service booking has been confirmed for Dec 15, 2025',
     time: '11:00 PM',
+    read: false,
+    type: 'booking',
   },
   {
     id: '2',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
+    title: 'Service Provider on the way',
+    message: 'John is on the way to your location',
+    time: '10:30 PM',
+    read: false,
+    type: 'tracking',
   },
   {
     id: '3',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
+    title: 'Payment Successful',
+    message: 'Your payment of ₹550 was successful',
+    time: '9:00 PM',
+    read: true,
+    type: 'payment',
   },
   {
     id: '4',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '5',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '6',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '7',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
-  },
-  {
-    id: '8',
-    title: 'Your booking is confirmed!',
-    time: '11:00 PM',
+    title: 'Rate your experience',
+    message: 'How was your recent service? Please rate it',
+    time: '8:00 PM',
+    read: true,
+    type: 'review',
   },
 ];
 
 export default function NotificationsScreen() {
+  const [notifications, setNotifications] = React.useState(MOCK_NOTIFICATIONS);
+
+  const handleNotificationPress = (notification: typeof MOCK_NOTIFICATIONS[0]) => {
+    // Mark as read
+    setNotifications(prev =>
+      prev.map(n => (n.id === notification.id ? { ...n, read: true } : n))
+    );
+
+    // Navigate based on type
+    if (notification.type === 'booking') {
+      router.push('/(tabs)/orders' as any);
+    } else if (notification.type === 'tracking') {
+      router.push('/customer/booking-track' as any);
+    } else if (notification.type === 'payment') {
+      router.push('/customer/wallet' as any);
+    } else if (notification.type === 'review') {
+      router.push('/business-reviews/write-review' as any);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'booking':
+        return 'checkmark-circle';
+      case 'tracking':
+        return 'navigate';
+      case 'payment':
+        return 'cash';
+      case 'review':
+        return 'star';
+      default:
+        return 'notifications';
+    }
+  };
+
   const renderNotification = ({ item }: { item: typeof MOCK_NOTIFICATIONS[0] }) => (
-    <View style={styles.notificationCard}>
-      <View style={styles.avatar}>
-        <Ionicons name="checkmark-circle" size={24} color="#4A5F4E" />
+    <TouchableOpacity
+      style={[styles.notificationCard, !item.read && styles.unreadNotification]}
+      onPress={() => handleNotificationPress(item)}
+    >
+      <View style={[styles.avatar, { backgroundColor: item.read ? '#A8D5AB' : '#415D43' }]}>
+        <Ionicons name={getNotificationIcon(item.type) as any} size={24} color="#FFFFFF" />
       </View>
       <View style={styles.notificationInfo}>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
+        <Text style={[styles.notificationTitle, !item.read && styles.unreadText]}>{item.title}</Text>
+        <Text style={styles.notificationMessage} numberOfLines={2}>{item.message}</Text>
       </View>
-      <Text style={styles.notificationTime}>{item.time}</Text>
-    </View>
+      <View style={styles.timeContainer}>
+        <Text style={styles.notificationTime}>{item.time}</Text>
+        {!item.read && <View style={styles.unreadDot} />}
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -79,16 +113,11 @@ export default function NotificationsScreen() {
 
       {/* Notifications List */}
       <FlatList
-        data={MOCK_NOTIFICATIONS}
+        data={notifications}
         renderItem={renderNotification}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.notificationsList}
       />
-
-      {/* See All Button */}
-      <TouchableOpacity style={styles.seeAllButton}>
-        <Text style={styles.seeAllText}>See All</Text>
-      </TouchableOpacity>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -152,11 +181,15 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.sm,
   },
+  unreadNotification: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#415D43',
+  },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4A5F4E',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
@@ -168,10 +201,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
+    marginBottom: 4,
+  },
+  unreadText: {
+    fontWeight: '700',
+  },
+  notificationMessage: {
+    fontSize: 12,
+    color: '#666',
+  },
+  timeContainer: {
+    alignItems: 'flex-end',
   },
   notificationTime: {
     fontSize: 12,
     color: '#555',
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#415D43',
+    marginTop: 4,
   },
   seeAllButton: {
     alignItems: 'center',

@@ -24,7 +24,7 @@ class RealtimeService {
    * Subscribe to real-time booking updates for a specific user
    */
   subscribeToUserBookings(
-    userId: string,
+    userId: string | undefined,
     callbacks: {
       onInsert?: (booking: BookingRow) => void;
       onUpdate?: (booking: BookingRow) => void;
@@ -32,6 +32,7 @@ class RealtimeService {
     },
     config?: RealtimeConfig
   ): RealtimeChannel {
+    if (!userId) throw new Error('userId is required for subscribeToUserBookings');
     const channelName = `user-bookings-${userId}`;
     
     // Remove existing channel if it exists
@@ -50,13 +51,13 @@ class RealtimeService {
         (payload: RealtimePostgresChangesPayload<BookingRow>) => {
           switch (payload.eventType) {
             case 'INSERT':
-              callbacks.onInsert?.(payload.new);
+              callbacks.onInsert?.(payload.new as BookingRow);
               break;
             case 'UPDATE':
-              callbacks.onUpdate?.(payload.new);
+              callbacks.onUpdate?.(payload.new as BookingRow);
               break;
             case 'DELETE':
-              callbacks.onDelete?.(payload.old.id);
+              callbacks.onDelete?.((payload.old as BookingRow)?.id || '');
               break;
           }
         }
@@ -106,13 +107,13 @@ class RealtimeService {
         (payload: RealtimePostgresChangesPayload<BookingRow>) => {
           switch (payload.eventType) {
             case 'INSERT':
-              callbacks.onInsert?.(payload.new);
+              callbacks.onInsert?.(payload.new as BookingRow);
               break;
             case 'UPDATE':
-              callbacks.onUpdate?.(payload.new);
+              callbacks.onUpdate?.(payload.new as BookingRow);
               break;
             case 'DELETE':
-              callbacks.onDelete?.(payload.old.id);
+              callbacks.onDelete?.((payload.old as BookingRow)?.id || '');
               break;
           }
         }
@@ -167,7 +168,7 @@ class RealtimeService {
               callbacks.onMessageUpdate?.(payload.new);
               break;
             case 'DELETE':
-              callbacks.onMessageDelete?.(payload.old.id);
+              callbacks.onMessageDelete?.((payload.old as MessageRow)?.id || '');
               break;
           }
         }
@@ -210,11 +211,13 @@ class RealtimeService {
           filter: `id=eq.${businessId}`,
         },
         (payload: RealtimePostgresChangesPayload<BusinessRow>) => {
-          callbacks.onUpdate?.(payload.new);
+          const newBusiness = payload.new as BusinessRow;
+          const oldBusiness = payload.old as BusinessRow;
+          callbacks.onUpdate?.(newBusiness);
           
           // Check if status changed
-          if (payload.old.is_open !== payload.new.is_open) {
-            callbacks.onStatusChange?.(payload.new);
+          if (oldBusiness?.is_open !== newBusiness?.is_open) {
+            callbacks.onStatusChange?.(newBusiness);
           }
         }
       )
@@ -401,7 +404,9 @@ class RealtimeService {
    * Get connection status
    */
   getConnectionStatus(): string {
-    return supabase.realtime.connection?.state || 'disconnected';
+    // Supabase realtime uses socket property instead of connection
+    const state = (supabase.realtime as any)?.socket?.state || 'disconnected';
+    return typeof state === 'string' ? state : 'disconnected';
   }
 
   /**

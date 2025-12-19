@@ -3,7 +3,6 @@
  * Manage saved payment methods
  */
 
-import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
@@ -12,17 +11,18 @@ import { BorderRadius, spacing } from '@/constants/spacing';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth-store';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface PaymentMethod {
@@ -516,6 +516,11 @@ const styles = StyleSheet.create({
   typeIcon: {
     fontSize: 24,
     marginBottom: spacing.xs,
+  },
+  typeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: spacing.xs,
   },
   inputLabel: {
     fontSize: 12,

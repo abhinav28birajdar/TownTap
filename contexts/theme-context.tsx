@@ -40,6 +40,9 @@ export function useThemeContext() {
   return context;
 }
 
+// Alias for convenience - components can use useTheme from context
+export { useThemeContext as useTheme };
+
 // Convenience hook for quick color access
 export function useColors() {
   const { colors } = useThemeContext();

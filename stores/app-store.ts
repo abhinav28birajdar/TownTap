@@ -58,6 +58,9 @@ interface AppState {
     retryCount: number;
   }>;
   
+  // Connection status for realtime
+  connectionStatus: 'connected' | 'disconnected' | 'connecting' | 'error';
+  
   // Actions
   setInitialized: (initialized: boolean) => void;
   setLoading: (loading: boolean) => void;
@@ -67,6 +70,7 @@ interface AppState {
     updates: Partial<AppState['settings'][K]>
   ) => void;
   setNetworkStatus: (online: boolean) => void;
+  updateConnectionStatus: (status: 'connected' | 'disconnected' | 'connecting' | 'error') => void;
   
   // Notification actions
   addNotification: (notification: Omit<AppState['notifications'][0], 'id' | 'timestamp' | 'read'>) => void;
@@ -114,6 +118,7 @@ export const useAppStore = create<AppState>()(
       notifications: [],
       unreadCount: 0,
       offlineQueue: [],
+      connectionStatus: 'disconnected' as const,
       
       setInitialized: (initialized: boolean) => {
         set({ isInitialized: initialized });
@@ -147,6 +152,10 @@ export const useAppStore = create<AppState>()(
         if (wasOffline && online) {
           get().processOfflineQueue();
         }
+      },
+      
+      updateConnectionStatus: (status) => {
+        set({ connectionStatus: status });
       },
       
       // Notification actions

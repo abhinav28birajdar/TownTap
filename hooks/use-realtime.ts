@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { AppState } from 'react-native';
+import { AppState, AppStateStatus } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { notificationService } from '../lib/notification-service';
 import { BookingRow, BusinessRow, MessageRow, RealtimeConfig, realtimeService, ReviewRow } from '../lib/realtime-service';
 import { useAppStore } from '../stores/app-store';
 import { useAuthStore } from '../stores/auth-store';
-import { useBusinessStore } from '../stores/business-store';
+import { useBookingStore, useBusinessStore } from '../stores/business-store';
 
 interface UseRealtimeOptions {
   enableBookings?: boolean;
@@ -19,7 +19,8 @@ interface UseRealtimeOptions {
 export function useRealtime(options: UseRealtimeOptions = {}) {
   const { user } = useAuthStore();
   const { addNotification, updateConnectionStatus } = useAppStore();
-  const { currentBusiness, updateBusinessData, addBooking, updateBooking, removeBooking } = useBusinessStore();
+  const { currentBusiness, updateBusinessData } = useBusinessStore();
+  const { addBooking, updateBooking, removeBooking } = useBookingStore();
   
   const appStateRef = useRef(AppState.currentState);
   const subscriptionsRef = useRef<string[]>([]);
@@ -31,7 +32,7 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
     enableBusinessUpdates = true,
     enablePresence = false,
     autoReconnect = true,
-  } = options;
+  } = options ?? {};
 
   /**
    * Real-time configuration
@@ -84,12 +85,10 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
           
           // Add app notification
           addNotification({
-            id: `booking-${booking.id}`,
-            type: 'booking',
             title: 'New Booking',
-            message: `Booking request for ${new Date(booking.booking_date).toLocaleDateString()}`,
+            body: `Booking request for ${booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'upcoming'}`,
+            type: 'info',
             data: { bookingId: booking.id },
-            timestamp: new Date().toISOString(),
           });
 
           Toast.show({
@@ -154,12 +153,10 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
           notificationService.showBookingNotification(booking, 'new');
           
           addNotification({
-            id: `business-booking-${booking.id}`,
-            type: 'booking',
             title: 'New Customer Booking',
-            message: `New booking from customer`,
-            data: { bookingId: booking.id, businessId: currentBusiness.id },
-            timestamp: new Date().toISOString(),
+            body: `New booking from customer`,
+            type: 'success',
+            data: { bookingId: booking.id, businessId: currentBusiness?.id },
           });
 
           Toast.show({
@@ -218,12 +215,10 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
             notificationService.showMessageNotification(message, 'Customer'); // You might want to fetch sender name
             
             addNotification({
-              id: `message-${message.id}`,
-              type: 'message',
               title: 'New Message',
-              message: message.content || 'You have a new message',
+              body: message.content || 'You have a new message',
+              type: 'info',
               data: { messageId: message.id, bookingId },
-              timestamp: new Date().toISOString(),
             });
 
             Toast.show({
@@ -267,7 +262,7 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       {
         onUpdate: (business: BusinessRow) => {
           console.log('🏢 Business updated:', business);
-          updateBusinessData(business);
+          updateBusinessData(business.id, business);
           
           Toast.show({
             type: 'info',
@@ -279,7 +274,7 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
 
         onStatusChange: (business: BusinessRow) => {
           console.log('🏢 Business status changed:', business);
-          updateBusinessData(business);
+          updateBusinessData(business.id, business);
           
           notificationService.showBusinessUpdateNotification(business, 'status_change');
           
@@ -313,12 +308,10 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
           notificationService.showReviewNotification(review, 'Customer'); // You might want to fetch customer name
           
           addNotification({
-            id: `review-${review.id}`,
-            type: 'review',
             title: 'New Review',
-            message: `You received a ${review.rating}-star review`,
-            data: { reviewId: review.id, businessId: currentBusiness.id },
-            timestamp: new Date().toISOString(),
+            body: `You received a ${review.rating}-star review`,
+            type: 'success',
+            data: { reviewId: review.id, businessId: currentBusiness?.id },
           });
 
           const rating = '⭐'.repeat(Math.floor(review.rating || 0));
@@ -381,7 +374,7 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
    * Handle app state changes
    */
   useEffect(() => {
-    const handleAppStateChange = (nextAppState: string) => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
         // App has come to the foreground
         console.log('📱 App foregrounded - reconnecting real-time');
@@ -484,4 +477,4 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
   };
 }
 
-export default useRealtime;
+export default useRealtime;{ useRealtime }

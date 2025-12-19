@@ -16,6 +16,7 @@ interface BusinessState {
   setBusinesses: (businesses: Business[]) => void;
   addBusiness: (business: Business) => void;
   updateBusiness: (id: string, updates: Partial<Business>) => void;
+  updateBusinessData: (id: string, updates: Partial<Business>) => void;
   setCurrentBusiness: (business: Business | null) => void;
   toggleFavorite: (businessId: string) => void;
   isFavorite: (businessId: string) => boolean;
@@ -44,6 +45,17 @@ export const useBusinessStore = create<BusinessState>()(
           businesses: state.businesses.map((business) =>
             business.id === id ? { ...business, ...updates } : business
           ),
+        }));
+      },
+      
+      updateBusinessData: (id: string, updates: Partial<Business>) => {
+        set((state) => ({
+          businesses: state.businesses.map((business) =>
+            business.id === id ? { ...business, ...updates } : business
+          ),
+          currentBusiness: state.currentBusiness?.id === id 
+            ? { ...state.currentBusiness, ...updates }
+            : state.currentBusiness,
         }));
       },
       

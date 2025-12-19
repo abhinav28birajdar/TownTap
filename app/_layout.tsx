@@ -183,6 +183,7 @@ function RootLayoutNav() {
       <OfflineIndicator />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="welcome" />
+        <Stack.Screen name="onboarding" />
         <Stack.Screen name="config-setup" />
         <Stack.Screen name="debug" options={{ headerShown: true, title: 'Debug Info' }} />
         <Stack.Screen name="auth/forgot-password" />
@@ -193,14 +194,23 @@ function RootLayoutNav() {
         <Stack.Screen name="business/[id]" />
         
         {/* Business Owner Routes */}
+        <Stack.Screen name="business-owner/(tabs)" />
         <Stack.Screen name="business-owner/dashboard" />
         <Stack.Screen name="business-owner/notifications" />
         <Stack.Screen name="business-owner/profile" />
         <Stack.Screen name="business-owner/add-product" />
+        <Stack.Screen name="business-owner/add-service" />
         <Stack.Screen name="business-owner/orders" />
         <Stack.Screen name="business-owner/services" />
         <Stack.Screen name="business-owner/analytics" />
         <Stack.Screen name="business-owner/customers" />
+        <Stack.Screen name="business-owner/customer-details" />
+        <Stack.Screen name="business-owner/order-details" />
+        <Stack.Screen name="business-owner/earnings" />
+        <Stack.Screen name="business-owner/revenue-reports" />
+        <Stack.Screen name="business-owner/calendar" />
+        <Stack.Screen name="business-owner/pricing-management" />
+        <Stack.Screen name="business-owner/service-categories" />
         
         {/* Customer Routes */}
         <Stack.Screen name="customer/dashboard" />
@@ -208,12 +218,28 @@ function RootLayoutNav() {
         <Stack.Screen name="customer/bookings" />
         <Stack.Screen name="customer/favorites" />
         <Stack.Screen name="customer/notifications" />
+        <Stack.Screen name="customer/notifications-list" />
         <Stack.Screen name="customer/profile" />
         <Stack.Screen name="customer/orders" />
         <Stack.Screen name="customer/history" />
+        <Stack.Screen name="customer/order-details" />
+        <Stack.Screen name="customer/order-history" />
         <Stack.Screen name="customer/booking" />
+        <Stack.Screen name="customer/booking-track" />
+        <Stack.Screen name="customer/booking-tracking" />
+        <Stack.Screen name="customer/booking-confirmation" />
         <Stack.Screen name="customer/location" />
         <Stack.Screen name="customer/tracking" />
+        <Stack.Screen name="customer/addresses" />
+        <Stack.Screen name="customer/add-address" />
+        <Stack.Screen name="customer/payment-methods" />
+        <Stack.Screen name="customer/wallet" />
+        <Stack.Screen name="customer/reviews" />
+        <Stack.Screen name="customer/advanced-search" />
+        <Stack.Screen name="customer/map-view" />
+        <Stack.Screen name="customer/loyalty-program" />
+        <Stack.Screen name="customer/notification-preferences" />
+        <Stack.Screen name="customer/help-support" />
         
         {/* Category Routes */}
         <Stack.Screen name="category/[category]" />
@@ -222,9 +248,27 @@ function RootLayoutNav() {
         <Stack.Screen name="messages/index" />
         <Stack.Screen name="messages/chat/[id]" />
         
+        {/* Review Routes */}
+        <Stack.Screen name="business-reviews/[businessId]" />
+        <Stack.Screen name="business-reviews/write-review" />
+        
+        {/* Booking Routes */}
+        <Stack.Screen name="booking/select-service" />
+        <Stack.Screen name="booking/booking-form" />
+        <Stack.Screen name="booking/confirmation" />
+        <Stack.Screen name="booking/success" />
+        
+        {/* Profile & Settings Routes */}
         <Stack.Screen name="profile" options={{ headerShown: true, title: 'Profile' }} />
+        <Stack.Screen name="profile/edit" />
+        <Stack.Screen name="profile/edit-simple" />
         <Stack.Screen name="settings/index" options={{ headerShown: true, title: 'Settings' }} />
         <Stack.Screen name="settings/advanced" options={{ headerShown: true, title: 'Advanced Settings' }} />
+        <Stack.Screen name="settings/theme" />
+        <Stack.Screen name="settings/language" />
+        <Stack.Screen name="settings/about" />
+        <Stack.Screen name="settings/privacy" />
+        <Stack.Screen name="settings/terms" />
         <Stack.Screen name="notifications" options={{ headerShown: true, title: 'Notifications' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>

@@ -5,11 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -57,7 +57,7 @@ export default function MessagesTabScreen() {
   };
 
   const handleMessagePress = (messageId: string) => {
-    router.push(`/messages/chat/${messageId}`);
+    router.push(`/messages/chat/${messageId}` as any);
   };
 
   return (
@@ -225,13 +225,13 @@ const styles = StyleSheet.create({
   },
   businessName: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     marginRight: 8,
   },
   timestamp: {
-    fontSize: 12,
-    opacity: 0.5,
+    fontSize: 13,
+    opacity: 0.7,
   },
   messageFooter: {
     flexDirection: 'row',
@@ -240,8 +240,8 @@ const styles = StyleSheet.create({
   },
   lastMessage: {
     flex: 1,
-    fontSize: 14,
-    opacity: 0.7,
+    fontSize: 15,
+    opacity: 0.9,
     marginRight: 8,
   },
   unreadBadge: {

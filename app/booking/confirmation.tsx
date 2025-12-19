@@ -6,7 +6,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { Colors } from '@/constants/colors';
-import { spacing , BorderRadius} from '@/constants/spacing';
+import { BorderRadius, spacing } from '@/constants/spacing';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth-store';
@@ -36,8 +36,8 @@ export default function BookingConfirmationPage() {
 
     try {
       // Create booking in database
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
+      const { data: booking, error: bookingError } = await (supabase
+        .from('bookings') as any)
         .insert({
           customer_id: user?.id,
           business_id: bookingData.businessId,
@@ -60,15 +60,15 @@ export default function BookingConfirmationPage() {
         price: service.final_price,
       }));
 
-      const { error: servicesError } = await supabase
-        .from('booking_services')
+      const { error: servicesError } = await (supabase
+        .from('booking_services') as any)
         .insert(serviceInserts);
 
       if (servicesError) throw servicesError;
 
       // Create transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
+      const { error: transactionError } = await (supabase
+        .from('transactions') as any)
         .insert({
           user_id: user?.id,
           booking_id: booking.id,
@@ -83,8 +83,8 @@ export default function BookingConfirmationPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Update booking status
-      await supabase
-        .from('bookings')
+      await (supabase
+        .from('bookings') as any)
         .update({ status: 'confirmed', payment_status: 'paid' })
         .eq('id', booking.id);
 

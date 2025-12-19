@@ -39,7 +39,13 @@ export default function BusinessServicesScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <View style={styles.serviceCard}>
+          <TouchableOpacity 
+            style={styles.serviceCard}
+            onPress={() => {
+              console.log('Edit service:', item.id);
+              router.push(`/business-owner/edit-service?id=${item.id}`);
+            }}
+          >
             <View style={styles.serviceImage}>
               <Ionicons name="briefcase-outline" size={40} color="#6B8E6F" />
             </View>
@@ -57,14 +63,28 @@ export default function BusinessServicesScreen() {
             </View>
 
             <View style={styles.serviceActions}>
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  console.log('Edit service:', item.id);
+                  router.push(`/business-owner/edit-service?id=${item.id}`);
+                }}
+              >
                 <Ionicons name="create-outline" size={20} color="#4A5F4E" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  console.log('Delete service:', item.id);
+                  // Add delete confirmation
+                }}
+              >
                 <Ionicons name="trash-outline" size={20} color="#EF4444" />
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>

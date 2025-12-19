@@ -5,7 +5,7 @@
 
 import { Card } from '@/components/ui/Card';
 import { Colors } from '@/constants/colors';
-import { spacing , BorderRadius} from '@/constants/spacing';
+import { BorderRadius, spacing } from '@/constants/spacing';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';

@@ -5,11 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -82,6 +83,75 @@ export default function OrdersTabScreen() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     setRefreshing(false);
+  };
+
+  const handleTrackService = (orderId: string) => {
+    router.push('/customer/booking-track' as any);
+  };
+
+  const handleReschedule = (orderId: string) => {
+    // Show date selection options
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfter = new Date(today);
+    dayAfter.setDate(dayAfter.getDate() + 2);
+
+    Alert.alert(
+      'Reschedule Booking',
+      'Choose a new date:',
+      [
+        {
+          text: 'Tomorrow',
+          onPress: () => {
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.id === orderId 
+                  ? { ...order, date: tomorrow.toISOString().split('T')[0] } 
+                  : order
+              )
+            );
+            Alert.alert('Success', 'Booking rescheduled to tomorrow');
+          },
+        },
+        {
+          text: dayAfter.toLocaleDateString('en-US', { weekday: 'long' }),
+          onPress: () => {
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.id === orderId 
+                  ? { ...order, date: dayAfter.toISOString().split('T')[0] } 
+                  : order
+              )
+            );
+            Alert.alert('Success', `Booking rescheduled to ${dayAfter.toLocaleDateString()}`);
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleCancelBooking = (orderId: string) => {
+    Alert.alert(
+      'Cancel Booking',
+      'Are you sure you want to cancel this booking?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: () => {
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.id === orderId ? { ...order, status: 'cancelled' } : order
+              )
+            );
+            Alert.alert('Success', 'Booking cancelled successfully');
+          },
+        },
+      ]
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -259,19 +329,46 @@ export default function OrdersTabScreen() {
 
                   <View style={styles.orderActions}>
                     {order.status === 'active' && (
-                      <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="navigate" size={18} color={colors.primary} />
-                        <ThemedText style={styles.actionButtonText}>Track</ThemedText>
+                      <>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, { backgroundColor: colors.primary + '10' }]}
+                          onPress={() => handleTrackService(order.id)}
+                        >
+                          <Ionicons name="navigate" size={18} color={colors.primary} />
+                          <ThemedText style={[styles.actionButtonText, { color: colors.primary }]}>Track Service</ThemedText>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, { backgroundColor: '#FF9800' + '10' }]}
+                          onPress={() => handleReschedule(order.id)}
+                        >
+                          <Ionicons name="time" size={18} color="#FF9800" />
+                          <ThemedText style={[styles.actionButtonText, { color: '#FF9800' }]}>Reschedule</ThemedText>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, { backgroundColor: '#F44336' + '10' }]}
+                          onPress={() => handleCancelBooking(order.id)}
+                        >
+                          <Ionicons name="close-circle" size={18} color="#F44336" />
+                          <ThemedText style={[styles.actionButtonText, { color: '#F44336' }]}>Cancel</ThemedText>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                    {order.status !== 'active' && (
+                      <TouchableOpacity 
+                        style={[styles.actionButton, { backgroundColor: colors.primary + '10' }]}
+                        onPress={() => router.push(`/messages/chat/${order.id}` as any)}
+                      >
+                        <Ionicons name="chatbubbles" size={18} color={colors.primary} />
+                        <ThemedText style={[styles.actionButtonText, { color: colors.primary }]}>Message</ThemedText>
                       </TouchableOpacity>
                     )}
-                    <TouchableOpacity style={styles.actionButton}>
-                      <Ionicons name="chatbubbles" size={18} color={colors.primary} />
-                      <ThemedText style={styles.actionButtonText}>Message</ThemedText>
-                    </TouchableOpacity>
                     {order.status === 'completed' && !order.rating && (
-                      <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="star" size={18} color={colors.primary} />
-                        <ThemedText style={styles.actionButtonText}>Rate</ThemedText>
+                      <TouchableOpacity 
+                        style={[styles.actionButton, { backgroundColor: '#FFC107' + '10' }]}
+                        onPress={() => router.push(`/business-reviews/write-review?orderId=${order.id}` as any)}
+                      >
+                        <Ionicons name="star" size={18} color="#FFC107" />
+                        <ThemedText style={[styles.actionButtonText, { color: '#FFC107' }]}>Rate</ThemedText>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -350,8 +447,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 4,
   },
   businessRow: {
@@ -360,8 +457,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   businessName: {
-    fontSize: 12,
-    opacity: 0.6,
+    fontSize: 14,
+    opacity: 0.8,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -383,8 +480,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   detailText: {
-    fontSize: 12,
-    opacity: 0.7,
+    fontSize: 14,
+    opacity: 0.9,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -410,7 +507,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.02)',
+    flex: 1,
+    justifyContent: 'center',
   },
   actionButtonText: {
     fontSize: 12,

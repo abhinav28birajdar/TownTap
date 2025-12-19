@@ -50,7 +50,27 @@ export default function BusinessOwnerDashboard() {
   }, []);
 
   const handleQuickAction = (route: string) => {
-    router.push(route as any);
+    console.log('Quick action clicked:', route);
+    try {
+      router.push(route as any);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
+
+  const handleViewOrderDetails = (orderId: string) => {
+    console.log('View order details:', orderId);
+    router.push(`/business-owner/order-details?id=${orderId}`);
+  };
+
+  const handleAcceptOrder = (orderId: string) => {
+    console.log('Accept order:', orderId);
+    // Add accept order logic
+  };
+
+  const handleRejectOrder = (orderId: string) => {
+    console.log('Reject order:', orderId);
+    // Add reject order logic
   };
 
   return (
@@ -74,14 +94,20 @@ export default function BusinessOwnerDashboard() {
             <View style={styles.headerActions}>
               <TouchableOpacity 
                 style={styles.iconButton}
-                onPress={() => router.push('/messages')}
+                onPress={() => {
+                  console.log('Messages clicked');
+                  router.push('/(tabs)/messages');
+                }}
               >
                 <Ionicons name="chatbubbles-outline" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.notificationButton}
-                onPress={() => router.push('/business-owner/notifications')}
+                onPress={() => {
+                  console.log('Notifications clicked');
+                  router.push('/business-owner/notifications');
+                }}
               >
                 <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
                 <View style={styles.notificationBadge}>
@@ -91,16 +117,12 @@ export default function BusinessOwnerDashboard() {
               
               <TouchableOpacity 
                 style={styles.profileButton}
-                onPress={() => router.push('/business-owner/profile')}
+                onPress={() => {
+                  console.log('Profile clicked');
+                  router.push('/business-owner/profile');
+                }}
               >
                 <Ionicons name="person-outline" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.profileButton}
-                onPress={() => router.push('/business-owner/add-product')}
-              >
-                <Ionicons name="add-circle-outline" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -207,10 +229,16 @@ export default function BusinessOwnerDashboard() {
             </View>
             
             <View style={styles.orderActions}>
-              <TouchableOpacity style={styles.rejectButton}>
+              <TouchableOpacity 
+                style={styles.rejectButton}
+                onPress={() => handleRejectOrder('order-1')}
+              >
                 <Text style={styles.rejectText}>Reject</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.acceptButton}>
+              <TouchableOpacity 
+                style={styles.acceptButton}
+                onPress={() => handleAcceptOrder('order-1')}
+              >
                 <Text style={styles.acceptText}>Accept</Text>
               </TouchableOpacity>
             </View>
@@ -234,7 +262,10 @@ export default function BusinessOwnerDashboard() {
               <Text style={styles.orderAmount}>₹1200</Text>
             </View>
             
-            <TouchableOpacity style={styles.viewOrderButton}>
+            <TouchableOpacity 
+              style={styles.viewOrderButton}
+              onPress={() => handleViewOrderDetails('order-2')}
+            >
               <Text style={styles.viewOrderText}>View Details</Text>
             </TouchableOpacity>
           </View>

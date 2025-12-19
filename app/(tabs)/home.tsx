@@ -7,27 +7,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 type Category = Database['public']['Tables']['categories']['Row'];
 
 const CATEGORY_ICONS: { [key: string]: any } = {
-  'food': '🍔',
-  'doctor': '👨‍⚕️',
-  'shopkeeper': '👔',
-  'gardener': '👨‍🌾',
-  'carpenter': '👷',
-  'painter': '🎨',
-  'plumber': '🔧',
-  'house maid': '🧹',
+  'plumbing': 'water',
+  'electrical': 'flash',
+  'ac repair': 'snow',
+  'cleaning': 'sparkles',
+  'painting': 'color-palette',
+  'carpentry': 'hammer',
+  'pest control': 'bug',
+  'appliance repair': 'construct',
+  'food': 'restaurant',
+  'doctor': 'medical',
+  'shopkeeper': 'storefront',
+  'gardener': 'leaf',
+  'carpenter': 'hammer',
+  'painter': 'color-palette',
+  'plumber': 'water',
+  'house maid': 'sparkles',
 };
 
 export default function HomeScreen() {
@@ -82,7 +90,7 @@ export default function HomeScreen() {
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
           <TouchableOpacity
             style={styles.profileButton}
-            onPress={() => router.push('/customer/profile')}
+            onPress={() => router.push('/(tabs)/profile')}
           >
             <View style={[styles.avatar, { backgroundColor: colors.primaryDark }]}>
               <Ionicons name="person" size={24} color="#fff" />
@@ -92,7 +100,7 @@ export default function HomeScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={[styles.iconButton, { backgroundColor: colors.surface }]}
-              onPress={() => router.push('/messages')}
+              onPress={() => router.push('/(tabs)/messages')}
             >
               <Ionicons name="chatbubbles" size={22} color={colors.primary} />
             </TouchableOpacity>
@@ -109,10 +117,10 @@ export default function HomeScreen() {
         {/* Local Business Heroes Banner */}
         <View style={[styles.heroBanner, { backgroundColor: colors.muted }]}>
           <View style={styles.heroHeader}>
-            <Text style={[styles.heroRibbon, { color: colors.text }]}>LOCAL BUSINESS HEROES</Text>
+            <Text style={[styles.heroRibbon, { color: colors.text }]}></Text>
           </View>
           <Image
-            source={require('@/assets/images/react-logo.png')}
+            source={require('@/assets/images/header.png')}
             style={styles.heroImage}
             resizeMode="contain"
           />
@@ -131,27 +139,33 @@ export default function HomeScreen() {
             {categories.slice(0, 4).map((category, index) => (
               <TouchableOpacity
                 key={category.id}
-                style={[styles.categoryCard, { backgroundColor: colors.primary }]}
+                style={[styles.categoryCard, { backgroundColor: '#A1CCA5' }]}
                 onPress={() => router.push(`/category/${category.name.toLowerCase()}`)}
               >
                 <View style={styles.categoryIcon}>
-                  <Text style={styles.categoryEmoji}>
-                    {CATEGORY_ICONS[category.name.toLowerCase()] || '📦'}
-                  </Text>
+                  <Ionicons 
+                    name={CATEGORY_ICONS[category.name.toLowerCase()] || 'cube'} 
+                    size={28} 
+                    color="#FFFFFF" 
+                  />
                 </View>
+                <Text style={styles.categoryName}>{category.name}</Text>
               </TouchableOpacity>
             ))}
             {categories.slice(4, 8).map((category, index) => (
               <TouchableOpacity
                 key={category.id}
-                style={[styles.categoryCard, { backgroundColor: colors.primary }]}
+                style={[styles.categoryCard, { backgroundColor: '#29422B' }]}
                 onPress={() => router.push(`/category/${category.name.toLowerCase()}`)}
               >
                 <View style={styles.categoryIcon}>
-                  <Text style={styles.categoryEmoji}>
-                    {CATEGORY_ICONS[category.name.toLowerCase()] || '📦'}
-                  </Text>
+                  <Ionicons 
+                    name={CATEGORY_ICONS[category.name.toLowerCase()] || 'cube'} 
+                    size={28} 
+                    color="#FFFFFF" 
+                  />
                 </View>
+                <Text style={styles.categoryName}>{category.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -181,6 +195,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.quickActionText}>Book</Text>
             </TouchableOpacity>
+            
           </View>
         </View>
 
@@ -188,7 +203,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
+      {/* <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.push('/(tabs)/home')}
@@ -213,7 +228,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="receipt" size={24} color="#fff" />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -264,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    minHeight: 200,
+    minHeight: 100,
   },
   heroHeader: {
     alignItems: 'center',
@@ -308,10 +323,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 8,
   },
   categoryIcon: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
+  },
+  categoryName: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   categoryEmoji: {
     fontSize: 32,

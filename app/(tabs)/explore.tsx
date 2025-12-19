@@ -18,7 +18,7 @@ import {
 type Category = Database['public']['Tables']['categories']['Row'];
 
 const SERVICE_DATA = [
-  { id: 'food', name: 'Food', subtitle: 'Meals, Snacks, Food Hub', icon: '🍔', color: '#A8D5AB' },
+  { id: 'food', name: 'Food', subtitle: 'Meals, Snacks, Food Hub', url: '🍔', color: '#A8D5AB' },
   { id: 'doctor', name: 'Doctor', subtitle: 'Health, Medic Care', icon: '👨‍⚕️', color: '#A8D5AB' },
   { id: 'shopkeeper', name: 'Shopkeeper', subtitle: 'General Store, Local Shop', icon: '👔', color: '#A8D5AB' },
   { id: 'gardener', name: 'Gardener', subtitle: 'Garden Care, Green Work', icon: '👨‍🌾', color: '#A8D5AB' },
@@ -30,6 +30,7 @@ const SERVICE_DATA = [
   { id: 'clothes shop', name: 'Clothes Shop', subtitle: 'Fashion, Apparel', icon: '👕', color: '#A8D5AB' },
   { id: 'water supply', name: 'Water Supply', subtitle: 'Water Tank, Water Service', icon: '💧', color: '#A8D5AB' },
   { id: 'stationery', name: 'Stationery', subtitle: 'Office Needs, Study Shop', icon: '📝', color: '#A8D5AB' },
+  { id: 'stationery', name: 'House Maid', subtitle: 'Office Needs, Study Shop', icon: '👨‍🏭', color: '#A8D5AB' },
 ];
 
 export default function ExploreScreen() {
@@ -140,7 +141,7 @@ export default function ExploreScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
+      {/* <View style={[styles.bottomNav, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.push('/(tabs)/home')}
@@ -165,7 +166,7 @@ export default function ExploreScreen() {
         >
           <Ionicons name="receipt" size={24} color="#fff" />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderRadius: 20,
-    marginBottom: Spacing.md,
+    marginBottom: 8,
     minHeight: 100,
   },
   serviceIconContainer: {

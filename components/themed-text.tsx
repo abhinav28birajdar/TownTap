@@ -3,30 +3,52 @@ import Animated from 'react-native-reanimated';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+// Material Design style type names mapped to our internal types
+type MaterialType = 'titleLarge' | 'titleMedium' | 'titleSmall' | 'bodyLarge' | 'bodyMedium' | 'bodySmall' | 'labelLarge' | 'labelMedium' | 'labelSmall';
+type InternalType = 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link' | 'caption' | 'overline' | 'body1' | 'body2' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link' | 'caption' | 'overline' | 'body1' | 'body2' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  type?: InternalType;
+  variant?: MaterialType; // Alias for Material Design naming convention
   animated?: boolean;
   gradient?: boolean;
   weight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'heavy';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
 };
 
+// Map Material Design variant names to internal type names
+const variantToType: Record<MaterialType, InternalType> = {
+  titleLarge: 'h2',
+  titleMedium: 'h4',
+  titleSmall: 'h6',
+  bodyLarge: 'body1',
+  bodyMedium: 'body2',
+  bodySmall: 'caption',
+  labelLarge: 'defaultSemiBold',
+  labelMedium: 'default',
+  labelSmall: 'caption',
+};
+
 export function ThemedText({
   style,
   lightColor,
   darkColor,
-  type = 'default',
+  type,
+  variant,
   animated = false,
   weight,
   size,
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  
+  // Use variant if provided, otherwise use type, default to 'default'
+  const effectiveType: InternalType = variant ? variantToType[variant] : (type || 'default');
 
   const getTypeStyles = () => {
-    switch (type) {
+    switch (effectiveType) {
       case 'h1': return styles.h1;
       case 'h2': return styles.h2;
       case 'h3': return styles.h3;

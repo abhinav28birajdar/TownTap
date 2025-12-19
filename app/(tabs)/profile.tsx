@@ -19,7 +19,7 @@ const profileMenuItems = [
   {
     section: 'Account',
     items: [
-      { id: 'edit-profile', title: 'Edit Profile', icon: 'person-outline', route: '/profile/edit' },
+      { id: 'edit-profile', title: 'Edit Profile', icon: 'person-outline', route: '/profile/edit-simple' },
       { id: 'addresses', title: 'Saved Addresses', icon: 'location-outline', route: '/customer/addresses' },
       { id: 'payment-methods', title: 'Payment Methods', icon: 'card-outline', route: '/customer/payment-methods' },
       { id: 'wallet', title: 'My Wallet', icon: 'wallet-outline', route: '/customer/wallet' },
@@ -28,7 +28,7 @@ const profileMenuItems = [
   {
     section: 'Preferences',
     items: [
-      { id: 'notifications', title: 'Notifications', icon: 'notifications-outline', route: '/settings/notifications' },
+      { id: 'notifications', title: 'Notifications', icon: 'notifications-outline', route: '/customer/notification-preferences' },
       { id: 'language', title: 'Language', icon: 'language-outline', route: '/settings/language' },
       { id: 'theme', title: 'Theme', icon: 'moon-outline', route: '/settings/theme' },
     ],
@@ -36,7 +36,7 @@ const profileMenuItems = [
   {
     section: 'Support',
     items: [
-      { id: 'help', title: 'Help & Support', icon: 'help-circle-outline', route: '/settings/help' },
+      { id: 'help', title: 'Help & Support', icon: 'help-circle-outline', route: '/customer/help-support' },
       { id: 'about', title: 'About', icon: 'information-circle-outline', route: '/settings/about' },
       { id: 'privacy', title: 'Privacy Policy', icon: 'shield-outline', route: '/settings/privacy' },
       { id: 'terms', title: 'Terms of Service', icon: 'document-text-outline', route: '/settings/terms' },
@@ -49,7 +49,13 @@ export default function ProfileTabScreen() {
   const { user, profile, signOut } = useAuth();
 
   const handleMenuPress = (route: string) => {
-    router.push(route as any);
+    console.log('Navigating to:', route);
+    try {
+      router.push(route as any);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert('Navigation Error', `Could not navigate to ${route}`);
+    }
   };
 
   const handleLogout = () => {
@@ -78,10 +84,37 @@ export default function ProfileTabScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Switch',
-          onPress: () => router.push('/business-owner/dashboard'),
+          onPress: () => {
+            console.log('Switching to business owner');
+            router.push('/business-owner/(tabs)/dashboard' as any);
+          },
         },
       ]
     );
+  };
+
+  const handleChangeProfilePicture = () => {
+    Alert.alert(
+      'Change Profile Picture',
+      'Choose an option',
+      [
+        { text: 'Take Photo', onPress: () => console.log('Take Photo') },
+        { text: 'Choose from Gallery', onPress: () => console.log('Choose from Gallery') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleViewBookings = () => {
+    router.push('/(tabs)/orders');
+  };
+
+  const handleViewFavorites = () => {
+    router.push('/customer/favorites');
+  };
+
+  const handleViewReviews = () => {
+    router.push('/customer/reviews');
   };
 
   return (
@@ -97,7 +130,10 @@ export default function ProfileTabScreen() {
               <View style={styles.avatar}>
                 <Ionicons name="person" size={40} color="#FFFFFF" />
               </View>
-              <TouchableOpacity style={styles.editAvatarButton}>
+              <TouchableOpacity 
+                style={styles.editAvatarButton}
+                onPress={handleChangeProfilePicture}
+              >
                 <Ionicons name="camera" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
@@ -109,7 +145,10 @@ export default function ProfileTabScreen() {
             
             <TouchableOpacity
               style={styles.editProfileButton}
-              onPress={() => router.push('/profile/edit' as any)}
+              onPress={() => {
+                console.log('Edit Profile clicked');
+                router.push('/profile/edit-simple');
+              }}
             >
               <ThemedText style={styles.editProfileButtonText}>Edit Profile</ThemedText>
               <Ionicons name="create-outline" size={16} color="#FFFFFF" />
@@ -122,23 +161,23 @@ export default function ProfileTabScreen() {
           entering={FadeInDown.delay(200)}
           style={[styles.statsCard, { backgroundColor: colors.card }]}
         >
-          <View style={styles.statItem}>
+          <TouchableOpacity style={styles.statItem} onPress={handleViewBookings}>
             <Ionicons name="receipt" size={24} color={colors.primary} />
             <ThemedText style={styles.statValue}>12</ThemedText>
             <ThemedText style={styles.statLabel}>Bookings</ThemedText>
-          </View>
+          </TouchableOpacity>
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.statItem}>
+          <TouchableOpacity style={styles.statItem} onPress={handleViewFavorites}>
             <Ionicons name="heart" size={24} color="#F44336" />
             <ThemedText style={styles.statValue}>8</ThemedText>
             <ThemedText style={styles.statLabel}>Favorites</ThemedText>
-          </View>
+          </TouchableOpacity>
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.statItem}>
+          <TouchableOpacity style={styles.statItem} onPress={handleViewReviews}>
             <Ionicons name="star" size={24} color="#FFC107" />
             <ThemedText style={styles.statValue}>24</ThemedText>
             <ThemedText style={styles.statLabel}>Reviews</ThemedText>
-          </View>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Switch Role Banner */}

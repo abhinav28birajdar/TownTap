@@ -7,23 +7,23 @@ export type ColorScheme = 'light' | 'dark';
 
 const BaseColors = {
   light: {
-    // Primary brand colors
-    primary: '#2563EB', // Blue 600
-    primaryLight: '#3B82F6', // Blue 500
-    primaryDark: '#1D4ED8', // Blue 700
+    // Nature-inspired Primary Colors
+    primary: '#415D43', // Deep forest green - Primary Action
+    primaryLight: '#5A7C5D', // Lighter forest green
+    primaryDark: '#29422B', // Very dark green
     primaryForeground: '#FFFFFF',
     
-    // Secondary colors
-    secondary: '#7C3AED', // Violet 600
-    secondaryLight: '#8B5CF6', // Violet 500
-    secondaryDark: '#6D28D9', // Violet 700
+    // Nature Secondary Colors
+    secondary: '#29422B', // Very dark green - Dark Accent
+    secondaryLight: '#415D43', // Deep forest green
+    secondaryDark: '#1C2F1E', // Darkest green
     secondaryForeground: '#FFFFFF',
     
-    // Accent colors
-    accent: '#06B6D4', // Cyan 500
-    accentLight: '#22D3EE', // Cyan 400
-    accentDark: '#0891B2', // Cyan 600
-    accentForeground: '#FFFFFF',
+    // Nature Accent Colors
+    accent: '#A1CCA5', // Sage green - Secondary Background
+    accentLight: '#B8D9BB', // Lighter sage
+    accentDark: '#7FB584', // Darker sage
+    accentForeground: '#29422B',
     
     // Success, Warning, Error
     success: '#10B981', // Emerald 500
@@ -41,62 +41,73 @@ const BaseColors = {
     errorDark: '#DC2626', // Red 600
     errorForeground: '#FFFFFF',
     
-    // Neutral colors
-    background: '#FFFFFF',
-    foreground: '#0F172A', // Slate 900
+    // Info colors
+    info: '#3B82F6', // Blue 500
+    infoLight: '#60A5FA', // Blue 400
+    infoDark: '#2563EB', // Blue 600
+    infoForeground: '#FFFFFF',
+    
+    // Neutral colors with nature palette
+    background: '#DAF8DC', // Pale mint green - Primary Background
+    foreground: '#29422B', // Very dark green - Text/Headers
     
     card: '#FFFFFF',
-    cardForeground: '#0F172A',
+    cardForeground: '#29422B',
     
     popover: '#FFFFFF',
-    popoverForeground: '#0F172A',
+    popoverForeground: '#29422B',
     
-    // Grays
-    muted: '#F8FAFC', // Slate 50
-    mutedForeground: '#64748B', // Slate 500
+    // Grays with nature tint
+    muted: '#E8F5E9', // Very light green tint
+    mutedForeground: '#415D43', // Deep forest green
     
-    border: '#E2E8F0', // Slate 200
-    input: '#F1F5F9', // Slate 100
-    ring: '#2563EB',
+    border: '#C8E6C9', // Light green border
+    input: '#F1F8F4', // Very light mint
+    ring: '#415D43', // Deep forest green
     
-    // Text hierarchy
-    text: '#0F172A', // Slate 900
-    textSecondary: '#475569', // Slate 600
-    textTertiary: '#94A3B8', // Slate 400
-    textDisabled: '#CBD5E1', // Slate 300
+    // Text hierarchy with nature colors
+    text: '#29422B', // Very dark green - Primary text
+    textSecondary: '#415D43', // Deep forest green - Secondary text
+    textTertiary: '#5A7C5D', // Medium green - Tertiary text
+    textDisabled: '#A1CCA5', // Sage green - Disabled text
     
     // Surface colors
     surface: '#FFFFFF',
-    surfaceSecondary: '#F8FAFC', // Slate 50
-    surfaceTertiary: '#F1F5F9', // Slate 100
+    surfaceSecondary: '#DAF8DC', // Pale mint green
+    surfaceTertiary: '#E8F5E9', // Very light green
+    
+    // Additional UI colors
+    cardBorder: '#E2E8F0', // Light border for cards
+    textInverse: '#FFFFFF', // Inverse text color
+    inputPlaceholder: '#9CA3AF', // Placeholder text color
     
     // Overlay
-    overlay: 'rgba(15, 23, 42, 0.4)',
+    overlay: 'rgba(41, 66, 43, 0.4)',
     
     // Tab colors
-    tabIconDefault: '#94A3B8', // Slate 400
-    tabIconSelected: '#2563EB',
+    tabIconDefault: '#A1CCA5', // Sage green
+    tabIconSelected: '#415D43', // Deep forest green - Primary
   },
   dark: {
-    // Primary brand colors
-    primary: '#3B82F6', // Blue 500
-    primaryLight: '#60A5FA', // Blue 400
-    primaryDark: '#2563EB', // Blue 600
+    // Nature-inspired Primary Colors (adjusted for dark mode)
+    primary: '#5A7C5D', // Lighter forest green - Primary Action
+    primaryLight: '#7FB584', // Even lighter green
+    primaryDark: '#415D43', // Deep forest green
     primaryForeground: '#FFFFFF',
     
-    // Secondary colors
-    secondary: '#8B5CF6', // Violet 500
-    secondaryLight: '#A78BFA', // Violet 400
-    secondaryDark: '#7C3AED', // Violet 600
+    // Nature Secondary Colors (adjusted for dark mode)
+    secondary: '#5A7C5D', // Lighter forest green for dark mode
+    secondaryLight: '#7FB584', // Even lighter
+    secondaryDark: '#415D43', // Deep forest green
     secondaryForeground: '#FFFFFF',
     
-    // Accent colors
-    accent: '#22D3EE', // Cyan 400
-    accentLight: '#67E8F9', // Cyan 300
-    accentDark: '#06B6D4', // Cyan 500
-    accentForeground: '#0F172A',
+    // Nature Accent Colors (adjusted for dark mode)
+    accent: '#7FB584', // Adjusted sage green for dark mode
+    accentLight: '#A1CCA5', // Sage green
+    accentDark: '#5A7C5D', // Darker green
+    accentForeground: '#1C2F1E',
     
-    // Success, Warning, Error
+    // Success, Warning, Error (adjusted for dark mode)
     success: '#34D399', // Emerald 400
     successLight: '#6EE7B7', // Emerald 300
     successDark: '#10B981', // Emerald 500
@@ -112,41 +123,52 @@ const BaseColors = {
     errorDark: '#EF4444', // Red 500
     errorForeground: '#FFFFFF',
     
-    // Neutral colors
-    background: '#0F172A', // Slate 900
-    foreground: '#F8FAFC', // Slate 50
+    // Info colors (dark mode)
+    info: '#60A5FA', // Blue 400
+    infoLight: '#93C5FD', // Blue 300
+    infoDark: '#3B82F6', // Blue 500
+    infoForeground: '#0F172A',
     
-    card: '#1E293B', // Slate 800
-    cardForeground: '#F8FAFC',
+    // Neutral colors with dark nature palette
+    background: '#1C2F1E', // Very dark green
+    foreground: '#E8F5E9', // Very light green
     
-    popover: '#1E293B', // Slate 800
-    popoverForeground: '#F8FAFC',
+    card: '#29422B', // Very dark green card
+    cardForeground: '#E8F5E9',
     
-    // Grays
-    muted: '#1E293B', // Slate 800
-    mutedForeground: '#94A3B8', // Slate 400
+    popover: '#29422B', // Very dark green
+    popoverForeground: '#E8F5E9',
     
-    border: '#334155', // Slate 700
-    input: '#334155', // Slate 700
-    ring: '#3B82F6',
+    // Grays with dark nature tint
+    muted: '#29422B', // Very dark green
+    mutedForeground: '#A1CCA5', // Sage green
     
-    // Text hierarchy
-    text: '#F8FAFC', // Slate 50
-    textSecondary: '#CBD5E1', // Slate 300
-    textTertiary: '#94A3B8', // Slate 400
-    textDisabled: '#64748B', // Slate 500
+    border: '#415D43', // Deep forest green
+    input: '#415D43', // Deep forest green
+    ring: '#0560C2',
+    
+    // Text hierarchy with nature colors (dark mode)
+    text: '#E8F5E9', // Very light green - Primary text
+    textSecondary: '#C8E6C9', // Light green - Secondary text
+    textTertiary: '#A1CCA5', // Sage green - Tertiary text
+    textDisabled: '#5A7C5D', // Medium green - Disabled text
     
     // Surface colors
-    surface: '#1E293B', // Slate 800
-    surfaceSecondary: '#334155', // Slate 700
-    surfaceTertiary: '#475569', // Slate 600
+    surface: '#29422B', // Very dark green
+    surfaceSecondary: '#415D43', // Deep forest green
+    surfaceTertiary: '#5A7C5D', // Medium green
+    
+    // Additional UI colors
+    cardBorder: '#415D43', // Dark border for cards
+    textInverse: '#1C2F1E', // Inverse text color (dark)
+    inputPlaceholder: '#6B7280', // Placeholder text color
     
     // Overlay
     overlay: 'rgba(0, 0, 0, 0.6)',
     
     // Tab colors
-    tabIconDefault: '#94A3B8', // Slate 400
-    tabIconSelected: '#3B82F6',
+    tabIconDefault: '#A1CCA5', // Sage green
+    tabIconSelected: '#0560C2', // Bright blue
   },
 } as const;
 

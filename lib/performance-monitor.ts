@@ -92,19 +92,13 @@ class PerformanceMonitorService {
     if (this.isMonitoring) return;
 
     try {
-      // Load existing metrics
       await this.loadMetrics();
-      
-      // Start memory monitoring
       this.startMemoryMonitoring();
-      
-      // Listen for app state changes
       this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
-      
       this.isMonitoring = true;
-      console.log('Performance monitoring initialized');
+      console.log('[Performance Monitor] Initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize performance monitoring:', error);
+      console.error('[Performance Monitor] Initialization error:', error);
     }
   }
 
@@ -124,8 +118,30 @@ class PerformanceMonitorService {
       this.appStateSubscription.remove();
     }
     
-    // Save metrics before stopping
     this.saveMetrics();
+  }
+
+  /**
+   * Track screen load time
+   */
+  trackScreenLoad(screenName: string, loadTime: number, success: boolean = true, error?: string): void {
+    const metric: NavigationMetric = {
+      route: screenName,
+      loadTime,
+      timestamp: Date.now(),
+      success,
+      error,
+    };
+
+    this.metrics.navigation.push(metric);
+    this.trimMetrics('navigation');
+    this.saveMetrics();
+
+    console.log(`[Performance] Screen ${screenName} loaded in ${loadTime}ms`);
+    
+    if (loadTime > 3000) {
+      console.warn(`[Performance] Slow screen load: ${screenName} took ${loadTime}ms`);
+    }
   }
 
   /**
@@ -134,13 +150,11 @@ class PerformanceMonitorService {
   trackNavigation(route: string): void {
     if (!this.isMonitoring) return;
 
-    // End previous route timing
     if (this.currentRoute && this.routeStartTime) {
       const loadTime = Date.now() - this.routeStartTime;
       this.addNavigationMetric(this.currentRoute, loadTime, true);
     }
 
-    // Start timing new route
     this.currentRoute = route;
     this.routeStartTime = Date.now();
   }
@@ -163,9 +177,19 @@ class PerformanceMonitorService {
     method: string,
     duration: number,
     status: number,
+    successOrSize?: boolean | number,
     size?: number
   ): void {
-    if (!this.isMonitoring) return;
+    let isSuccess: boolean;
+    let responseSize: number | undefined;
+    
+    if (typeof successOrSize === 'boolean') {
+      isSuccess = successOrSize;
+      responseSize = size;
+    } else {
+      isSuccess = status >= 200 && status < 400;
+      responseSize = successOrSize;
+    }
 
     const metric: APIMetric = {
       endpoint,
@@ -173,12 +197,56 @@ class PerformanceMonitorService {
       duration,
       status,
       timestamp: Date.now(),
-      success: status >= 200 && status < 400,
-      size,
+      success: isSuccess,
+      size: responseSize,
     };
 
     this.metrics.api.push(metric);
     this.trimMetrics('api');
+    this.saveMetrics();
+
+    console.log(`[Performance] API ${method} ${endpoint}: ${duration}ms (${status})`);
+    
+    if (duration > 5000) {
+      console.warn(`[Performance] Slow API call: ${method} ${endpoint} took ${duration}ms`);
+    }
+  }
+
+  /**
+   * Track crash or error
+   */
+  trackCrash(error: Error, context?: string): void {
+    const crashMetric: PerformanceMetric = {
+      name: 'app_crash',
+      value: 1,
+      timestamp: Date.now(),
+      tags: {
+        error: error.message,
+        stack: error.stack || '',
+        context: context || 'unknown',
+      },
+    };
+
+    this.metrics.custom.push(crashMetric);
+    this.saveMetrics();
+
+    console.error('[Performance] Crash tracked:', {
+      error: error.message,
+      context,
+      stack: error.stack,
+    });
+  }
+
+  /**
+   * Track user interaction
+   */
+  trackInteraction(
+    action: string,
+    component: string,
+    duration?: number,
+    success: boolean = true
+  ): void {
+    this.trackUserInteraction(action, component, success, duration);
   }
 
   /**
@@ -190,8 +258,6 @@ class PerformanceMonitorService {
     success = true,
     duration?: number
   ): void {
-    if (!this.isMonitoring) return;
-
     const metric: UserInteractionMetric = {
       action,
       component,
@@ -202,14 +268,13 @@ class PerformanceMonitorService {
 
     this.metrics.userInteractions.push(metric);
     this.trimMetrics('userInteractions');
+    this.saveMetrics();
   }
 
   /**
    * Track custom performance metric
    */
   trackCustomMetric(name: string, value: number, tags?: Record<string, string>): void {
-    if (!this.isMonitoring) return;
-
     const metric: PerformanceMetric = {
       name,
       value,
@@ -219,6 +284,14 @@ class PerformanceMonitorService {
 
     this.metrics.custom.push(metric);
     this.trimMetrics('custom');
+    this.saveMetrics();
+  }
+
+  /**
+   * Get performance report
+   */
+  getReport(): PerformanceReport {
+    return this.generateReportSync();
   }
 
   /**
@@ -226,15 +299,13 @@ class PerformanceMonitorService {
    */
   async getCurrentMemoryUsage(): Promise<MemoryMetric | null> {
     try {
-      // This is a simplified version - in a real app you'd use
-      // native modules to get actual memory usage
       const memory = (performance as any).memory;
       const used = memory?.usedJSHeapSize || 0;
       const total = memory?.totalJSHeapSize || 0;
       
       return {
-        used: used / (1024 * 1024), // MB
-        available: (total - used) / (1024 * 1024), // MB
+        used: used / (1024 * 1024),
+        available: (total - used) / (1024 * 1024),
         timestamp: Date.now(),
         warning: (used / (1024 * 1024)) > this.memoryWarningThreshold,
       };
@@ -247,11 +318,11 @@ class PerformanceMonitorService {
    * Get current metrics
    */
   async getMetrics(): Promise<PerformanceReport> {
-    return this.generateReport();
+    return this.generateReportSync();
   }
 
   /**
-   * Get realtime metrics (current snapshot)
+   * Get realtime metrics
    */
   getRealtimeMetrics(): {
     navigation: NavigationMetric[];
@@ -273,42 +344,7 @@ class PerformanceMonitorService {
    * Generate performance report
    */
   async generateReport(): Promise<PerformanceReport> {
-    const now = Date.now();
-    
-    // Calculate averages and summaries
-    const avgApiTime = this.metrics.api.length > 0
-      ? this.metrics.api.reduce((sum, m) => sum + m.duration, 0) / this.metrics.api.length
-      : 0;
-
-    const avgNavTime = this.metrics.navigation.length > 0
-      ? this.metrics.navigation.reduce((sum, m) => sum + m.loadTime, 0) / this.metrics.navigation.length
-      : 0;
-
-    const totalErrors = this.metrics.api.filter(m => !m.success).length +
-                       this.metrics.navigation.filter(m => !m.success).length +
-                       this.metrics.userInteractions.filter(m => !m.success).length;
-
-    const totalCalls = this.metrics.api.length + 
-                      this.metrics.navigation.length + 
-                      this.metrics.userInteractions.length;
-
-    const memoryWarnings = this.metrics.memory.filter(m => m.warning).length;
-
-    return {
-      appStartTime: this.appStartTime,
-      navigationMetrics: [...this.metrics.navigation],
-      apiMetrics: [...this.metrics.api],
-      memoryMetrics: [...this.metrics.memory],
-      userInteractions: [...this.metrics.userInteractions],
-      customMetrics: [...this.metrics.custom],
-      summary: {
-        averageApiResponseTime: Math.round(avgApiTime),
-        averageNavigationTime: Math.round(avgNavTime),
-        totalUserInteractions: this.metrics.userInteractions.length,
-        memoryWarnings,
-        errorRate: totalCalls > 0 ? (totalErrors / totalCalls) * 100 : 0,
-      },
-    };
+    return this.generateReportSync();
   }
 
   /**
@@ -322,19 +358,55 @@ class PerformanceMonitorService {
       userInteractions: [],
       custom: [],
     };
-    
     await AsyncStorage.removeItem(this.STORAGE_KEY);
+    console.log('[Performance Monitor] Metrics cleared');
   }
 
   /**
    * Export metrics for debugging
    */
   async exportMetrics(): Promise<string> {
-    const report = await this.generateReport();
+    const report = this.generateReportSync();
     return JSON.stringify(report, null, 2);
   }
 
   // Private methods
+
+  private generateReportSync(): PerformanceReport {
+    const navigationMetrics = this.metrics.navigation;
+    const apiMetrics = this.metrics.api;
+    const memoryMetrics = this.metrics.memory;
+
+    const avgApiTime = apiMetrics.length > 0
+      ? apiMetrics.reduce((sum, m) => sum + m.duration, 0) / apiMetrics.length
+      : 0;
+
+    const avgNavTime = navigationMetrics.length > 0
+      ? navigationMetrics.reduce((sum, m) => sum + m.loadTime, 0) / navigationMetrics.length
+      : 0;
+
+    const memoryWarnings = memoryMetrics.filter(m => m.warning).length;
+    const totalApiCalls = apiMetrics.length;
+    const failedApiCalls = apiMetrics.filter(m => !m.success).length;
+    const errorRate = totalApiCalls > 0 ? (failedApiCalls / totalApiCalls) * 100 : 0;
+
+    return {
+      appStartTime: this.appStartTime,
+      timestamp: Date.now(),
+      navigationMetrics,
+      apiMetrics,
+      memoryMetrics,
+      userInteractions: this.metrics.userInteractions,
+      customMetrics: this.metrics.custom,
+      summary: {
+        averageApiResponseTime: Math.round(avgApiTime),
+        averageNavigationTime: Math.round(avgNavTime),
+        totalUserInteractions: this.metrics.userInteractions.length,
+        memoryWarnings,
+        errorRate: Math.round(errorRate * 10) / 10,
+      },
+    };
+  }
 
   private addNavigationMetric(
     route: string,
@@ -355,14 +427,12 @@ class PerformanceMonitorService {
   }
 
   private startMemoryMonitoring(): void {
-    // Check memory every 30 seconds
     this.memoryCheckInterval = setInterval(async () => {
       const memoryMetric = await this.getCurrentMemoryUsage();
       if (memoryMetric) {
         this.metrics.memory.push(memoryMetric);
         this.trimMetrics('memory');
 
-        // Log warning if memory usage is high
         if (memoryMetric.warning) {
           console.warn('High memory usage detected:', memoryMetric.used.toFixed(2), 'MB');
         }
@@ -379,7 +449,6 @@ class PerformanceMonitorService {
   private trimMetrics(type: keyof typeof this.metrics): void {
     const metrics = this.metrics[type];
     if (metrics.length > this.MAX_METRICS) {
-      // Remove oldest metrics
       const toRemove = metrics.length - this.MAX_METRICS;
       metrics.splice(0, toRemove);
     }
@@ -404,8 +473,6 @@ class PerformanceMonitorService {
       const data = await AsyncStorage.getItem(this.STORAGE_KEY);
       if (data) {
         const parsed = JSON.parse(data);
-        
-        // Only load recent metrics (last 24 hours)
         const cutoff = Date.now() - (24 * 60 * 60 * 1000);
         
         this.metrics = {
@@ -422,7 +489,6 @@ class PerformanceMonitorService {
   }
 }
 
-// Create and export singleton instance
 export const performanceMonitor = new PerformanceMonitorService();
 
 /**
