@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Spacing } from '@/constants/spacing';
@@ -10,18 +10,34 @@ type Role = 'customer' | 'business_owner' | null;
 export default function RoleSelectionScreen() {
   const [selectedRole, setSelectedRole] = useState<Role>(null);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (!selectedRole) return;
-    router.push(`/auth/sign-up?role=${selectedRole}`);
-  };
+    try {
+      // Pass role as a query parameter for the sign-up screen
+      router.push({
+        pathname: '/auth/sign-up',
+        params: { role: selectedRole },
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, [selectedRole]);
 
-  const handleDemoCustomer = () => {
-    router.replace('/(tabs)/home');
-  };
+  const handleDemoCustomer = useCallback(() => {
+    try {
+      router.replace('/(tabs)/home');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
-  const handleDemoOwner = () => {
-    router.replace('/business-owner/dashboard');
-  };
+  const handleDemoOwner = useCallback(() => {
+    try {
+      router.replace('/business-owner/dashboard');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>

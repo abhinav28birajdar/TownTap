@@ -5,27 +5,45 @@ import { BorderRadius, FontSize } from '@/constants/theme';
 import { useColors } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 export default function WelcomeScreen() {
   const colors = useColors();
 
-  const handleGetStarted = () => {
-    router.push('/auth/role-selection');
-  };
+  const handleGetStarted = useCallback(() => {
+    try {
+      router.push('/auth/role-selection');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
-  const handleSignIn = () => {
-    router.push('/auth/sign-in');
-  };
+  const handleSignIn = useCallback(() => {
+    try {
+      router.push('/auth/sign-in');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
-  const handleDemoCustomer = () => {
-    router.replace('/(tabs)/home');
-  };
+  const handleDemoCustomer = useCallback(() => {
+    try {
+      // Clear navigation stack and go to home
+      router.replace('/(tabs)/home');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
-  const handleDemoOwner = () => {
-    router.replace('/business-owner/dashboard');
-  };
+  const handleDemoOwner = useCallback(() => {
+    try {
+      // Clear navigation stack and go to business owner dashboard
+      router.replace('/business-owner/dashboard');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
   return (
     <LinearGradient

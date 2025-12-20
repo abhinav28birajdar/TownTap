@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -27,7 +27,7 @@ export default function SignUpScreen() {
 
   const userRole = (role as 'customer' | 'business_owner') || 'customer';
 
-  const handleSignUp = async () => {
+  const handleSignUp = useCallback(async () => {
     if (!fullName || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -42,6 +42,7 @@ export default function SignUpScreen() {
     try {
       await signUp(email, password, fullName, '', userRole);
       Alert.alert('Success', 'Account created successfully!');
+      // Replace the entire navigation stack to go to home
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Sign up error:', error);
@@ -49,7 +50,7 @@ export default function SignUpScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fullName, email, password, userRole, signUp]);
 
   return (
     <KeyboardAvoidingView

@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 // Import our modern UI components
@@ -35,23 +35,32 @@ export default function SignInScreen() {
     successMessage: 'Welcome back! 🎉',
   });
 
-  const handleSignIn = async (data: SignInFormData) => {
+  const handleSignIn = useCallback(async (data: SignInFormData) => {
     try {
       await signIn(data.email, data.password);
+      // Replace the entire stack to avoid back navigation to sign-in
       router.replace('/(tabs)/home');
     } catch (error: any) {
       console.error('Sign in error:', error);
       throw new Error(error.message || 'Failed to sign in. Please check your credentials.');
     }
-  };
+  }, [signIn]);
 
-  const handleDemoCustomer = () => {
-    router.replace('/(tabs)/home');
-  };
+  const handleDemoCustomer = useCallback(() => {
+    try {
+      router.replace('/(tabs)/home');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
-  const handleDemoOwner = () => {
-    router.replace('/business-owner/dashboard');
-  };
+  const handleDemoOwner = useCallback(() => {
+    try {
+      router.replace('/business-owner/dashboard');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }, []);
 
   return (
     <KeyboardAvoidingView
