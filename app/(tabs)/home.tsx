@@ -7,14 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Image,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Image,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 type Category = Database['public']['Tables']['categories']['Row'];
@@ -45,6 +45,14 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Demo categories for when not logged in
+  const DEMO_CATEGORIES: Category[] = [
+    { id: '1', name: 'Plumbing', description: 'Plumbing services', icon: 'water', is_active: true, created_at: new Date().toISOString() } as any,
+    { id: '2', name: 'Electrical', description: 'Electrical services', icon: 'flash', is_active: true, created_at: new Date().toISOString() } as any,
+    { id: '3', name: 'Cleaning', description: 'Cleaning services', icon: 'sparkles', is_active: true, created_at: new Date().toISOString() } as any,
+    { id: '4', name: 'AC Repair', description: 'AC repair services', icon: 'snow', is_active: true, created_at: new Date().toISOString() } as any,
+  ];
+
   useEffect(() => {
     loadData();
   }, []);
@@ -54,7 +62,12 @@ export default function HomeScreen() {
       await loadCategories();
     } catch (error) {
       console.error('Error loading data:', error);
-      Alert.alert('Error', 'Failed to load data');
+      // Use demo data if loading fails (demo mode without session)
+      if (!user) {
+        setCategories(DEMO_CATEGORIES);
+      } else {
+        Alert.alert('Error', 'Failed to load data');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,7 +83,7 @@ export default function HomeScreen() {
       .limit(8);
 
     if (error) throw error;
-    setCategories(data || []);
+    setCategories(data || DEMO_CATEGORIES);
   };
 
   const onRefresh = async () => {

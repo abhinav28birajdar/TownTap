@@ -164,7 +164,12 @@ function RootLayoutNav() {
       }
 
       // Allow access to tabs, business-owner, and customer routes even without session (for demo mode)
-      if (!session && !inAuthGroup && !inWelcome && !inConfigSetup && !inTabs && !inBusinessOwner && !inCustomer) {
+      // If user is on welcome screen, don't interfere with navigation
+      if (inWelcome) {
+        return;
+      }
+
+      if (!session && !inAuthGroup && !inConfigSetup && !inTabs && !inBusinessOwner && !inCustomer) {
         router.replace('/welcome');
       } else if (session && !profile && !inAuthGroup) {
         router.replace('/auth/role-selection');

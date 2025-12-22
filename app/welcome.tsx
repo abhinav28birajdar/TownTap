@@ -29,19 +29,23 @@ export default function WelcomeScreen() {
 
   const handleDemoCustomer = useCallback(() => {
     try {
-      // Clear navigation stack and go to home
-      router.replace('/(tabs)/home');
+      console.log('🎯 Demo Customer button clicked - navigating to /(tabs)/home');
+      // Use push instead of replace to maintain proper navigation stack
+      router.push('/(tabs)/home');
     } catch (error) {
-      console.error('Navigation error:', error);
+      console.error('❌ Navigation error:', error);
+      console.error('Error type:', error instanceof Error ? error.message : String(error));
     }
   }, []);
 
   const handleDemoOwner = useCallback(() => {
     try {
-      // Clear navigation stack and go to business owner dashboard
-      router.replace('/business-owner/dashboard');
+      console.log('🎯 Demo Business Owner button clicked - navigating to /business-owner/dashboard');
+      // Use push instead of replace to maintain proper navigation stack
+      router.push('/business-owner/dashboard');
     } catch (error) {
-      console.error('Navigation error:', error);
+      console.error('❌ Navigation error:', error);
+      console.error('Error type:', error instanceof Error ? error.message : String(error));
     }
   }, []);
 
