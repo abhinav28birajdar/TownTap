@@ -188,22 +188,24 @@ export const useAuthStore = create<AuthState>()(
                 {
                   id: data.user.id,
                   email: data.user.email,
-                  full_name: userData.full_name,
-                  first_name: userData.first_name,
-                  last_name: userData.last_name,
+                  full_name: userData.full_name ?? null,
+                  first_name: userData.first_name ?? null,
+                  last_name: userData.last_name ?? null,
                   role: userData.role || 'customer',
-                  phone: userData.phone,
-                  preferences: {
+                  phone: userData.phone ?? null,
+                  preferences: JSON.stringify({
                     notifications: true,
                     marketing_emails: false,
                     location_sharing: true,
                     theme: 'system',
                     language: 'en',
-                  },
+                  }),
                   verified_email: false,
                   verified_phone: false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
                 }
-              ]);
+              ] as Partial<import('../lib/database.types').Database['public']['Tables']['profiles']['Insert']>[]);
 
             if (profileError) {
               console.error('Error creating profile:', profileError);
@@ -313,7 +315,8 @@ export const useAuthStore = create<AuthState>()(
             .update({
               ...updates,
               updated_at: new Date().toISOString(),
-            })
+              preferences: updates.preferences ? JSON.stringify(updates.preferences) : undefined,
+            } as Partial<import('../lib/database.types').Database['public']['Tables']['profiles']['Update']>)
             .eq('id', user.id)
             .select()
             .single();
@@ -324,7 +327,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           set({
-            user: { ...user, ...data },
+            user: data ? { ...(user as object), ...(data as object) } as UserProfile : user,
             profileLoading: false,
             profileError: null,
           });
