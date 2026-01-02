@@ -1,277 +1,152 @@
-import { ThemedButton, ThemedText } from '@/components/ui';
-import { Spacing } from '@/constants/spacing';
-import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { supabase } from '@/lib/supabase';
 
-const OTP_LENGTH = 6;
-
+/**
+ * OTP Verification
+ * 6-digit code verification
+ * Section: auth
+ */
 export default function OTPVerificationScreen() {
-  const colors = useColors();
-  const params = useLocalSearchParams<{ email?: string; phone?: string }>();
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [loading, setLoading] = useState(false);
-  const [resendTimer, setResendTimer] = useState(60);
-  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    // Focus first input on mount
-    inputRefs.current[0]?.focus();
-
-    // Start resend timer
-    const timer = setInterval(() => {
-      setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
+    loadData();
   }, []);
 
-  const handleChangeText = (text: string, index: number) => {
-    // Only allow numbers
-    if (text && !/^\d+$/.test(text)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
-
-    // Auto-focus next input
-    if (text && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-verify when all fields are filled
-    if (text && index === OTP_LENGTH - 1 && newOtp.every((digit) => digit !== '')) {
-      handleVerify(newOtp.join(''));
-    }
-  };
-
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleVerify = async (otpCode?: string) => {
-    const code = otpCode || otp.join('');
-    
-    if (code.length !== OTP_LENGTH) {
-      Alert.alert('Error', 'Please enter the complete OTP');
-      return;
-    }
-
+  const loadData = async () => {
     try {
       setLoading(true);
-      
-      // TODO: Implement actual OTP verification with Supabase
-      // const { error } = await supabase.auth.verifyOtp({
-      //   email: params.email,
-      //   token: code,
-      //   type: 'email',
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Navigate to success or home
-      router.replace('/(tabs)/home');
-    } catch (error: any) {
-      console.error('OTP verification error:', error);
-      Alert.alert('Error', 'Invalid OTP. Please try again.');
-      setOtp(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
+      // TODO: Fetch data from Supabase
+      // const { data, error } = await supabase.from('table_name').select('*');
+      // if (error) throw error;
+      // setData(data);
+    } catch (error) {
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResendOTP = async () => {
-    if (resendTimer > 0) return;
-
-    try {
-      setLoading(true);
-      
-      // TODO: Implement actual OTP resend with Supabase
-      // await supabase.auth.signInWithOtp({
-      //   email: params.email,
-      // });
-
-      Alert.alert('Success', 'OTP has been resent to your email/phone');
-      setResendTimer(60);
-    } catch (error: any) {
-      console.error('Resend OTP error:', error);
-      Alert.alert('Error', 'Failed to resend OTP. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Back Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-
-        {/* Header Icon */}
-        <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
-          <Ionicons name="mail-outline" size={60} color="#fff" />
-        </View>
-
-        {/* Title */}
-        <ThemedText type="h1" weight="bold" style={styles.title}>
-          Verify OTP
-        </ThemedText>
-
-        {/* Subtitle */}
-        <ThemedText style={styles.subtitle}>
-          Enter the 6-digit code sent to
-        </ThemedText>
-        <ThemedText weight="bold" style={[styles.contact, { color: colors.primary }]}>
-          {params.email || params.phone}
-        </ThemedText>
-
-        {/* OTP Input */}
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => {
-                inputRefs.current[index] = ref;
-              }}
-              style={[
-                styles.otpInput,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: digit ? colors.primary : colors.border,
-                  color: colors.text,
-                },
-              ]}
-              value={digit}
-              onChangeText={(text) => handleChangeText(text, index)}
-              onKeyPress={(e) => handleKeyPress(e, index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              selectTextOnFocus
-            />
-          ))}
-        </View>
-
-        {/* Verify Button */}
-        <ThemedButton
-          title={loading ? 'Verifying...' : 'Verify OTP'}
-          onPress={() => handleVerify()}
-          disabled={loading || otp.some((digit) => !digit)}
-          style={styles.verifyButton}
-        />
-
-        {/* Resend OTP */}
-        <View style={styles.resendContainer}>
-          <ThemedText style={styles.resendText}>Didn't receive the code?</ThemedText>
-          <TouchableOpacity onPress={handleResendOTP} disabled={resendTimer > 0}>
-            <ThemedText
-              weight="bold"
-              style={[
-                styles.resendButton,
-                { color: resendTimer > 0 ? colors.textTertiary : colors.primary },
-              ]}
-            >
-              {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
-            </ThemedText>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>OTP Verification</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.title}>OTP Verification</Text>
+          <Text style={styles.description}>6-digit code verification</Text>
+          
+          {/* TODO: Implement page-specific content */}
+          <View style={styles.placeholderCard}>
+            <Ionicons name="construct" size={48} color="#6B7280" />
+            <Text style={styles.placeholderText}>
+              This page is ready for implementation
+            </Text>
+            <Text style={styles.placeholderSubtext}>
+              Connect to Supabase and add your custom UI
+            </Text>
+          </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  scrollContent: {
-    flexGrow: 1,
-    padding: Spacing.xl,
-    paddingTop: 60,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   backButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    marginBottom: Spacing.xl,
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: Spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  content: {
+    padding: 20,
   },
   title: {
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-  },
-  subtitle: {
-    textAlign: 'center',
-    opacity: 0.7,
-    marginBottom: Spacing.xs,
-  },
-  contact: {
-    textAlign: 'center',
-    marginBottom: Spacing.xl,
-  },
-  otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-  },
-  otpInput: {
-    width: 50,
-    height: 60,
-    borderRadius: 12,
-    borderWidth: 2,
-    textAlign: 'center',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 8,
   },
-  verifyButton: {
-    marginBottom: Spacing.xl,
-  },
-  resendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  resendText: {
-    opacity: 0.7,
-  },
-  resendButton: {
+  description: {
     fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  placeholderCard: {
+    padding: 40,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  placeholderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  placeholderSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

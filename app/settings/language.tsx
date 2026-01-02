@@ -1,89 +1,82 @@
-import { ThemedText } from '@/components/ui';
-import { useColors } from '@/contexts/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { supabase } from '@/lib/supabase';
 
-const languages = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी' },
-  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી' },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
-  { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ' },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা' },
-];
+/**
+ * Language
+ * Language selection
+ * Section: utility
+ */
+export default function LanguageScreen() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
 
-export default function LanguageSettingsScreen() {
-  const colors = useColors();
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleLanguageSelect = (code: string) => {
-    setSelectedLanguage(code);
-    Alert.alert(
-      'Language Changed',
-      'Language has been updated successfully. App will restart to apply changes.',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.back(),
-        },
-      ]
-    );
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      // TODO: Fetch data from Supabase
+      // const { data, error } = await supabase.from('table_name').select('*');
+      // if (error) throw error;
+      // setData(data);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Language</ThemedText>
-        <View style={{ width: 24 }} />
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
+    );
+  }
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.description}>
-          <ThemedText style={styles.descriptionText}>
-            Select your preferred language for the app interface
-          </ThemedText>
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Language</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        <View style={styles.languageList}>
-          {languages.map((language) => (
-            <TouchableOpacity
-              key={language.code}
-              style={[
-                styles.languageItem,
-                { backgroundColor: colors.card },
-                selectedLanguage === language.code && {
-                  borderColor: '#415D43',
-                  borderWidth: 2,
-                },
-              ]}
-              onPress={() => handleLanguageSelect(language.code)}
-            >
-              <View style={styles.languageInfo}>
-                <ThemedText style={styles.languageName}>{language.name}</ThemedText>
-                <ThemedText style={styles.languageNative}>
-                  {language.nativeName}
-                </ThemedText>
-              </View>
-              {selectedLanguage === language.code && (
-                <Ionicons name="checkmark-circle" size={24} color="#415D43" />
-              )}
-            </TouchableOpacity>
-          ))}
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.title}>Language</Text>
+          <Text style={styles.description}>Language selection</Text>
+          
+          {/* TODO: Implement page-specific content */}
+          <View style={styles.placeholderCard}>
+            <Ionicons name="construct" size={48} color="#6B7280" />
+            <Text style={styles.placeholderText}>
+              This page is ready for implementation
+            </Text>
+            <Text style={styles.placeholderSubtext}>
+              Connect to Supabase and add your custom UI
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -93,6 +86,13 @@ export default function LanguageSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -100,44 +100,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
   },
-  scrollView: {
-    flex: 1,
+  content: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 8,
   },
   description: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 24,
+    lineHeight: 24,
   },
-  descriptionText: {
-    fontSize: 14,
-    opacity: 0.6,
+  placeholderCard: {
+    padding: 40,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  placeholderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 16,
     textAlign: 'center',
   },
-  languageList: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  languageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-  },
-  languageInfo: {
-    flex: 1,
-  },
-  languageName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  languageNative: {
+  placeholderSubtext: {
     fontSize: 14,
-    opacity: 0.6,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

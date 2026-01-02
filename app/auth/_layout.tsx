@@ -5,46 +5,16 @@ export default function AuthLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animationEnabled: true,
         gestureEnabled: true,
+        animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen 
-        name="sign-in" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
-      <Stack.Screen 
-        name="sign-up" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
-      <Stack.Screen 
-        name="role-selection" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
-      <Stack.Screen 
-        name="forgot-password" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
-      <Stack.Screen 
-        name="reset-password" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
-      <Stack.Screen 
-        name="otp-verification" 
-        options={{
-          animationEnabled: true,
-        }}
-      />
+      <Stack.Screen name="sign-in" />
+      <Stack.Screen name="sign-up" />
+      <Stack.Screen name="role-selection" />
+      <Stack.Screen name="forgot-password" />
+      <Stack.Screen name="reset-password" />
+      <Stack.Screen name="otp-verification" />
     </Stack>
   );
 }

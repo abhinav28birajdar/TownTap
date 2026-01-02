@@ -1,280 +1,152 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, router } from 'expo-router';
-import { MotiView } from 'moti';
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
+  ActivityIndicator,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-
-// Import our modern UI components
-import { Card } from '@/components/ui/Card';
-import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
-// Import form validation
-import { useFormWithValidation } from '@/hooks/use-form-validation';
-import { ForgotPasswordFormData, forgotPasswordSchema } from '@/lib/validation-schemas';
-
-// Import theme and constants
-import { Gradients, Shadows } from '@/constants/colors';
-import { Spacing } from '@/constants/spacing';
-import { getThemeColors, useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Forgot Password
+ * Email input for password reset
+ * Section: auth
+ */
 export default function ForgotPasswordScreen() {
-  const { colorScheme } = useTheme();
-  const colors = getThemeColors(colorScheme);
-  const [emailSent, setEmailSent] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
 
-  // Enhanced form handling with validation
-  const form = useFormWithValidation(forgotPasswordSchema, {
-    defaultValues: {
-      email: '',
-    },
-    successMessage: 'Password reset email sent! 📧',
-  });
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleResetPassword = async (data: ForgotPasswordFormData) => {
+  const loadData = async () => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: 'towntap://reset-password',
-      });
-
-      if (error) throw error;
-
-      setEmailSent(true);
-      setEmailSent(true);
-    } catch (error: any) {
-      console.error('Reset password error:', error);
-      throw new Error(error.message || 'Failed to send reset email. Please try again.');
+      setLoading(true);
+      // TODO: Fetch data from Supabase
+      // const { data, error } = await supabase.from('table_name').select('*');
+      // if (error) throw error;
+      // setData(data);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <Stack.Screen
-        options={{
-          title: 'Forgot Password',
-          headerTransparent: true,
-          headerTintColor: colors.primaryForeground,
-        }}
-      />
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Forgot Password</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-      <LinearGradient
-        colors={Gradients.primary}
-        style={styles.gradient}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {!emailSent ? (
-            <>
-              {/* Animated Icon */}
-              <MotiView
-                from={{ opacity: 0, scale: 0.5, rotate: '45deg' }}
-                animate={{ opacity: 1, scale: 1, rotate: '0deg' }}
-                transition={{ type: 'spring', delay: 200 }}
-                style={styles.iconContainer}
-              >
-                <Text style={styles.lockIcon}>🔐</Text>
-              </MotiView>
-
-              {/* Title Section */}
-              <MotiView
-                from={{ opacity: 0, translateY: -30 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'spring', delay: 400 }}
-                style={styles.header}
-              >
-                <Text variant="display-small" style={styles.title}>
-                  Forgot Password?
-                </Text>
-                <Text variant="body-large" style={styles.subtitle}>
-                  Enter your email address and we'll send you a link to reset your password
-                </Text>
-              </MotiView>
-
-              {/* Form Card */}
-              <MotiView
-                from={{ opacity: 0, translateY: 50 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'spring', delay: 600 }}
-              >
-                <Card variant="elevated" style={styles.formCard}>
-                  <View style={styles.form}>
-                    <Input
-                      label="Email Address"
-                      placeholder="Enter your email"
-                      value={form.watch('email')}
-                      onChangeText={(text) => form.setValue('email', text)}
-                      onBlur={() => form.trigger('email')}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                      leftIcon="mail"
-                      error={form.isFieldInvalid('email') ? form.getFieldError('email') || 'Invalid email' : undefined}
-                      hint={form.getFieldError('email')}
-                      containerStyle={styles.input}
-                    />
-
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onPress={() => form.submitWithToast(handleResetPassword)}
-                      disabled={form.isSubmitting}
-                      style={styles.resetButton}
-                    >
-                      {form.isSubmitting ? 'Sending...' : 'Send Reset Link'}
-                    </Button>
-
-                    <TouchableOpacity
-                      onPress={() => router.back()}
-                      style={styles.backToSignIn}
-                    >
-                      <Text variant="body-medium" style={styles.backToSignInText}>
-                        ← Back to Sign In
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </Card>
-              </MotiView>
-            </>
-          ) : (
-            /* Success State */
-            <MotiView
-              from={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', damping: 15 }}
-              style={styles.successContainer}
-            >
-              <Text style={styles.successIcon}>📧</Text>
-              <Text variant="display-small" style={styles.successTitle}>
-                Check Your Email
-              </Text>
-              <Text variant="body-large" style={styles.successSubtitle}>
-                We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
-              </Text>
-
-              <Button
-                variant="secondary"
-                size="lg"
-                onPress={() => router.back()}
-                style={styles.doneButton}
-              >
-                Back to Sign In
-              </Button>
-
-              <TouchableOpacity
-                onPress={() => setEmailSent(false)}
-                style={styles.resendContainer}
-              >
-                <Text variant="body-small" style={styles.resendText}>
-                  Didn't receive the email? Try again
-                </Text>
-              </TouchableOpacity>
-            </MotiView>
-          )}
-        </ScrollView>
-      </LinearGradient>
-    </KeyboardAvoidingView>
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.title}>Forgot Password</Text>
+          <Text style={styles.description}>Email input for password reset</Text>
+          
+          {/* TODO: Implement page-specific content */}
+          <View style={styles.placeholderCard}>
+            <Ionicons name="construct" size={48} color="#6B7280" />
+            <Text style={styles.placeholderText}>
+              This page is ready for implementation
+            </Text>
+            <Text style={styles.placeholderSubtext}>
+              Connect to Supabase and add your custom UI
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  gradient: {
+  loadingContainer: {
     flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
     justifyContent: 'center',
-    padding: Spacing.xl,
-  },
-  iconContainer: {
     alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  lockIcon: {
-    fontSize: 80,
+    backgroundColor: '#FFFFFF',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  content: {
+    padding: 20,
   },
   title: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 8,
   },
-  subtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
+  description: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 24,
     lineHeight: 24,
-    paddingHorizontal: Spacing.md,
   },
-  formCard: {
-    ...Shadows.xl,
-  },
-  form: {
-    padding: Spacing.lg,
-  },
-  input: {
-    marginBottom: Spacing.lg,
-  },
-  resetButton: {
-    marginBottom: Spacing.md,
-  },
-  backToSignIn: {
+  placeholderCard: {
+    padding: 40,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
     alignItems: 'center',
-    paddingVertical: Spacing.md,
+    marginTop: 20,
   },
-  backToSignInText: {
-    color: '#64748B',
+  placeholderText: {
+    fontSize: 18,
     fontWeight: '600',
-  },
-  successContainer: {
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
-  successIcon: {
-    fontSize: 80,
-    marginBottom: Spacing.xl,
-  },
-  successTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
+    marginTop: 16,
     textAlign: 'center',
-    marginBottom: Spacing.md,
-    fontWeight: '700',
   },
-  successSubtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
+  placeholderSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 8,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: Spacing.xl,
-  },
-  doneButton: {
-    marginBottom: Spacing.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  resendContainer: {
-    alignItems: 'center',
-  },
-  resendText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    textDecorationLine: 'underline',
   },
 });

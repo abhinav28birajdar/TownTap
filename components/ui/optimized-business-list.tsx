@@ -10,8 +10,10 @@ import {
     View,
 } from 'react-native';
 
-// Components
-import { BusinessCard, LoadingScreen, Text } from '@/components/ui';
+// Components - direct imports to avoid require cycle
+import { BusinessCard } from '@/components/ui/business-card';
+import LoadingScreen from '@/components/ui/loading-screen';
+import { Text } from '@/components/ui/Text';
 
 // Services and hooks
 import { imageCacheService } from '@/lib/image-cache-service';
