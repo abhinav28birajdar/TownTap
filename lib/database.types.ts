@@ -17,6 +17,7 @@ export interface Database {
           first_name: string | null
           last_name: string | null
           phone: string | null
+          user_type: 'customer' | 'business_owner' | 'admin'
           role: 'customer' | 'business_owner' | 'admin'
           avatar_url: string | null
           date_of_birth: string | null
@@ -36,6 +37,7 @@ export interface Database {
           first_name?: string | null
           last_name?: string | null
           phone?: string | null
+          user_type?: 'customer' | 'business_owner' | 'admin'
           role?: 'customer' | 'business_owner' | 'admin'
           avatar_url?: string | null
           date_of_birth?: string | null
@@ -55,6 +57,7 @@ export interface Database {
           first_name?: string | null
           last_name?: string | null
           phone?: string | null
+          user_type?: 'customer' | 'business_owner' | 'admin'
           role?: 'customer' | 'business_owner' | 'admin'
           avatar_url?: string | null
           date_of_birth?: string | null

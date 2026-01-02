@@ -43,8 +43,8 @@ export default function RoleSelectionScreen() {
       setLoading(true);
 
       // Update the user's profile with selected role (user_type column)
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({ 
           user_type: selectedRole,
           updated_at: new Date().toISOString(),

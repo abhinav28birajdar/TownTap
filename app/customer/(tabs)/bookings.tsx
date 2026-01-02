@@ -67,7 +67,7 @@ export default function CustomerBookings() {
     return (
       <TouchableOpacity
         style={styles.bookingCard}
-        onPress={() => router.push(`/customer/booking/${item.id}`)}
+        onPress={() => router.push({ pathname: '/customer/booking/[id]', params: { id: item.id } })}
       >
         <View style={styles.bookingHeader}>
           <View style={styles.businessImage}>
